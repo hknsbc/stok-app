@@ -99,3 +99,77 @@ create index if not exists idx_operations_user_id on stock_operations(user_id);
 create index if not exists idx_operations_stock_id on stock_operations(stock_id);
 create index if not exists idx_sessions_user_id on sessions(user_id);
 create index if not exists idx_users_username on users(username);
+
+-- =============================================
+-- STOK TAKİP UYGULAMA TABLOLARI (src/pages)
+-- Bu tablolar src/pages/*.jsx tarafından
+-- doğrudan Supabase client üzerinden kullanılır
+-- =============================================
+
+-- CARİ (Müşteri / Tedarikçi yönetimi)
+create table if not exists cari (
+  id uuid primary key default gen_random_uuid(),
+  company_id text not null,
+  ad text not null,
+  tip text not null default 'Müşteri',   -- 'Müşteri' | 'Tedarikçi'
+  telefon text not null default '',
+  email text not null default '',
+  bakiye numeric not null default 0,
+  durum text not null default 'Aktif',   -- 'Aktif' | 'Pasif'
+  created_at timestamptz not null default now()
+);
+
+alter table cari enable row level security;
+create policy "allow_all_cari" on cari for all using (true) with check (true);
+create index if not exists idx_cari_company_id on cari(company_id);
+
+-- STOK (Ürün / Envanter)
+create table if not exists stok (
+  id uuid primary key default gen_random_uuid(),
+  company_id text not null,
+  kod text not null default '',
+  ad text not null,
+  kategori text not null default 'Genel',
+  miktar numeric not null default 0,
+  birim text not null default 'Adet',
+  alis_fiyat numeric not null default 0,
+  satis_fiyat numeric not null default 0,
+  durum text not null default 'Aktif',   -- 'Aktif' | 'Pasif'
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table stok enable row level security;
+create policy "allow_all_stok" on stok for all using (true) with check (true);
+create index if not exists idx_stok_company_id on stok(company_id);
+
+-- ALISLAR (Satın alma / Alış faturaları)
+create table if not exists alislar (
+  id uuid primary key default gen_random_uuid(),
+  company_id text not null,
+  no text not null default '',
+  tedarikci text not null default '',
+  tarih date not null default current_date,
+  toplam numeric not null default 0,
+  durum text not null default 'Beklemede',  -- 'Beklemede' | 'Tamamlandı' | 'İptal'
+  created_at timestamptz not null default now()
+);
+
+alter table alislar enable row level security;
+create policy "allow_all_alislar" on alislar for all using (true) with check (true);
+create index if not exists idx_alislar_company_id on alislar(company_id);
+
+-- SATISLAR (Satış faturaları)
+create table if not exists satislar (
+  id uuid primary key default gen_random_uuid(),
+  company_id text not null,
+  musteri text not null default '',
+  tarih date not null default current_date,
+  toplam numeric not null default 0,
+  durum text not null default 'Beklemede',  -- 'Beklemede' | 'Tamamlandı' | 'İptal'
+  created_at timestamptz not null default now()
+);
+
+alter table satislar enable row level security;
+create policy "allow_all_satislar" on satislar for all using (true) with check (true);
+create index if not exists idx_satislar_company_id on satislar(company_id);
