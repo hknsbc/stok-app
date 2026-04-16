@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 
 // Server build configuration
 export default defineConfig({
+  root: process.cwd(),
   build: {
     lib: {
       entry: "./server/node-build.ts",
