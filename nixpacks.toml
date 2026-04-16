@@ -1,0 +1,8 @@
+[phases.install]
+cmds = ["pnpm install --frozen-lockfile=false"]
+
+[phases.build]
+cmds = ["pnpm run build:client"]
+
+[start]
+cmd = "node --import tsx/esm server/node-build.ts"
