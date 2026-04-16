@@ -2,7 +2,12 @@
 cmds = ["pnpm install --frozen-lockfile=false"]
 
 [phases.build]
-cmds = ["pnpm run build:client"]
+cmds = [
+  "ls -la /app", 
+  "ls -la /app/server || echo 'server dir not found'",
+  "pnpm run build:client",
+  "pnpm run build:server"
+]
 
 [start]
-cmd = "node --import tsx/esm server/node-build.ts"
+cmd = "node dist/server/node-build.mjs"
