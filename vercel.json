@@ -1,19 +1,9 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
-  "builds": [
-    {
-      "src": "server/node-build.ts",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["dist/spa/**"]
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "server/node-build.ts"
-    }
+  "buildCommand": "npm run build:client",
+  "outputDirectory": "dist/spa",
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api/index" },
+    { "source": "/:path*", "destination": "/index.html" }
   ]
 }
