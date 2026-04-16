@@ -1,9 +1,13 @@
+# Railpack configuration - include server directory despite .gitignore
+[build]
+include = ["server/**/*", "api/**/*", "client/**/*", "shared/**/*", "package.json", "pnpm-lock.yaml", ".npmrc", "tsconfig.json", "vite.config.ts", "vite.config.server.ts"]
+
 [phases.install]
 cmds = ["pnpm install --frozen-lockfile=false"]
 
 [phases.build]
 cmds = [
-  "ls -la /app", 
+  "ls -la /app",
   "ls -la /app/server || echo 'server dir not found'",
   "pnpm run build:client",
   "pnpm run build:server"
