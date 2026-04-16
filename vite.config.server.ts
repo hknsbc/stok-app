@@ -1,8 +1,13 @@
 import { defineConfig } from "vite";
 import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Server build configuration
 export default defineConfig({
+  root: __dirname,
   build: {
     lib: {
       entry: path.resolve(__dirname, "server/node-build.ts"),
@@ -38,7 +43,7 @@ export default defineConfig({
         entryFileNames: "[name].mjs",
       },
     },
-    minify: false, // Keep readable for debugging
+    minify: false,
     sourcemap: true,
   },
   resolve: {
