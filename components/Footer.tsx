@@ -26,14 +26,14 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link
-                  to="/"
+                  href="/"
                   className="text-sidebar-accent-foreground/70 hover:text-sidebar-primary transition-colors"
                 >
                   Ana Sayfa
                 </Link>
               </li>
               <li>
-                <a
+                
                   href="mailto:support@staktakip.com"
                   className="text-sidebar-accent-foreground/70 hover:text-sidebar-primary transition-colors"
                 >
@@ -41,7 +41,7 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a
+                
                   href="tel:+902125551234"
                   className="text-sidebar-accent-foreground/70 hover:text-sidebar-primary transition-colors"
                 >
@@ -59,7 +59,7 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link
-                  to="/kvkk"
+                  href="/kvkk"
                   className="text-sidebar-accent-foreground/70 hover:text-sidebar-primary transition-colors"
                 >
                   Gizlilik Politikası (KVKK)
@@ -67,7 +67,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  to="/terms"
+                  href="/terms"
                   className="text-sidebar-accent-foreground/70 hover:text-sidebar-primary transition-colors"
                 >
                   Kullanıcı Sözleşmesi
