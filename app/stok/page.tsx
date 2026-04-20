@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import DashboardLayout from "@/components/DashboardLayout";
 
 type Product = {
   id: string;
@@ -29,39 +30,39 @@ export default function StokListesi() {
   };
 
   return (
-    <div style={{ padding: 40 }}>
-      <h1 style={{ fontSize: 28, fontWeight: "bold" }}>Stok Listesi</h1>
-      <a href="/stok/ekle" style={{ display: "inline-block", marginTop: 20, marginBottom: 20, padding: "10px 20px", background: "black", color: "white", borderRadius: 6, textDecoration: "none" }}>
-        Yeni Urun Ekle
-      </a>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr>
-            <th style={{ borderBottom: "1px solid #ccc", padding: 10 }}>Urun</th>
-            <th style={{ borderBottom: "1px solid #ccc", padding: 10 }}>Stok</th>
-            <th style={{ borderBottom: "1px solid #ccc", padding: 10 }}>Fiyat</th>
-            <th style={{ borderBottom: "1px solid #ccc", padding: 10 }}>Islem</th>
-          </tr>
-        </thead>
-        <tbody>
-          {products.map((p) => (
-            <tr key={p.id}>
-              <td style={{ padding: 10 }}>{p.name}</td>
-              <td style={{ padding: 10 }}>{p.stock}</td>
-              <td style={{ padding: 10 }}>{p.price} TL</td>
-              <td style={{ padding: 10 }}>
-                <a href={`/stok/duzenle/${p.id}`} style={{ padding: "6px 12px", background: "blue", color: "white", borderRadius: 6, textDecoration: "none", marginRight: 10 }}>Duzenle</a>
-                <button onClick={() => handleDelete(p.id)} style={{ padding: "6px 12px", background: "red", color: "white", borderRadius: 6, border: "none", cursor: "pointer" }}>Sil</button>
-              </td>
-            </tr>
-          ))}
-          {products.length === 0 && (
+    <DashboardLayout>
+      <div>
+        <h1 style={{ fontSize: 28, fontWeight: "bold", marginBottom: 20 }}>Stok Listesi</h1>
+        <a href="/stok/ekle" style={{ display: "inline-block", marginBottom: 20, padding: "10px 20px", background: "black", color: "white", borderRadius: 6, textDecoration: "none" }}>
+          Yeni Urun Ekle
+        </a>
+        <table style={{ width: "100%", borderCollapse: "collapse", background: "white", borderRadius: 8 }}>
+          <thead>
             <tr>
-              <td colSpan={4} style={{ padding: 20, textAlign: "center", color: "#777" }}>Henuz urun eklenmemis.</td>
+              <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>Urun Adi</th>
+              <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>Stok Adedi</th>
+              <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>Islem</th>
             </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {products.map((p) => (
+              <tr key={p.id}>
+                <td style={{ padding: 12 }}>{p.name}</td>
+                <td style={{ padding: 12 }}>{p.stock}</td>
+                <td style={{ padding: 12 }}>
+                  <a href={`/stok/duzenle/${p.id}`} style={{ padding: "6px 12px", background: "blue", color: "white", borderRadius: 6, textDecoration: "none", marginRight: 10 }}>Duzenle</a>
+                  <button onClick={() => handleDelete(p.id)} style={{ padding: "6px 12px", background: "red", color: "white", borderRadius: 6, border: "none", cursor: "pointer" }}>Sil</button>
+                </td>
+              </tr>
+            ))}
+            {products.length === 0 && (
+              <tr>
+                <td colSpan={3} style={{ padding: 20, textAlign: "center", color: "#777" }}>Henuz urun eklenmemis.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </DashboardLayout>
   );
 }
