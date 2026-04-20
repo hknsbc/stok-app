@@ -25,26 +25,17 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link
-                  href="/"
-                  className="text-sidebar-accent-foreground/70 hover:text-sidebar-primary transition-colors"
-                >
+                <Link href="/" className="text-sidebar-accent-foreground/70 hover:text-sidebar-primary transition-colors">
                   Ana Sayfa
                 </Link>
               </li>
               <li>
-                
-                  href="mailto:support@staktakip.com"
-                  className="text-sidebar-accent-foreground/70 hover:text-sidebar-primary transition-colors"
-                >
+                <a href="mailto:support@staktakip.com" className="text-sidebar-accent-foreground/70 hover:text-sidebar-primary transition-colors">
                   Destek
                 </a>
               </li>
               <li>
-                
-                  href="tel:+902125551234"
-                  className="text-sidebar-accent-foreground/70 hover:text-sidebar-primary transition-colors"
-                >
+                <a href="tel:+902125551234" className="text-sidebar-accent-foreground/70 hover:text-sidebar-primary transition-colors">
                   İletişim
                 </a>
               </li>
@@ -58,18 +49,12 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link
-                  href="/kvkk"
-                  className="text-sidebar-accent-foreground/70 hover:text-sidebar-primary transition-colors"
-                >
+                <Link href="/kvkk" className="text-sidebar-accent-foreground/70 hover:text-sidebar-primary transition-colors">
                   Gizlilik Politikası (KVKK)
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/terms"
-                  className="text-sidebar-accent-foreground/70 hover:text-sidebar-primary transition-colors"
-                >
+                <Link href="/terms" className="text-sidebar-accent-foreground/70 hover:text-sidebar-primary transition-colors">
                   Kullanıcı Sözleşmesi
                 </Link>
               </li>
@@ -77,10 +62,8 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Divider */}
         <div className="border-t border-sidebar-border my-6" />
 
-        {/* Bottom Section */}
         <div className="flex flex-col md:flex-row items-center justify-between">
           <p className="text-sm text-sidebar-accent-foreground/60">
             © {currentYear} Stok Takip Sistemi. Tüm hakları saklıdır.
