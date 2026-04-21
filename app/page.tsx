@@ -8,6 +8,7 @@ export default function AnaSayfa() {
   const [stokDegeri, setStokDegeri] = useState<number | null>(null);
   const [buAySatis, setBuAySatis] = useState<number | null>(null);
   const [lisansDurumu, setLisansDurumu] = useState<string>("Yukleniyor");
+  const [firmaAdi, setFirmaAdi] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -37,9 +38,13 @@ export default function AnaSayfa() {
       if (user) {
         const { data: profile } = await supabase
           .from("profiles")
-          .select("subscription_status, plan")
+          .select("subscription_status, plan, company_name")
           .eq("id", user.id)
           .single();
+
+        if (profile?.company_name) setFirmaAdi(profile.company_name);
+        else setFirmaAdi(user.email ?? null);
+
         if (profile?.subscription_status === "active") {
           setLisansDurumu(`Aktif${profile.plan ? ` (${profile.plan})` : ""}`);
         } else if (profile?.subscription_status) {
@@ -60,7 +65,14 @@ export default function AnaSayfa() {
   return (
     <DashboardLayout>
       <div>
-        <h1 style={{ fontSize: 28, fontWeight: "bold", marginBottom: 24 }}>Ana Sayfa</h1>
+        <div style={{ marginBottom: 24 }}>
+          <h1 style={{ fontSize: 28, fontWeight: "bold" }}>Ana Sayfa</h1>
+          {firmaAdi && (
+            <p style={{ fontSize: 16, color: "#6366f1", fontWeight: "500", marginTop: 4 }}>
+              {firmaAdi}
+            </p>
+          )}
+        </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 32 }}>
           <div style={{ background: "white", padding: 24, borderRadius: 12, boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
             <p style={{ color: "#888", fontSize: 13, marginBottom: 8 }}>Toplam Cari</p>
