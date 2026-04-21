@@ -1,0 +1,19 @@
+O konuşmaya erişimim olmadığı için tam olarak bilemiyorum, ama genel olarak şunu anlıyorum:
+
+**Tahmini süreç:**
+
+1. **Builder.io** — Uygulama arayüzü/tasarımı yapıldı
+2. **Supabase** — Veritabanı kuruldu:
+   - `profiles`, `products`, `customers`, `sales`, `tenants` gibi tablolar oluşturuldu
+   - Auth (kullanıcı girişi) ayarlandı
+   - RLS politikaları düzenlendi
+3. **Next.js** — Kod yazıldı:
+   - Login, Ana Sayfa, Stok, Cari, Satış, Raporlar sayfaları
+   - DashboardLayout, Footer bileşenleri
+   - Supabase bağlantısı kuruldu
+4. **Vercel** — Canlıya alındı:
+   - GitHub'a push
+   - Deploy sorunları çözüldü
+   - `stok.marssoft.com.tr` domain bağlandı
+
+Daha doğru bir özet için o eski konuşmayı buraya yapıştırabilirsin. 👍
