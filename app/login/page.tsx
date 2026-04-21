@@ -24,11 +24,11 @@ const translations = {
     feature1: "📦 Stok Takip",
     feature2: "💰 Satış",
     feature3: "👥 Cari",
-    errorInactive: "Hesabınız askıya alınmıştır. Lütfen destek ile iletişime geçin.",
+    errorInactive: "Hesabınız henüz onaylanmamıştır. Lütfen yönetici onayını bekleyin.",
     errorExpired: "Abonelik süreniz dolmuştur. Lütfen aboneliğinizi yenileyin.",
     errorLogin: "E-posta veya şifre hatalı.",
     errorFailed: "Giriş başarısız.",
-    successRegister: "Kayıt başarılı! E-posta onayı gerekebilir.",
+    successRegister: "Kayıt talebiniz alındı! Hesabınız yönetici onayından sonra aktif edilecektir.",
   },
   en: {
     title: "Stock Tracking",
@@ -50,11 +50,11 @@ const translations = {
     feature1: "📦 Stock",
     feature2: "💰 Sales",
     feature3: "👥 Customers",
-    errorInactive: "Your account has been suspended. Please contact support.",
+    errorInactive: "Your account has not been approved yet. Please wait for admin approval.",
     errorExpired: "Your subscription has expired. Please renew your subscription.",
     errorLogin: "Invalid email or password.",
     errorFailed: "Login failed.",
-    successRegister: "Registration successful! Email confirmation may be required.",
+    successRegister: "Your registration request has been received! Your account will be activated after admin approval.",
   },
 };
 
@@ -83,7 +83,10 @@ export default function Login() {
       });
       if (error) { setError(error.message); setLoading(false); return; }
       if (signUpData.user) {
-        await supabase.from("profiles").update({ plan: selectedPlan }).eq("id", signUpData.user.id);
+        await supabase.from("profiles").update({
+          plan: selectedPlan,
+          is_active: false,
+        }).eq("id", signUpData.user.id);
         if (isPro) {
           const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", signUpData.user.id).single();
           if (profile?.tenant_id) {
@@ -127,7 +130,6 @@ export default function Login() {
 
   return (
     <div style={{ display: "flex", height: "100vh", background: "#f0f4ff" }}>
-      {/* Sol — İllüstrasyon */}
       <div style={{
         flex: 1,
         background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
@@ -154,12 +156,8 @@ export default function Login() {
           style={{ width: "100%", maxWidth: 480, borderRadius: 16, position: "relative", zIndex: 1 }} />
 
         <div style={{ textAlign: "center", marginTop: 32, position: "relative", zIndex: 1 }}>
-          <h2 style={{ fontSize: 26, fontWeight: "bold", color: "white", marginBottom: 12 }}>
-            {t.heroTitle}
-          </h2>
-          <p style={{ fontSize: 15, color: "rgba(255,255,255,0.7)", maxWidth: 360 }}>
-            {t.heroDesc}
-          </p>
+          <h2 style={{ fontSize: 26, fontWeight: "bold", color: "white", marginBottom: 12 }}>{t.heroTitle}</h2>
+          <p style={{ fontSize: 15, color: "rgba(255,255,255,0.7)", maxWidth: 360 }}>{t.heroDesc}</p>
         </div>
 
         <div style={{ display: "flex", gap: 24, marginTop: 32, position: "relative", zIndex: 1 }}>
@@ -167,18 +165,13 @@ export default function Login() {
             <div key={item} style={{
               background: "rgba(255,255,255,0.1)", borderRadius: 8, padding: "8px 16px",
               color: "white", fontSize: 13, backdropFilter: "blur(10px)",
-            }}>
-              {item}
-            </div>
+            }}>{item}</div>
           ))}
         </div>
       </div>
 
-      {/* Sağ — Form */}
       <div style={{ width: 480, display: "flex", justifyContent: "center", alignItems: "center", padding: 48, background: "white" }}>
         <div style={{ width: "100%", maxWidth: 360 }}>
-
-          {/* Dil Seçici */}
           <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 24, gap: 8 }}>
             <button onClick={() => setLang("tr")}
               style={{ padding: "4px 12px", borderRadius: 6, border: `2px solid ${lang === "tr" ? "#1a1a2e" : "#e5e7eb"}`, background: lang === "tr" ? "#1a1a2e" : "white", color: lang === "tr" ? "white" : "#888", fontSize: 12, cursor: "pointer", fontWeight: 600 }}>
