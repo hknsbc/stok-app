@@ -2,76 +2,11 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
-
-const translations = {
-  tr: {
-    title: "Stok Takip",
-    subtitle: "by Marssoft",
-    signIn: "Giriş Yap",
-    signUp: "Kayıt Ol",
-    email: "E-posta",
-    password: "Şifre",
-    loading: "Lütfen bekleyin...",
-    noAccount: "Hesabın yok mu? Kayıt ol",
-    hasAccount: "Zaten hesabın var mı? Giriş yap",
-    selectPlan: "Plan Seçin",
-    basicPlan: "Temel Plan",
-    basicPrice: "2.500 TL/Ay",
-    proPlan: "Profesyonel Plan",
-    proPrice: "Fiyat Teklifi · Şube Yönetimi dahil",
-    heroTitle: "Stok Yönetimini Kolaylaştır",
-    heroDesc: "Tüm stok, satış ve cari işlemlerinizi tek platformda yönetin.",
-    feature1: "📦 Stok Takip",
-    feature2: "💰 Satış",
-    feature3: "👥 Cari",
-    errorInactive: "Hesabınız henüz onaylanmamıştır. Lütfen yönetici onayını bekleyin.",
-    errorExpired: "Abonelik süreniz dolmuştur. Lütfen aboneliğinizi yenileyin.",
-    errorLogin: "E-posta veya şifre hatalı.",
-    errorFailed: "Giriş başarısız.",
-    successRegister: "Kayıt talebiniz alındı! Hesabınız yönetici onayından sonra aktif edilecektir.",
-    forgotPassword: "Şifremi Unuttum",
-    forgotPasswordTitle: "Şifre Sıfırlama",
-    forgotPasswordDesc: "E-posta adresinize şifre sıfırlama bağlantısı gönderilecektir.",
-    sendResetLink: "Sıfırlama Bağlantısı Gönder",
-    resetSent: "Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.",
-    backToLogin: "Giriş sayfasına dön",
-  },
-  en: {
-    title: "Stock Tracking",
-    subtitle: "by Marssoft",
-    signIn: "Sign In",
-    signUp: "Sign Up",
-    email: "Email",
-    password: "Password",
-    loading: "Please wait...",
-    noAccount: "Don't have an account? Sign up",
-    hasAccount: "Already have an account? Sign in",
-    selectPlan: "Select Plan",
-    basicPlan: "Basic Plan",
-    basicPrice: "2.500 TL/Month",
-    proPlan: "Professional Plan",
-    proPrice: "Custom Price · Branch Management included",
-    heroTitle: "Simplify Your Stock Management",
-    heroDesc: "Manage all your stock, sales and customer operations in one platform.",
-    feature1: "📦 Stock",
-    feature2: "💰 Sales",
-    feature3: "👥 Customers",
-    errorInactive: "Your account has not been approved yet. Please wait for admin approval.",
-    errorExpired: "Your subscription has expired. Please renew your subscription.",
-    errorLogin: "Invalid email or password.",
-    errorFailed: "Login failed.",
-    successRegister: "Your registration request has been received! Your account will be activated after admin approval.",
-    forgotPassword: "Forgot Password",
-    forgotPasswordTitle: "Password Reset",
-    forgotPasswordDesc: "A password reset link will be sent to your email address.",
-    sendResetLink: "Send Reset Link",
-    resetSent: "Password reset link has been sent to your email address.",
-    backToLogin: "Back to login",
-  },
-};
+import { useLang } from "@/lib/LangContext";
 
 export default function Login() {
   const router = useRouter();
+  const { lang, setLang, t } = useLang();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isRegister, setIsRegister] = useState(false);
@@ -80,8 +15,6 @@ export default function Login() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
-  const [lang, setLang] = useState<"tr" | "en">("tr");
-  const t = translations[lang];
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -184,8 +117,8 @@ export default function Login() {
 
           <div style={{ textAlign: "center", marginBottom: 32 }}>
             <div style={{ fontSize: 36, marginBottom: 8 }}>📦</div>
-            <h1 style={{ fontSize: 24, fontWeight: "bold", color: "#1a1a2e" }}>{t.title}</h1>
-            <p style={{ fontSize: 13, color: "#888", marginTop: 4 }}>{t.subtitle}</p>
+            <h1 style={{ fontSize: 24, fontWeight: "bold", color: "#1a1a2e" }}>{t.loginTitle}</h1>
+            <p style={{ fontSize: 13, color: "#888", marginTop: 4 }}>{t.loginSubtitle}</p>
           </div>
 
           <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 20, color: "#1a1a2e" }}>
@@ -205,11 +138,11 @@ export default function Login() {
           )}
 
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <input type="email" placeholder={t.email} value={email} onChange={(e) => setEmail(e.target.value)} required
+            <input type="email" placeholder={t.emailLabel} value={email} onChange={(e) => setEmail(e.target.value)} required
               style={{ padding: 12, border: "1px solid #e5e7eb", borderRadius: 8, fontSize: 14, outline: "none" }} />
 
             {!isForgotPassword && (
-              <input type="password" placeholder={t.password} value={password} onChange={(e) => setPassword(e.target.value)} required
+              <input type="password" placeholder={t.passwordLabel} value={password} onChange={(e) => setPassword(e.target.value)} required
                 style={{ padding: 12, border: "1px solid #e5e7eb", borderRadius: 8, fontSize: 14, outline: "none" }} />
             )}
 
@@ -235,7 +168,7 @@ export default function Login() {
 
             <button type="submit" disabled={loading}
               style={{ padding: 12, background: "#1a1a2e", color: "white", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600, marginTop: 4 }}>
-              {loading ? t.loading : isForgotPassword ? t.sendResetLink : isRegister ? t.signUp : t.signIn}
+              {loading ? t.loginLoading : isForgotPassword ? t.sendResetLink : isRegister ? t.signUp : t.signIn}
             </button>
           </form>
 

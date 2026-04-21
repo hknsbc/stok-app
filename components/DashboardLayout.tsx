@@ -19,22 +19,11 @@ import {
   Settings,
   Building2,
 } from "lucide-react";
+import { useLang } from "@/lib/LangContext";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
-
-const menuItems = [
-  { label: "Ana Sayfa", path: "/", icon: Home },
-  { label: "Cari", path: "/cari", icon: Users },
-  { label: "Stok", path: "/stok", icon: Package },
-  { label: "Alislar", path: "/alislar", icon: Truck },
-  { label: "Satislar", path: "/satislar", icon: BarChart3 },
-  { label: "Yeni Satis", path: "/yeni-satis", icon: ShoppingCart },
-  { label: "Raporlar", path: "/raporlar", icon: FileText },
-  { label: "Abonelik", path: "/abonelik", icon: CreditCard },
-  { label: "Lisans", path: "/lisans", icon: Shield },
-];
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -44,6 +33,19 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [hasBranches, setHasBranches] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+  const { lang, setLang, t } = useLang();
+
+  const menuItems = [
+    { label: t.menuHome, path: "/", icon: Home },
+    { label: t.menuCari, path: "/cari", icon: Users },
+    { label: t.menuStok, path: "/stok", icon: Package },
+    { label: t.menuAlislar, path: "/alislar", icon: Truck },
+    { label: t.menuSatislar, path: "/satislar", icon: BarChart3 },
+    { label: t.menuYeniSatis, path: "/yeni-satis", icon: ShoppingCart },
+    { label: t.menuRaporlar, path: "/raporlar", icon: FileText },
+    { label: t.menuAbonelik, path: "/abonelik", icon: CreditCard },
+    { label: t.menuLisans, path: "/lisans", icon: Shield },
+  ];
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -76,11 +78,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     router.push("/login");
   };
 
-  // Auth kontrol edilene kadar boş ekran göster (flash önleme)
   if (!authChecked) {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "#f5f5f5" }}>
-        <div style={{ color: "#888", fontSize: 14 }}>Yukleniyor...</div>
+        <div style={{ color: "#888", fontSize: 14 }}>{t.loading}</div>
       </div>
     );
   }
@@ -132,7 +133,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               color: "white", textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
             }}>
               <Building2 size={18} />
-              Subeler
+              {t.menuSubeler}
             </Link>
           )}
           {isSuperAdmin && (
@@ -144,7 +145,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               borderTop: "1px solid #333",
             }}>
               <Settings size={18} />
-              Admin Paneli
+              {t.menuAdmin}
             </Link>
           )}
         </nav>
@@ -169,7 +170,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             padding: "6px 0",
           }}>
             <LogOut size={16} />
-            Cikis Yap
+            {t.logout}
           </button>
         </div>
       </div>
@@ -189,9 +190,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: "none", border: "none", cursor: "pointer" }}>
               {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
-            <span style={{ fontSize: 16, fontWeight: 600 }}>Stok Yonetim Sistemi</span>
+            <span style={{ fontSize: 16, fontWeight: 600 }}>{t.sysTitle}</span>
           </div>
-          <span style={{ fontSize: 13, color: "#aaa", fontWeight: 500 }}>Marssoft</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ display: "flex", gap: 6 }}>
+              <button onClick={() => setLang("tr")} style={{ padding: "4px 10px", borderRadius: 6, border: `2px solid ${lang === "tr" ? "#1a1a2e" : "#e5e7eb"}`, background: lang === "tr" ? "#1a1a2e" : "white", color: lang === "tr" ? "white" : "#888", fontSize: 12, cursor: "pointer", fontWeight: 600 }}>🇹🇷 TR</button>
+              <button onClick={() => setLang("en")} style={{ padding: "4px 10px", borderRadius: 6, border: `2px solid ${lang === "en" ? "#1a1a2e" : "#e5e7eb"}`, background: lang === "en" ? "#1a1a2e" : "white", color: lang === "en" ? "white" : "#888", fontSize: 12, cursor: "pointer", fontWeight: 600 }}>🇬🇧 EN</button>
+            </div>
+            <span style={{ fontSize: 13, color: "#aaa", fontWeight: 500 }}>Marssoft</span>
+          </div>
         </div>
         <div style={{ flex: 1, overflow: "auto", padding: 24 }}>
           {children}

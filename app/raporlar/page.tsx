@@ -2,6 +2,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import DashboardLayout from "@/components/DashboardLayout";
+import { useLang } from "@/lib/LangContext";
 
 type FilterType = "bugun" | "bu_hafta" | "bu_ay" | "gecen_ay" | "tum_zamanlar" | "ay_sec";
 
@@ -31,7 +32,7 @@ function getDateRange(filter: FilterType, customMonth: string): { start: string 
     return { start: t, end: t };
   }
   if (filter === "bu_hafta") {
-    const day = today.getDay(); // 0=Sun
+    const day = today.getDay();
     const diffToMon = (day === 0 ? -6 : 1 - day);
     const mon = new Date(today); mon.setDate(today.getDate() + diffToMon);
     const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
@@ -39,21 +40,15 @@ function getDateRange(filter: FilterType, customMonth: string): { start: string 
   }
   if (filter === "bu_ay") {
     const y = today.getFullYear(), m = today.getMonth();
-    const first = new Date(y, m, 1);
-    const last = new Date(y, m + 1, 0);
-    return { start: fmt(first), end: fmt(last) };
+    return { start: fmt(new Date(y, m, 1)), end: fmt(new Date(y, m + 1, 0)) };
   }
   if (filter === "gecen_ay") {
     const y = today.getFullYear(), m = today.getMonth();
-    const first = new Date(y, m - 1, 1);
-    const last = new Date(y, m, 0);
-    return { start: fmt(first), end: fmt(last) };
+    return { start: fmt(new Date(y, m - 1, 1)), end: fmt(new Date(y, m, 0)) };
   }
   if (filter === "ay_sec" && customMonth) {
     const [y, m] = customMonth.split("-").map(Number);
-    const first = new Date(y, m - 1, 1);
-    const last = new Date(y, m, 0);
-    return { start: fmt(first), end: fmt(last) };
+    return { start: fmt(new Date(y, m - 1, 1)), end: fmt(new Date(y, m, 0)) };
   }
   return { start: null, end: null };
 }
@@ -65,25 +60,25 @@ function calcSummary(rows: { total: number; cost: number; quantity: number }[]):
   return { ciro, maliyet, kar: ciro - maliyet, adet };
 }
 
-const FILTERS: { key: FilterType; label: string }[] = [
-  { key: "bugun", label: "Bugün" },
-  { key: "bu_hafta", label: "Bu Hafta" },
-  { key: "bu_ay", label: "Bu Ay" },
-  { key: "gecen_ay", label: "Geçen Ay" },
-  { key: "tum_zamanlar", label: "Tüm Zamanlar" },
-  { key: "ay_sec", label: "Ay Seç" },
-];
-
 export default function Raporlar() {
+  const { t } = useLang();
   const today = new Date();
   const defaultMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
+
+  const FILTERS: { key: FilterType; label: string }[] = [
+    { key: "bugun", label: t.filterToday },
+    { key: "bu_hafta", label: t.filterThisWeek },
+    { key: "bu_ay", label: t.filterThisMonth },
+    { key: "gecen_ay", label: t.filterLastMonth },
+    { key: "tum_zamanlar", label: t.filterAllTime },
+    { key: "ay_sec", label: t.filterSelectMonth },
+  ];
 
   const [filter, setFilter] = useState<FilterType>("bu_ay");
   const [customMonth, setCustomMonth] = useState(defaultMonth);
   const [summary, setSummary] = useState<Summary>({ ciro: 0, maliyet: 0, kar: 0, adet: 0 });
   const [satislar, setSatislar] = useState<SaleRow[]>([]);
   const [productNames, setProductNames] = useState<Record<string, string>>({});
-  const [toplamUrun, setToplamUrun] = useState(0);
   const [loading, setLoading] = useState(false);
 
   const fetchData = useCallback(async () => {
@@ -110,7 +105,6 @@ export default function Raporlar() {
     }
 
     if (productsRes.data) {
-      setToplamUrun(productsRes.data.length);
       const names: Record<string, string> = {};
       for (const p of productsRes.data) names[p.id] = p.name;
       setProductNames(names);
@@ -128,8 +122,7 @@ export default function Raporlar() {
     <DashboardLayout>
       <div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
-          <h1 style={{ fontSize: 28, fontWeight: "bold" }}>Raporlar</h1>
-          {/* Tarih filtre butonları */}
+          <h1 style={{ fontSize: 28, fontWeight: "bold" }}>{t.raporlarTitle}</h1>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {FILTERS.map((f) => (
               <button key={f.key} onClick={() => setFilter(f.key)} style={{
@@ -148,7 +141,6 @@ export default function Raporlar() {
           </div>
         </div>
 
-        {/* Ay seçici */}
         {filter === "ay_sec" && (
           <div style={{ marginBottom: 20 }}>
             <input
@@ -160,19 +152,17 @@ export default function Raporlar() {
           </div>
         )}
 
-        {/* Dönem etiketi */}
         <p style={{ color: "#888", fontSize: 13, marginBottom: 20 }}>
-          {loading ? "Yukleniyor..." : `Seçilen dönem: ${filterLabel}${filter === "ay_sec" ? ` (${customMonth})` : ""} — ${satislar.length} satış kaydı`}
+          {loading ? t.loading : `${t.periodLabel} ${filterLabel}${filter === "ay_sec" ? ` (${customMonth})` : ""} — ${satislar.length} ${t.salesRecords}`}
         </p>
 
-        {/* Özet kartlar */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 14, marginBottom: 28 }}>
           {[
-            { label: "Toplam Ciro", value: summary.ciro.toFixed(2) + " TL", color: "#6366f1" },
-            { label: "Toplam Maliyet", value: summary.maliyet.toFixed(2) + " TL", color: "#f59e0b" },
-            { label: "Toplam Kar", value: summary.kar.toFixed(2) + " TL", color: summary.kar >= 0 ? "#10b981" : "#ef4444" },
-            { label: "Karlılık %", value: "%" + karlilikPct, color: Number(karlilikPct) >= 0 ? "#10b981" : "#ef4444" },
-            { label: "Satılan Adet", value: String(summary.adet), color: "#334155" },
+            { label: t.totalRevenue, value: summary.ciro.toFixed(2) + " TL", color: "#6366f1" },
+            { label: t.totalCost, value: summary.maliyet.toFixed(2) + " TL", color: "#f59e0b" },
+            { label: t.totalProfit, value: summary.kar.toFixed(2) + " TL", color: summary.kar >= 0 ? "#10b981" : "#ef4444" },
+            { label: t.profitPct, value: "%" + karlilikPct, color: Number(karlilikPct) >= 0 ? "#10b981" : "#ef4444" },
+            { label: t.soldCount, value: String(summary.adet), color: "#334155" },
           ].map((card) => (
             <div key={card.label} style={{ background: "white", padding: "20px 18px", borderRadius: 12, boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
               <p style={{ color: "#888", fontSize: 12, marginBottom: 8 }}>{card.label}</p>
@@ -181,16 +171,13 @@ export default function Raporlar() {
           ))}
         </div>
 
-        {/* Satış detay tablosu */}
         <div style={{ background: "white", padding: 24, borderRadius: 12 }}>
-          <h2 style={{ fontSize: 17, fontWeight: "bold", marginBottom: 16 }}>
-            Satış Detayları
-          </h2>
+          <h2 style={{ fontSize: 17, fontWeight: "bold", marginBottom: 16 }}>{t.salesDetails}</h2>
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 700 }}>
               <thead>
                 <tr style={{ background: "#f9fafb" }}>
-                  {["Tarih", "Ürün", "Adet", "Alış Fiyatı", "Satış Fiyatı", "Ciro", "Maliyet", "Kar", "Karlılık %"].map((h) => (
+                  {[t.date, t.product, t.soldCount, t.buyPriceCol, t.sellPriceCol, t.revenue, t.cost, t.profit, t.profitPct].map((h) => (
                     <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontSize: 12, color: "#555", fontWeight: 600, borderBottom: "2px solid #eee" }}>{h}</th>
                   ))}
                 </tr>
@@ -218,13 +205,13 @@ export default function Raporlar() {
                   );
                 })}
                 {satislar.length === 0 && !loading && (
-                  <tr><td colSpan={9} style={{ padding: 28, textAlign: "center", color: "#aaa", fontSize: 13 }}>Bu dönemde satış kaydı bulunamadı.</td></tr>
+                  <tr><td colSpan={9} style={{ padding: 28, textAlign: "center", color: "#aaa", fontSize: 13 }}>{t.noSalesInPeriod}</td></tr>
                 )}
               </tbody>
               {satislar.length > 0 && (
                 <tfoot>
                   <tr style={{ background: "#f9fafb", fontWeight: "bold" }}>
-                    <td colSpan={2} style={{ padding: "10px 12px", fontSize: 13 }}>TOPLAM</td>
+                    <td colSpan={2} style={{ padding: "10px 12px", fontSize: 13 }}>{t.totalRow}</td>
                     <td style={{ padding: "10px 12px", fontSize: 13 }}>{summary.adet}</td>
                     <td colSpan={2} />
                     <td style={{ padding: "10px 12px", fontSize: 13, color: "#6366f1" }}>{summary.ciro.toFixed(2)} TL</td>

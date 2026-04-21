@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import DashboardLayout from "@/components/DashboardLayout";
+import { useLang } from "@/lib/LangContext";
 
 type Customer = {
   id: string;
@@ -12,6 +13,7 @@ type Customer = {
 };
 
 export default function Cari() {
+  const { t } = useLang();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Customer | null>(null);
@@ -73,32 +75,32 @@ export default function Cari() {
     <DashboardLayout>
       <div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-          <h1 style={{ fontSize: 28, fontWeight: "bold" }}>Cari</h1>
+          <h1 style={{ fontSize: 28, fontWeight: "bold" }}>{t.cariTitle}</h1>
           <button
             onClick={() => setShowForm(!showForm)}
             style={{ padding: "10px 20px", background: "#6366f1", color: "white", border: "none", borderRadius: 8, cursor: "pointer" }}
           >
-            {showForm ? "Iptal" : "Yeni Cari Ekle"}
+            {showForm ? t.cancel : t.newCari}
           </button>
         </div>
 
         {showForm && (
           <form onSubmit={handleSave} style={{ background: "white", padding: 24, borderRadius: 12, marginBottom: 24, display: "flex", flexDirection: "column", gap: 12, maxWidth: 500 }}>
-            <h2 style={{ fontSize: 18, fontWeight: "bold" }}>{editing ? "Cari Duzenle" : "Yeni Cari"}</h2>
-            <input placeholder="Ad Soyad" value={name} onChange={(e) => setName(e.target.value)} required
+            <h2 style={{ fontSize: 18, fontWeight: "bold" }}>{editing ? t.editCari : t.newCariForm}</h2>
+            <input placeholder={t.name} value={name} onChange={(e) => setName(e.target.value)} required
               style={{ padding: 10, border: "1px solid #ccc", borderRadius: 6 }} />
-            <input placeholder="Telefon" value={phone} onChange={(e) => setPhone(e.target.value)}
+            <input placeholder={t.phone} value={phone} onChange={(e) => setPhone(e.target.value)}
               style={{ padding: 10, border: "1px solid #ccc", borderRadius: 6 }} />
-            <input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)}
+            <input placeholder={t.email} value={email} onChange={(e) => setEmail(e.target.value)}
               style={{ padding: 10, border: "1px solid #ccc", borderRadius: 6 }} />
-            <input placeholder="Adres" value={address} onChange={(e) => setAddress(e.target.value)}
+            <input placeholder={t.address} value={address} onChange={(e) => setAddress(e.target.value)}
               style={{ padding: 10, border: "1px solid #ccc", borderRadius: 6 }} />
             <div style={{ display: "flex", gap: 8 }}>
               <button type="submit" style={{ padding: "10px 20px", background: "black", color: "white", border: "none", borderRadius: 6, cursor: "pointer" }}>
-                {editing ? "Guncelle" : "Kaydet"}
+                {editing ? t.update : t.save}
               </button>
               <button type="button" onClick={resetForm} style={{ padding: "10px 20px", background: "#eee", border: "none", borderRadius: 6, cursor: "pointer" }}>
-                Iptal
+                {t.cancel}
               </button>
             </div>
           </form>
@@ -107,11 +109,11 @@ export default function Cari() {
         <table style={{ width: "100%", borderCollapse: "collapse", background: "white", borderRadius: 12 }}>
           <thead>
             <tr>
-              <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>Ad Soyad</th>
-              <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>Telefon</th>
-              <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>Email</th>
-              <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>Adres</th>
-              <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>Islem</th>
+              <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>{t.name}</th>
+              <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>{t.phone}</th>
+              <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>{t.email}</th>
+              <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>{t.address}</th>
+              <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>{t.actions}</th>
             </tr>
           </thead>
           <tbody>
@@ -122,13 +124,13 @@ export default function Cari() {
                 <td style={{ padding: 12 }}>{c.email}</td>
                 <td style={{ padding: 12 }}>{c.address}</td>
                 <td style={{ padding: 12 }}>
-                  <button onClick={() => handleEdit(c)} style={{ padding: "6px 12px", background: "blue", color: "white", borderRadius: 6, border: "none", cursor: "pointer", marginRight: 8 }}>Duzenle</button>
-                  <button onClick={() => handleDelete(c.id)} style={{ padding: "6px 12px", background: "red", color: "white", borderRadius: 6, border: "none", cursor: "pointer" }}>Sil</button>
+                  <button onClick={() => handleEdit(c)} style={{ padding: "6px 12px", background: "blue", color: "white", borderRadius: 6, border: "none", cursor: "pointer", marginRight: 8 }}>{t.edit}</button>
+                  <button onClick={() => handleDelete(c.id)} style={{ padding: "6px 12px", background: "red", color: "white", borderRadius: 6, border: "none", cursor: "pointer" }}>{t.delete}</button>
                 </td>
               </tr>
             ))}
             {customers.length === 0 && (
-              <tr><td colSpan={5} style={{ padding: 20, textAlign: "center", color: "#777" }}>Henuz cari eklenmemis.</td></tr>
+              <tr><td colSpan={5} style={{ padding: 20, textAlign: "center", color: "#777" }}>{t.noCari}</td></tr>
             )}
           </tbody>
         </table>

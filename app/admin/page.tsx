@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/DashboardLayout";
+import { useLang } from "@/lib/LangContext";
 
 type AdminUser = {
   id: string;
@@ -16,6 +17,7 @@ type AdminUser = {
 };
 
 export default function AdminPanel() {
+  const { t, lang } = useLang();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState<string | null>(null);
@@ -29,7 +31,6 @@ export default function AdminPanel() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { router.replace("/login"); return; }
 
-      // Superadmin kontrolü
       const { data: profile } = await supabase
         .from("profiles").select("is_superadmin").eq("id", session.user.id).single();
       if (!profile?.is_superadmin) { router.replace("/"); return; }
@@ -72,7 +73,7 @@ export default function AdminPanel() {
   };
 
   const handleToggleActive = (user: AdminUser) => {
-    if (!confirm(`${user.email} kullanıcısını ${user.is_active ? "pasif" : "aktif"} yapmak istediğinizden emin misiniz?`)) return;
+    if (!confirm(t.adminConfirmToggle(user.email, !user.is_active))) return;
     apiPatch(user.id, { is_active: !user.is_active });
   };
 
@@ -85,7 +86,7 @@ export default function AdminPanel() {
 
   const handleDelete = async (user: AdminUser) => {
     if (!token) return;
-    if (!confirm(`${user.email} kullanıcısını SİLMEK istediğinizden emin misiniz? Bu işlem geri alınamaz.`)) return;
+    if (!confirm(t.adminConfirmDelete(user.email))) return;
     setSaving(user.id);
     await fetch(`/api/admin/users/${user.id}`, {
       method: "DELETE",
@@ -95,12 +96,13 @@ export default function AdminPanel() {
     setSaving(null);
   };
 
+  const locale = lang === "tr" ? "tr-TR" : "en-US";
   const th = { padding: "10px 14px", textAlign: "left" as const, fontSize: 12, color: "#555", fontWeight: 600, borderBottom: "2px solid #eee" };
   const td = { padding: "10px 14px", fontSize: 13, borderBottom: "1px solid #f3f4f6", verticalAlign: "middle" as const };
 
   if (loading) return (
     <DashboardLayout>
-      <p style={{ color: "#888" }}>Yukleniyor...</p>
+      <p style={{ color: "#888" }}>{t.loading}</p>
     </DashboardLayout>
   );
 
@@ -108,9 +110,9 @@ export default function AdminPanel() {
     <DashboardLayout>
       <div>
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
-          <h1 style={{ fontSize: 28, fontWeight: "bold" }}>Admin Paneli</h1>
+          <h1 style={{ fontSize: 28, fontWeight: "bold" }}>{t.adminTitle}</h1>
           <span style={{ background: "#6366f1", color: "white", borderRadius: 20, padding: "3px 14px", fontSize: 13, fontWeight: 600 }}>
-            {users.length} kullanıcı
+            {users.length} {t.adminUsers}
           </span>
         </div>
 
@@ -119,13 +121,13 @@ export default function AdminPanel() {
             <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 860 }}>
               <thead>
                 <tr style={{ background: "#f9fafb" }}>
-                  <th style={th}>E-posta</th>
-                  <th style={th}>Kayıt Tarihi</th>
-                  <th style={th}>Durum</th>
-                  <th style={th}>Plan</th>
-                  <th style={th}>Abonelik Başlangıç / Bitiş</th>
-                  <th style={th}>Aktif/Pasif</th>
-                  <th style={th}>Sil</th>
+                  <th style={th}>{t.adminEmailCol}</th>
+                  <th style={th}>{t.adminRegDate}</th>
+                  <th style={th}>{t.adminStatus}</th>
+                  <th style={th}>{t.adminPlan}</th>
+                  <th style={th}>{t.adminSubDates}</th>
+                  <th style={th}>{t.adminToggle}</th>
+                  <th style={th}>{t.adminDeleteCol}</th>
                 </tr>
               </thead>
               <tbody>
@@ -142,21 +144,21 @@ export default function AdminPanel() {
                         </div>
                       </div>
                     </td>
-                    <td style={td}>{new Date(u.created_at).toLocaleDateString("tr-TR")}</td>
+                    <td style={td}>{new Date(u.created_at).toLocaleDateString(locale)}</td>
                     <td style={td}>
                       <span style={{
                         padding: "3px 10px", borderRadius: 20, fontSize: 12, fontWeight: 600,
                         background: u.is_active ? "#dcfce7" : "#fee2e2",
                         color: u.is_active ? "#16a34a" : "#dc2626",
                       }}>
-                        {u.is_active ? "Aktif" : "Pasif"}
+                        {u.is_active ? t.adminActiveLabel : t.adminPassiveLabel}
                       </span>
                     </td>
                     <td style={td}>{u.plan ?? "-"}</td>
                     <td style={{ ...td, minWidth: 260 }}>
                       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                          <span style={{ fontSize: 11, color: "#888", minWidth: 56 }}>Başlangıç</span>
+                          <span style={{ fontSize: 11, color: "#888", minWidth: 56 }}>{t.adminStart}</span>
                           <input
                             type="date"
                             value={editStart[u.id] ?? ""}
@@ -165,7 +167,7 @@ export default function AdminPanel() {
                           />
                         </div>
                         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                          <span style={{ fontSize: 11, color: "#888", minWidth: 56 }}>Bitiş</span>
+                          <span style={{ fontSize: 11, color: "#888", minWidth: 56 }}>{t.adminEnd}</span>
                           <input
                             type="date"
                             value={editExpiry[u.id] ?? ""}
@@ -178,7 +180,7 @@ export default function AdminPanel() {
                           disabled={saving === u.id}
                           style={{ padding: "5px 10px", background: "#6366f1", color: "white", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 600, alignSelf: "flex-end" }}
                         >
-                          Kaydet
+                          {t.save}
                         </button>
                       </div>
                     </td>
@@ -195,7 +197,7 @@ export default function AdminPanel() {
                           opacity: u.is_superadmin ? 0.4 : 1,
                         }}
                       >
-                        {u.is_active ? "Pasif Yap" : "Aktif Yap"}
+                        {u.is_active ? t.adminMakePassive : t.adminMakeActive}
                       </button>
                     </td>
                     <td style={td}>
@@ -211,13 +213,13 @@ export default function AdminPanel() {
                           opacity: u.is_superadmin ? 0.4 : 1,
                         }}
                       >
-                        Sil
+                        {t.delete}
                       </button>
                     </td>
                   </tr>
                 ))}
                 {users.length === 0 && (
-                  <tr><td colSpan={7} style={{ padding: 28, textAlign: "center", color: "#aaa" }}>Kullanıcı bulunamadı</td></tr>
+                  <tr><td colSpan={7} style={{ padding: 28, textAlign: "center", color: "#aaa" }}>{t.adminNoUsers}</td></tr>
                 )}
               </tbody>
             </table>

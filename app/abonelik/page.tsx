@@ -2,71 +2,49 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import DashboardLayout from "@/components/DashboardLayout";
+import { useLang } from "@/lib/LangContext";
 
 const TEKLIF_MAIL = "mailto:pazarlama@marssoft.com.tr?subject=Fiyat%20Teklifi%20Talebi";
 
-const plans = [
-  {
-    key: "temel",
-    name: "Temel Plan",
-    color: "#6366f1",
-    priceLabel: "2.500 TL",
-    period: "/ay",
-    teklifAl: false,
-    popular: false,
-    features: [
-      "1 Kullanici",
-      "500 Urun",
-      "Stok Takibi",
-      "Temel Raporlar",
-      "Barkod Destegi",
-      "E-posta Destek",
-    ],
-  },
-  {
-    key: "profesyonel",
-    name: "Profesyonel Plan",
-    color: "#10b981",
-    priceLabel: null,
-    period: null,
-    teklifAl: true,
-    popular: true,
-    features: [
-      "5 Kullanici",
-      "Sinirsiz Urun",
-      "Stok Takibi",
-      "Gelismis Raporlar",
-      "Cari Yonetimi",
-      "Barkod Destegi",
-      "Oncelikli Destek",
-    ],
-  },
-  {
-    key: "kurumsal",
-    name: "Kurumsal Plan",
-    color: "#f59e0b",
-    priceLabel: null,
-    period: null,
-    teklifAl: true,
-    popular: false,
-    features: [
-      "Sinirsiz Kullanici",
-      "Sinirsiz Urun",
-      "Tam Raporlama",
-      "Cari Yonetimi",
-      "Barkod Destegi",
-      "API Erisimi",
-      "7/24 Destek",
-      "Ozel Entegrasyon",
-    ],
-  },
-];
-
 export default function Abonelik() {
+  const { t, lang } = useLang();
   const [currentPlan, setCurrentPlan] = useState<string | null>(null);
   const [upgrading, setUpgrading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [tenantId, setTenantId] = useState<string | null>(null);
+
+  const plans = [
+    {
+      key: "temel",
+      name: t.temelPlanName,
+      color: "#6366f1",
+      priceLabel: "2.500 TL",
+      period: lang === "tr" ? "/ay" : "/mo",
+      teklifAl: false,
+      popular: false,
+      features: t.temelFeatures,
+    },
+    {
+      key: "profesyonel",
+      name: t.proPlanName,
+      color: "#10b981",
+      priceLabel: null,
+      period: null,
+      teklifAl: true,
+      popular: true,
+      features: t.proFeatures,
+    },
+    {
+      key: "kurumsal",
+      name: t.kurumPlanName,
+      color: "#f59e0b",
+      priceLabel: null,
+      period: null,
+      teklifAl: true,
+      popular: false,
+      features: t.kurumFeatures,
+    },
+  ];
 
   useEffect(() => {
     const fetchPlan = async () => {
@@ -82,7 +60,7 @@ export default function Abonelik() {
 
   const handleUpgradeToPro = async () => {
     if (!userId) return;
-    if (!confirm("Profesyonel Plan'a geçmek istediğinizden emin misiniz? Bu işlem şube yönetimini aktif edecektir.")) return;
+    if (!confirm(t.upgradeConfirm)) return;
     setUpgrading(true);
     await supabase.from("profiles").update({ plan: "profesyonel" }).eq("id", userId);
     if (tenantId) {
@@ -96,8 +74,8 @@ export default function Abonelik() {
   return (
     <DashboardLayout>
       <div>
-        <h1 style={{ fontSize: 28, fontWeight: "bold", marginBottom: 8 }}>Abonelik Planlari</h1>
-        <p style={{ color: "#888", marginBottom: 32 }}>Isletmenize uygun plani secin</p>
+        <h1 style={{ fontSize: 28, fontWeight: "bold", marginBottom: 8 }}>{t.abonelikTitle}</h1>
+        <p style={{ color: "#888", marginBottom: 32 }}>{t.abonelikSubtitle}</p>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24, maxWidth: 920 }}>
           {plans.map((plan) => {
@@ -119,13 +97,12 @@ export default function Abonelik() {
                     background: "#10b981", color: "white", fontSize: 11, fontWeight: "bold",
                     padding: "4px 16px", borderRadius: 20, whiteSpace: "nowrap",
                   }}>
-                    POPULER
+                    {t.popular}
                   </div>
                 )}
 
                 <h2 style={{ fontSize: 19, fontWeight: "bold", marginBottom: 12, color: "#1e1b4b" }}>{plan.name}</h2>
 
-                {/* Fiyat alanı */}
                 <div style={{ marginBottom: 24, minHeight: 52 }}>
                   {plan.priceLabel ? (
                     <div>
@@ -134,14 +111,13 @@ export default function Abonelik() {
                     </div>
                   ) : (
                     <div style={{ background: "#f9fafb", borderRadius: 10, padding: "10px 14px", display: "inline-block" }}>
-                      <p style={{ margin: 0, fontSize: 13, color: "#555", fontWeight: 500 }}>Fiyat Teklifi Icin Bize Ulasin</p>
+                      <p style={{ margin: 0, fontSize: 13, color: "#555", fontWeight: 500 }}>{t.contactUs}</p>
                     </div>
                   )}
                 </div>
 
-                {/* Özellikler */}
                 <ul style={{ listStyle: "none", padding: 0, margin: 0, marginBottom: 24, flex: 1 }}>
-                  {plan.features.map((f) => (
+                  {(plan.features as readonly string[]).map((f) => (
                     <li key={f} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 9, fontSize: 14, color: "#374151" }}>
                       <span style={{ color: plan.color, fontWeight: "bold", fontSize: 15 }}>✓</span>
                       {f}
@@ -149,10 +125,9 @@ export default function Abonelik() {
                   ))}
                 </ul>
 
-                {/* Buton */}
                 {isCurrent ? (
                   <div style={{ width: "100%", padding: "10px 0", background: "#e5e7eb", color: "#555", borderRadius: 8, textAlign: "center", fontSize: 14, fontWeight: "bold" }}>
-                    Mevcut Planınız
+                    {t.currentPlan}
                   </div>
                 ) : plan.key === "profesyonel" && currentPlan === "temel" ? (
                   <button
@@ -165,7 +140,7 @@ export default function Abonelik() {
                       fontSize: 14, fontWeight: "bold", opacity: upgrading ? 0.7 : 1,
                     }}
                   >
-                    {upgrading ? "Güncelleniyor..." : "Profesyonel Plan'a Geç"}
+                    {upgrading ? t.upgrading : t.upgradeToPro}
                   </button>
                 ) : plan.teklifAl ? (
                   <a href={TEKLIF_MAIL} style={{
@@ -173,7 +148,7 @@ export default function Abonelik() {
                     background: plan.color, color: "white", borderRadius: 8,
                     textAlign: "center", textDecoration: "none", fontSize: 14, fontWeight: "bold",
                   }}>
-                    Teklif Al
+                    {t.getQuote}
                   </a>
                 ) : (
                   <button style={{
@@ -181,7 +156,7 @@ export default function Abonelik() {
                     background: plan.color, color: "white", border: "none",
                     borderRadius: 8, cursor: "pointer", fontSize: 14, fontWeight: "bold",
                   }}>
-                    Hemen Basla
+                    {t.getStarted}
                   </button>
                 )}
               </div>

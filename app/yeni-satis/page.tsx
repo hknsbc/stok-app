@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import DashboardLayout from "@/components/DashboardLayout";
+import { useLang } from "@/lib/LangContext";
 
 type Product = {
   id: string;
@@ -20,6 +21,7 @@ type CartItem = {
 type OdemeYontemi = "nakit" | "kredi_kart";
 
 export default function YeniSatis() {
+  const { t } = useLang();
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [odeme, setOdeme] = useState<OdemeYontemi>("nakit");
@@ -32,7 +34,6 @@ export default function YeniSatis() {
 
   useEffect(() => {
     fetchProducts();
-    // Sayfa açılınca barkod alanına odaklan
     barcodeRef.current?.focus();
   }, []);
 
@@ -63,13 +64,13 @@ export default function YeniSatis() {
     const found = products.find((p) => p.barcode === val);
     if (found) {
       if (found.stock <= 0) {
-        setBarcodeMsg({ text: `Stok yetersiz: ${found.name}`, ok: false });
+        setBarcodeMsg({ text: `${t.insufficientStock} ${found.name}`, ok: false });
       } else {
         addToCart(found);
-        setBarcodeMsg({ text: `Sepete eklendi: ${found.name}`, ok: true });
+        setBarcodeMsg({ text: `${t.addedToCart} ${found.name}`, ok: true });
       }
     } else {
-      setBarcodeMsg({ text: `Barkod bulunamadi: ${val}`, ok: false });
+      setBarcodeMsg({ text: `${t.barcodeNotFound} ${val}`, ok: false });
     }
     setBarcodeInput("");
     setTimeout(() => setBarcodeMsg(null), 2500);
@@ -94,13 +95,13 @@ export default function YeniSatis() {
     setSaving(true);
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { alert("Giris yapmaniz gerekiyor!"); setSaving(false); return; }
+    if (!user) { alert(t.loginRequired); setSaving(false); return; }
     const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single();
-    if (!profile?.tenant_id) { alert("Tenant bulunamadi!"); setSaving(false); return; }
+    if (!profile?.tenant_id) { alert(t.tenantNotFound); setSaving(false); return; }
 
     const today = new Date().toISOString().split("T")[0];
+    const paymentNote = odeme === "nakit" ? t.cash.replace("💵 ", "") : t.creditCard.replace("💳 ", "");
 
-    // Her sepet kalemi için ayrı sales kaydı
     const inserts = cart.map((item) => ({
       product_id: item.product.id,
       quantity: item.quantity,
@@ -108,12 +109,12 @@ export default function YeniSatis() {
       total: (item.product.selling_price > 0 ? item.product.selling_price : item.product.price) * item.quantity,
       cost: item.product.price * item.quantity,
       date: today,
-      notes: `Odeme: ${odeme === "nakit" ? "Nakit" : "Kredi Karti"}`,
+      notes: `Payment: ${paymentNote}`,
       tenant_id: profile.tenant_id,
     }));
 
     const { error } = await supabase.from("sales").insert(inserts);
-    if (error) { alert("Hata: " + error.message); setSaving(false); return; }
+    if (error) { alert(`${t.errorPrefix} ${error.message}`); setSaving(false); return; }
 
     setCart([]);
     setSuccess(true);
@@ -128,19 +129,17 @@ export default function YeniSatis() {
     <DashboardLayout>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: 24, alignItems: "start" }}>
 
-        {/* Sol: Barkod + Ürün listesi */}
         <div>
-          <h1 style={{ fontSize: 26, fontWeight: "bold", marginBottom: 20 }}>Yeni Satış</h1>
+          <h1 style={{ fontSize: 26, fontWeight: "bold", marginBottom: 20 }}>{t.yeniSatisTitle}</h1>
 
-          {/* Barkod input */}
           <div style={{ background: "white", padding: 20, borderRadius: 12, marginBottom: 20, boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
             <label style={{ fontSize: 13, color: "#555", display: "block", marginBottom: 8, fontWeight: 600 }}>
-              Barkod Okuyucu
+              {t.barcodeReader}
             </label>
             <input
               ref={barcodeRef}
               type="text"
-              placeholder="Barkod okutun veya girin, Enter'a basin..."
+              placeholder={t.barcodeScanPlaceholder}
               value={barcodeInput}
               onChange={(e) => setBarcodeInput(e.target.value)}
               onKeyDown={handleBarcodeEnter}
@@ -154,13 +153,12 @@ export default function YeniSatis() {
             )}
           </div>
 
-          {/* Ürün listesi — hızlı ekleme */}
           <div style={{ background: "white", borderRadius: 12, boxShadow: "0 1px 4px rgba(0,0,0,0.08)", overflow: "hidden" }}>
             <button
               onClick={() => setUrunListeAcik((v) => !v)}
               style={{ width: "100%", padding: "14px 20px", background: "none", border: "none", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
             >
-              <span style={{ fontSize: 14, fontWeight: 600, color: "#333" }}>Hızlı Ürün Ekle</span>
+              <span style={{ fontSize: 14, fontWeight: 600, color: "#333" }}>{t.quickAdd}</span>
               <span style={{ fontSize: 18, color: "#6366f1" }}>{urunListeAcik ? "▲" : "▼"}</span>
             </button>
 
@@ -169,9 +167,9 @@ export default function YeniSatis() {
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
                     <tr style={{ background: "#f9fafb" }}>
-                      <th style={{ padding: "9px 16px", textAlign: "left", fontSize: 12, color: "#555", fontWeight: 600 }}>Ürün Adı</th>
-                      <th style={{ padding: "9px 12px", textAlign: "right", fontSize: 12, color: "#555", fontWeight: 600 }}>Satış Fiyatı</th>
-                      <th style={{ padding: "9px 12px", textAlign: "center", fontSize: 12, color: "#555", fontWeight: 600 }}>Stok</th>
+                      <th style={{ padding: "9px 16px", textAlign: "left", fontSize: 12, color: "#555", fontWeight: 600 }}>{t.productNameCol}</th>
+                      <th style={{ padding: "9px 12px", textAlign: "right", fontSize: 12, color: "#555", fontWeight: 600 }}>{t.sellPriceCol2}</th>
+                      <th style={{ padding: "9px 12px", textAlign: "center", fontSize: 12, color: "#555", fontWeight: 600 }}>{t.stockCount}</th>
                       <th style={{ padding: "9px 12px", textAlign: "center", fontSize: 12, color: "#555", fontWeight: 600 }} />
                     </tr>
                   </thead>
@@ -199,14 +197,14 @@ export default function YeniSatis() {
                                 fontWeight: 600,
                               }}
                             >
-                              Ekle
+                              {t.addBtn}
                             </button>
                           </td>
                         </tr>
                       );
                     })}
                     {products.length === 0 && (
-                      <tr><td colSpan={4} style={{ padding: 20, textAlign: "center", color: "#aaa", fontSize: 13 }}>Urun bulunamadi</td></tr>
+                      <tr><td colSpan={4} style={{ padding: 20, textAlign: "center", color: "#aaa", fontSize: 13 }}>{t.noProductsFound}</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -215,27 +213,24 @@ export default function YeniSatis() {
           </div>
         </div>
 
-        {/* Sağ: Sepet */}
         <div style={{ position: "sticky", top: 24 }}>
           <div style={{ background: "white", borderRadius: 14, boxShadow: "0 2px 12px rgba(0,0,0,0.1)", overflow: "hidden" }}>
-            {/* Sepet başlık */}
             <div style={{ background: "#1a1a2e", color: "white", padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontWeight: "bold", fontSize: 16 }}>Sepet</span>
-              <span style={{ background: "#6366f1", borderRadius: 20, padding: "2px 10px", fontSize: 13 }}>{cart.length} kalem</span>
+              <span style={{ fontWeight: "bold", fontSize: 16 }}>{t.cart}</span>
+              <span style={{ background: "#6366f1", borderRadius: 20, padding: "2px 10px", fontSize: 13 }}>{cart.length} {t.items}</span>
             </div>
 
-            {/* Sepet tablosu */}
             <div style={{ overflowX: "auto", maxHeight: 400, overflowY: "auto" }}>
               {cart.length === 0 ? (
-                <p style={{ padding: 28, textAlign: "center", color: "#aaa", fontSize: 13 }}>Sepet boş — barkod okutun veya ürün seçin</p>
+                <p style={{ padding: 28, textAlign: "center", color: "#aaa", fontSize: 13 }}>{t.cartEmpty}</p>
               ) : (
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
                     <tr style={{ background: "#f9fafb" }}>
-                      <th style={{ padding: "8px 12px", textAlign: "left", fontSize: 12, color: "#555", fontWeight: 600, borderBottom: "1px solid #eee" }}>Ürün Adı</th>
-                      <th style={{ padding: "8px 12px", textAlign: "right", fontSize: 12, color: "#555", fontWeight: 600, borderBottom: "1px solid #eee" }}>Satış Fiyatı</th>
-                      <th style={{ padding: "8px 12px", textAlign: "center", fontSize: 12, color: "#555", fontWeight: 600, borderBottom: "1px solid #eee" }}>Adet</th>
-                      <th style={{ padding: "8px 12px", textAlign: "right", fontSize: 12, color: "#555", fontWeight: 600, borderBottom: "1px solid #eee" }}>Ara Toplam</th>
+                      <th style={{ padding: "8px 12px", textAlign: "left", fontSize: 12, color: "#555", fontWeight: 600, borderBottom: "1px solid #eee" }}>{t.productNameCol}</th>
+                      <th style={{ padding: "8px 12px", textAlign: "right", fontSize: 12, color: "#555", fontWeight: 600, borderBottom: "1px solid #eee" }}>{t.sellPriceCol2}</th>
+                      <th style={{ padding: "8px 12px", textAlign: "center", fontSize: 12, color: "#555", fontWeight: 600, borderBottom: "1px solid #eee" }}>{t.quantity}</th>
+                      <th style={{ padding: "8px 12px", textAlign: "right", fontSize: 12, color: "#555", fontWeight: 600, borderBottom: "1px solid #eee" }}>{t.subtotal}</th>
                       <th style={{ padding: "8px 8px", borderBottom: "1px solid #eee" }} />
                     </tr>
                   </thead>
@@ -265,13 +260,11 @@ export default function YeniSatis() {
               )}
             </div>
 
-            {/* Özet + ödeme */}
             <div style={{ padding: "16px 20px", borderTop: "2px solid #f3f4f6" }}>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: 18, fontWeight: "bold", marginBottom: 16 }}>
-                <span>Toplam Tutar</span><span style={{ color: "#6366f1" }}>{totalTutar.toFixed(2)} TL</span>
+                <span>{t.totalAmount}</span><span style={{ color: "#6366f1" }}>{totalTutar.toFixed(2)} TL</span>
               </div>
 
-              {/* Ödeme yöntemi */}
               <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
                 {(["nakit", "kredi_kart"] as OdemeYontemi[]).map((y) => (
                   <button key={y} onClick={() => setOdeme(y)} style={{
@@ -280,14 +273,14 @@ export default function YeniSatis() {
                     background: odeme === y ? "#6366f1" : "white",
                     color: odeme === y ? "white" : "#333",
                   }}>
-                    {y === "nakit" ? "💵 Nakit" : "💳 Kredi Kartı"}
+                    {y === "nakit" ? t.cash : t.creditCard}
                   </button>
                 ))}
               </div>
 
               {success && (
                 <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, padding: 12, textAlign: "center", color: "#16a34a", fontWeight: 600, marginBottom: 12, fontSize: 14 }}>
-                  ✓ Satış başarıyla kaydedildi!
+                  {t.successSale}
                 </div>
               )}
 
@@ -302,7 +295,7 @@ export default function YeniSatis() {
                   fontSize: 15, fontWeight: "bold",
                 }}
               >
-                {saving ? "Kaydediliyor..." : `Satışı Tamamla (${cart.length} ürün)`}
+                {saving ? t.saving : `${t.completeSale} (${cart.length} ${t.productsLabel})`}
               </button>
             </div>
           </div>

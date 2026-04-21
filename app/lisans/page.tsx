@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import DashboardLayout from "@/components/DashboardLayout";
+import { useLang } from "@/lib/LangContext";
 
 type LicenseInfo = {
   plan: string | null;
@@ -12,6 +13,7 @@ type LicenseInfo = {
 };
 
 export default function Lisans() {
+  const { t, lang } = useLang();
   const [info, setInfo] = useState<LicenseInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -43,19 +45,21 @@ export default function Lisans() {
   };
 
   const statusLabel = (status: string | null) => {
-    if (status === "active") return "Aktif";
-    if (status === "expired") return "Suresi Dolmus";
-    if (status === "trial") return "Deneme";
-    return "Bilinmiyor";
+    if (status === "active") return t.statusActive;
+    if (status === "expired") return t.statusExpired;
+    if (status === "trial") return t.statusTrial;
+    return t.statusUnknown;
   };
+
+  const locale = lang === "tr" ? "tr-TR" : "en-US";
 
   return (
     <DashboardLayout>
       <div>
-        <h1 style={{ fontSize: 28, fontWeight: "bold", marginBottom: 24 }}>Lisans Durumu</h1>
+        <h1 style={{ fontSize: 28, fontWeight: "bold", marginBottom: 24 }}>{t.lisansTitle}</h1>
 
         {loading ? (
-          <p style={{ color: "#888" }}>Yukleniyor...</p>
+          <p style={{ color: "#888" }}>{t.loading}</p>
         ) : (
           <div style={{ maxWidth: 600 }}>
             <div style={{ background: "white", borderRadius: 16, padding: 32, boxShadow: "0 1px 4px rgba(0,0,0,0.08)", marginBottom: 24 }}>
@@ -69,7 +73,7 @@ export default function Lisans() {
                   {info?.subscription_status === "active" ? "✓" : "!"}
                 </div>
                 <div>
-                  <p style={{ fontSize: 13, color: "#888", margin: 0 }}>Lisans Durumu</p>
+                  <p style={{ fontSize: 13, color: "#888", margin: 0 }}>{t.lisansStatusLabel}</p>
                   <p style={{ fontSize: 20, fontWeight: "bold", color: statusColor(info?.subscription_status ?? null), margin: 0 }}>
                     {statusLabel(info?.subscription_status ?? null)}
                   </p>
@@ -78,27 +82,27 @@ export default function Lisans() {
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                 <div style={{ background: "#f9fafb", padding: 16, borderRadius: 10 }}>
-                  <p style={{ color: "#888", fontSize: 12, margin: "0 0 4px" }}>Plan</p>
+                  <p style={{ color: "#888", fontSize: 12, margin: "0 0 4px" }}>{t.planLabel}</p>
                   <p style={{ fontWeight: "bold", margin: 0, textTransform: "capitalize" }}>
-                    {info?.plan ?? "Temel"}
+                    {info?.plan ?? t.temelPlanName}
                   </p>
                 </div>
                 <div style={{ background: "#f9fafb", padding: 16, borderRadius: 10 }}>
-                  <p style={{ color: "#888", fontSize: 12, margin: "0 0 4px" }}>E-posta</p>
+                  <p style={{ color: "#888", fontSize: 12, margin: "0 0 4px" }}>{t.email}</p>
                   <p style={{ fontWeight: "bold", margin: 0, fontSize: 13 }}>
                     {info?.email ?? "-"}
                   </p>
                 </div>
                 <div style={{ background: "#f9fafb", padding: 16, borderRadius: 10 }}>
-                  <p style={{ color: "#888", fontSize: 12, margin: "0 0 4px" }}>Gecerlilik Tarihi</p>
+                  <p style={{ color: "#888", fontSize: 12, margin: "0 0 4px" }}>{t.validUntil}</p>
                   <p style={{ fontWeight: "bold", margin: 0 }}>
                     {info?.license_expires_at
-                      ? new Date(info.license_expires_at).toLocaleDateString("tr-TR")
-                      : "Suresiz"}
+                      ? new Date(info.license_expires_at).toLocaleDateString(locale)
+                      : t.unlimited}
                   </p>
                 </div>
                 <div style={{ background: "#f9fafb", padding: 16, borderRadius: 10 }}>
-                  <p style={{ color: "#888", fontSize: 12, margin: "0 0 4px" }}>Tenant ID</p>
+                  <p style={{ color: "#888", fontSize: 12, margin: "0 0 4px" }}>{t.tenantId}</p>
                   <p style={{ fontWeight: "bold", margin: 0, fontSize: 11, wordBreak: "break-all" }}>
                     {info?.tenant_id ?? "-"}
                   </p>
@@ -115,7 +119,7 @@ export default function Lisans() {
               textDecoration: "none",
               fontWeight: "bold",
             }}>
-              Plani Yukselt
+              {t.upgradePlan}
             </a>
           </div>
         )}

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/DashboardLayout";
+import { useLang } from "@/lib/LangContext";
 
 type Branch = {
   id: string;
@@ -20,6 +21,7 @@ type BranchStats = {
 };
 
 export default function SubelerPage() {
+  const { t, lang } = useLang();
   const [branches, setBranches] = useState<Branch[]>([]);
   const [stats, setStats] = useState<Record<string, BranchStats>>({});
   const [loading, setLoading] = useState(true);
@@ -125,19 +127,20 @@ export default function SubelerPage() {
 
   const handleDelete = async (b: Branch) => {
     if (!tenantId) return;
-    if (!confirm(`"${b.name}" şubesini silmek istediğinizden emin misiniz?`)) return;
+    if (!confirm(`"${b.name}" ${t.deleteConfirmBranch}`)) return;
     await supabase.from("branches").delete().eq("id", b.id);
     await fetchBranches(tenantId);
   };
 
-  const fmt = (n: number) => n.toLocaleString("tr-TR", { minimumFractionDigits: 2 });
+  const locale = lang === "tr" ? "tr-TR" : "en-US";
+  const fmt = (n: number) => n.toLocaleString(locale, { minimumFractionDigits: 2 });
 
   const th = { padding: "10px 14px", textAlign: "left" as const, fontSize: 12, color: "#555", fontWeight: 600, borderBottom: "2px solid #eee" };
   const td = { padding: "10px 14px", fontSize: 13, borderBottom: "1px solid #f3f4f6", verticalAlign: "middle" as const };
 
   if (loading) return (
     <DashboardLayout>
-      <p style={{ color: "#888" }}>Yukleniyor...</p>
+      <p style={{ color: "#888" }}>{t.loading}</p>
     </DashboardLayout>
   );
 
@@ -145,15 +148,13 @@ export default function SubelerPage() {
     <DashboardLayout>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: 300, gap: 16, textAlign: "center" }}>
         <div style={{ fontSize: 48 }}>🔒</div>
-        <h2 style={{ fontSize: 20, fontWeight: "bold", color: "#1e1b4b" }}>Profesyonel Plan Gerekli</h2>
-        <p style={{ color: "#888", maxWidth: 360 }}>
-          Şube yönetimi Profesyonel Plan'a özeldir. Abonelik sayfasına yönlendiriliyorsunuz...
-        </p>
+        <h2 style={{ fontSize: 20, fontWeight: "bold", color: "#1e1b4b" }}>{t.proRequired}</h2>
+        <p style={{ color: "#888", maxWidth: 360 }}>{t.proRequiredDesc}</p>
         <button
           onClick={() => router.push("/abonelik")}
           style={{ padding: "10px 24px", background: "#10b981", color: "white", border: "none", borderRadius: 8, cursor: "pointer", fontSize: 14, fontWeight: 600 }}
         >
-          Abonelik Sayfasına Git
+          {t.goToSubscription}
         </button>
       </div>
     </DashboardLayout>
@@ -164,37 +165,37 @@ export default function SubelerPage() {
       <div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <h1 style={{ fontSize: 28, fontWeight: "bold" }}>Subeler</h1>
+            <h1 style={{ fontSize: 28, fontWeight: "bold" }}>{t.subelerTitle}</h1>
             <span style={{ background: "#6366f1", color: "white", borderRadius: 20, padding: "3px 14px", fontSize: 13, fontWeight: 600 }}>
-              {branches.length} sube
+              {branches.length} {t.branchesCount}
             </span>
           </div>
           <button
             onClick={openAdd}
             style={{ padding: "10px 20px", background: "#6366f1", color: "white", border: "none", borderRadius: 8, cursor: "pointer", fontSize: 14, fontWeight: 600 }}
           >
-            + Yeni Sube
+            {t.newBranch}
           </button>
         </div>
 
         {showForm && (
           <div style={{ background: "white", borderRadius: 12, padding: 24, marginBottom: 24, boxShadow: "0 1px 6px rgba(0,0,0,0.08)" }}>
-            <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>{editBranch ? "Sube Duzenle" : "Yeni Sube"}</h2>
+            <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>{editBranch ? t.editBranchForm : t.newBranchForm}</h2>
             <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 400 }}>
               <input
-                placeholder="Sube Adi *"
+                placeholder={t.branchName}
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 style={{ padding: "10px 12px", border: "1px solid #ddd", borderRadius: 8, fontSize: 14 }}
               />
               <input
-                placeholder="Adres"
+                placeholder={t.address}
                 value={form.address}
                 onChange={(e) => setForm({ ...form, address: e.target.value })}
                 style={{ padding: "10px 12px", border: "1px solid #ddd", borderRadius: 8, fontSize: 14 }}
               />
               <input
-                placeholder="Telefon"
+                placeholder={t.phone}
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
                 style={{ padding: "10px 12px", border: "1px solid #ddd", borderRadius: 8, fontSize: 14 }}
@@ -205,13 +206,13 @@ export default function SubelerPage() {
                   disabled={saving}
                   style={{ flex: 1, padding: "10px", background: "#6366f1", color: "white", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 }}
                 >
-                  {saving ? "Kaydediliyor..." : "Kaydet"}
+                  {saving ? t.saving : t.save}
                 </button>
                 <button
                   onClick={() => setShowForm(false)}
                   style={{ flex: 1, padding: "10px", background: "#f3f4f6", color: "#555", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 }}
                 >
-                  Iptal
+                  {t.cancel}
                 </button>
               </div>
             </div>
@@ -223,14 +224,14 @@ export default function SubelerPage() {
             <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 700 }}>
               <thead>
                 <tr style={{ background: "#f9fafb" }}>
-                  <th style={th}>Sube Adi</th>
-                  <th style={th}>Adres</th>
-                  <th style={th}>Telefon</th>
-                  <th style={th}>Durum</th>
-                  <th style={th}>Stok (kalem)</th>
-                  <th style={th}>Toplam Satis</th>
-                  <th style={th}>Toplam Alis</th>
-                  <th style={th}>Islem</th>
+                  <th style={th}>{t.branchName.replace(" *", "")}</th>
+                  <th style={th}>{t.address}</th>
+                  <th style={th}>{t.phone}</th>
+                  <th style={th}>{t.statusLabel}</th>
+                  <th style={th}>{t.stockItems}</th>
+                  <th style={th}>{t.totalSalesCol}</th>
+                  <th style={th}>{t.totalPurchasesCol}</th>
+                  <th style={th}>{t.actions}</th>
                 </tr>
               </thead>
               <tbody>
@@ -245,7 +246,7 @@ export default function SubelerPage() {
                         background: b.is_active ? "#dcfce7" : "#fee2e2",
                         color: b.is_active ? "#16a34a" : "#dc2626",
                       }}>
-                        {b.is_active ? "Aktif" : "Pasif"}
+                        {b.is_active ? t.activeStatus : t.passiveStatus}
                       </span>
                     </td>
                     <td style={td}>{stats[b.id]?.stok ?? "-"}</td>
@@ -257,19 +258,19 @@ export default function SubelerPage() {
                           onClick={() => openEdit(b)}
                           style={{ padding: "5px 12px", background: "#eff6ff", color: "#3b82f6", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 600 }}
                         >
-                          Duzenle
+                          {t.edit}
                         </button>
                         <button
                           onClick={() => handleToggleActive(b)}
                           style={{ padding: "5px 12px", background: b.is_active ? "#fef9c3" : "#dcfce7", color: b.is_active ? "#854d0e" : "#15803d", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 600 }}
                         >
-                          {b.is_active ? "Pasif Yap" : "Aktif Yap"}
+                          {b.is_active ? t.makePassive : t.makeActive}
                         </button>
                         <button
                           onClick={() => handleDelete(b)}
                           style={{ padding: "5px 12px", background: "#fee2e2", color: "#dc2626", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 600 }}
                         >
-                          Sil
+                          {t.delete}
                         </button>
                       </div>
                     </td>
@@ -278,7 +279,7 @@ export default function SubelerPage() {
                 {branches.length === 0 && (
                   <tr>
                     <td colSpan={8} style={{ padding: 32, textAlign: "center", color: "#aaa" }}>
-                      Henuz sube eklenmemis. "Yeni Sube" butonuna tiklayin.
+                      {t.noBranches}
                     </td>
                   </tr>
                 )}

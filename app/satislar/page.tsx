@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import DashboardLayout from "@/components/DashboardLayout";
+import { useLang } from "@/lib/LangContext";
 
 type Sale = {
   id: string;
@@ -18,6 +19,7 @@ type Customer = { id: string; name: string };
 type Product = { id: string; name: string; price: number; selling_price: number };
 
 export default function Satislar() {
+  const { t } = useLang();
   const [sales, setSales] = useState<Sale[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -52,7 +54,6 @@ export default function Satislar() {
   const handleProductChange = (pid: string) => {
     setProductId(pid);
     const product = products.find((p) => p.id === pid);
-    // Satis fiyati olarak selling_price, yoksa price kullan
     if (product) setPrice(String(product.selling_price || product.price));
   };
 
@@ -73,7 +74,6 @@ export default function Satislar() {
     const unitPrice = Number(price);
     const total = qty * unitPrice;
 
-    // Birim alış maliyeti = products.price, toplam maliyet = products.price * adet
     const product = products.find((p) => p.id === productId);
     const cost = (product ? Number(product.price) : 0) * qty;
 
@@ -113,43 +113,43 @@ export default function Satislar() {
     <DashboardLayout>
       <div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-          <h1 style={{ fontSize: 28, fontWeight: "bold" }}>Satislar</h1>
+          <h1 style={{ fontSize: 28, fontWeight: "bold" }}>{t.satislarTitle}</h1>
           <button onClick={() => { resetForm(); setShowForm(true); }}
             style={{ padding: "10px 20px", background: "#6366f1", color: "white", border: "none", borderRadius: 8, cursor: "pointer" }}>
-            Yeni Satis Ekle
+            {t.newSale}
           </button>
         </div>
 
         {showForm && (
           <form onSubmit={handleSave} style={{ background: "white", padding: 24, borderRadius: 12, marginBottom: 24, display: "flex", flexDirection: "column", gap: 12, maxWidth: 500 }}>
-            <h2 style={{ fontSize: 18, fontWeight: "bold" }}>{editing ? "Satis Duzenle" : "Yeni Satis"}</h2>
+            <h2 style={{ fontSize: 18, fontWeight: "bold" }}>{editing ? t.editSale : t.newSaleForm}</h2>
             <select value={customerId} onChange={(e) => setCustomerId(e.target.value)}
               style={{ padding: 10, border: "1px solid #ccc", borderRadius: 6 }}>
-              <option value="">Cari Sec</option>
+              <option value="">{t.selectCustomer}</option>
               {customers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
             <select value={productId} onChange={(e) => handleProductChange(e.target.value)}
               style={{ padding: 10, border: "1px solid #ccc", borderRadius: 6 }}>
-              <option value="">Urun Sec</option>
+              <option value="">{t.selectProduct}</option>
               {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
-            <input type="number" placeholder="Miktar" value={quantity} onChange={(e) => setQuantity(e.target.value)}
+            <input type="number" placeholder={t.quantity} value={quantity} onChange={(e) => setQuantity(e.target.value)}
               style={{ padding: 10, border: "1px solid #ccc", borderRadius: 6 }} />
-            <input type="number" placeholder="Birim Fiyat" value={price} onChange={(e) => setPrice(e.target.value)}
+            <input type="number" placeholder={t.unitPrice} value={price} onChange={(e) => setPrice(e.target.value)}
               style={{ padding: 10, border: "1px solid #ccc", borderRadius: 6 }} />
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)}
               style={{ padding: 10, border: "1px solid #ccc", borderRadius: 6 }} />
-            <input placeholder="Not" value={notes} onChange={(e) => setNotes(e.target.value)}
+            <input placeholder={t.notes} value={notes} onChange={(e) => setNotes(e.target.value)}
               style={{ padding: 10, border: "1px solid #ccc", borderRadius: 6 }} />
             <div style={{ background: "#f5f5f5", padding: 10, borderRadius: 6 }}>
-              <strong>Toplam: {(Number(quantity) * Number(price)).toFixed(2)} TL</strong>
+              <strong>{t.total}: {(Number(quantity) * Number(price)).toFixed(2)} TL</strong>
             </div>
             <div style={{ display: "flex", gap: 8 }}>
               <button type="submit" style={{ padding: "10px 20px", background: "black", color: "white", border: "none", borderRadius: 6, cursor: "pointer" }}>
-                {editing ? "Guncelle" : "Kaydet"}
+                {editing ? t.update : t.save}
               </button>
               <button type="button" onClick={resetForm} style={{ padding: "10px 20px", background: "#eee", border: "none", borderRadius: 6, cursor: "pointer" }}>
-                Iptal
+                {t.cancel}
               </button>
             </div>
           </form>
@@ -158,13 +158,13 @@ export default function Satislar() {
         <table style={{ width: "100%", borderCollapse: "collapse", background: "white", borderRadius: 12 }}>
           <thead>
             <tr>
-              <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>Tarih</th>
-              <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>Cari</th>
-              <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>Urun</th>
-              <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>Miktar</th>
-              <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>Birim Fiyat</th>
-              <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>Toplam</th>
-              <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>Islem</th>
+              <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>{t.date}</th>
+              <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>{t.customer}</th>
+              <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>{t.product}</th>
+              <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>{t.quantity}</th>
+              <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>{t.unitPrice}</th>
+              <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>{t.total}</th>
+              <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>{t.actions}</th>
             </tr>
           </thead>
           <tbody>
@@ -177,13 +177,13 @@ export default function Satislar() {
                 <td style={{ padding: 12 }}>{s.price} TL</td>
                 <td style={{ padding: 12 }}>{s.total} TL</td>
                 <td style={{ padding: 12 }}>
-                  <button onClick={() => handleEdit(s)} style={{ padding: "6px 12px", background: "blue", color: "white", borderRadius: 6, border: "none", cursor: "pointer", marginRight: 8 }}>Duzenle</button>
-                  <button onClick={() => handleDelete(s.id)} style={{ padding: "6px 12px", background: "red", color: "white", borderRadius: 6, border: "none", cursor: "pointer" }}>Sil</button>
+                  <button onClick={() => handleEdit(s)} style={{ padding: "6px 12px", background: "blue", color: "white", borderRadius: 6, border: "none", cursor: "pointer", marginRight: 8 }}>{t.edit}</button>
+                  <button onClick={() => handleDelete(s.id)} style={{ padding: "6px 12px", background: "red", color: "white", borderRadius: 6, border: "none", cursor: "pointer" }}>{t.delete}</button>
                 </td>
               </tr>
             ))}
             {sales.length === 0 && (
-              <tr><td colSpan={7} style={{ padding: 20, textAlign: "center", color: "#777" }}>Henuz satis eklenmemis.</td></tr>
+              <tr><td colSpan={7} style={{ padding: 20, textAlign: "center", color: "#777" }}>{t.noSales}</td></tr>
             )}
           </tbody>
         </table>
