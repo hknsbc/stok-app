@@ -9,28 +9,15 @@ const TEKLIF_MAIL = "mailto:pazarlama@marssoft.com.tr?subject=Fiyat%20Teklifi%20
 export default function Abonelik() {
   const { t } = useLang();
   const [currentPlan, setCurrentPlan] = useState<string | null>(null);
-  const [upgrading, setUpgrading] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [tenantId, setTenantId] = useState<string | null>(null);
 
   const plans = [
-    {
-      key: "temel",
-      name: t.temelPlanName,
-      color: "#6366f1",
-      monthlyPrice: "1.990 TL",
-      yearlyPrice: "9.000 TL",
-      teklifAl: false,
-      popular: false,
-      features: t.temelFeatures,
-    },
     {
       key: "profesyonel",
       name: t.proPlanName,
       color: "#10b981",
-      monthlyPrice: null,
-      yearlyPrice: null,
-      teklifAl: true,
+      monthlyPrice: "1.990 TL",
+      yearlyPrice: "9.000 TL",
+      teklifAl: false,
       popular: true,
       features: t.proFeatures,
     },
@@ -50,26 +37,11 @@ export default function Abonelik() {
     const fetchPlan = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      setUserId(user.id);
-      const { data } = await supabase.from("profiles").select("plan, tenant_id").eq("id", user.id).single();
+      const { data } = await supabase.from("profiles").select("plan").eq("id", user.id).single();
       if (data?.plan) setCurrentPlan(data.plan);
-      if (data?.tenant_id) setTenantId(data.tenant_id);
     };
     fetchPlan();
   }, []);
-
-  const handleUpgradeToPro = async () => {
-    if (!userId) return;
-    if (!confirm(t.upgradeConfirm)) return;
-    setUpgrading(true);
-    await supabase.from("profiles").update({ plan: "profesyonel" }).eq("id", userId);
-    if (tenantId) {
-      await supabase.from("tenants").update({ has_branches: true }).eq("id", tenantId);
-    }
-    setCurrentPlan("profesyonel");
-    setUpgrading(false);
-    window.location.reload();
-  };
 
   return (
     <DashboardLayout>
@@ -77,7 +49,7 @@ export default function Abonelik() {
         <h1 style={{ fontSize: 28, fontWeight: "bold", marginBottom: 8 }}>{t.abonelikTitle}</h1>
         <p style={{ color: "#888", marginBottom: 32 }}>{t.abonelikSubtitle}</p>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24, maxWidth: 920 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 24, maxWidth: 640 }}>
           {plans.map((plan) => {
             const isCurrent = currentPlan === plan.key;
             return (
@@ -135,19 +107,6 @@ export default function Abonelik() {
                   <div style={{ width: "100%", padding: "10px 0", background: "#e5e7eb", color: "#555", borderRadius: 8, textAlign: "center", fontSize: 14, fontWeight: "bold" }}>
                     {t.currentPlan}
                   </div>
-                ) : plan.key === "profesyonel" && currentPlan === "temel" ? (
-                  <button
-                    onClick={handleUpgradeToPro}
-                    disabled={upgrading}
-                    style={{
-                      width: "100%", padding: "11px 0",
-                      background: plan.color, color: "white", border: "none",
-                      borderRadius: 8, cursor: upgrading ? "not-allowed" : "pointer",
-                      fontSize: 14, fontWeight: "bold", opacity: upgrading ? 0.7 : 1,
-                    }}
-                  >
-                    {upgrading ? t.upgrading : t.upgradeToPro}
-                  </button>
                 ) : plan.teklifAl ? (
                   <a href={TEKLIF_MAIL} style={{
                     display: "block", width: "100%", padding: "11px 0",
