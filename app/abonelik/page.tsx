@@ -7,7 +7,7 @@ import { useLang } from "@/lib/LangContext";
 const TEKLIF_MAIL = "mailto:pazarlama@marssoft.com.tr?subject=Fiyat%20Teklifi%20Talebi";
 
 export default function Abonelik() {
-  const { t, lang } = useLang();
+  const { t } = useLang();
   const [currentPlan, setCurrentPlan] = useState<string | null>(null);
   const [upgrading, setUpgrading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -18,8 +18,8 @@ export default function Abonelik() {
       key: "temel",
       name: t.temelPlanName,
       color: "#6366f1",
-      priceLabel: "2.500 TL",
-      period: lang === "tr" ? "/ay" : "/mo",
+      monthlyPrice: "1.990 TL",
+      yearlyPrice: "9.000 TL",
       teklifAl: false,
       popular: false,
       features: t.temelFeatures,
@@ -28,8 +28,8 @@ export default function Abonelik() {
       key: "profesyonel",
       name: t.proPlanName,
       color: "#10b981",
-      priceLabel: null,
-      period: null,
+      monthlyPrice: null,
+      yearlyPrice: null,
       teklifAl: true,
       popular: true,
       features: t.proFeatures,
@@ -38,8 +38,8 @@ export default function Abonelik() {
       key: "kurumsal",
       name: t.kurumPlanName,
       color: "#f59e0b",
-      priceLabel: null,
-      period: null,
+      monthlyPrice: null,
+      yearlyPrice: null,
       teklifAl: true,
       popular: false,
       features: t.kurumFeatures,
@@ -103,11 +103,17 @@ export default function Abonelik() {
 
                 <h2 style={{ fontSize: 19, fontWeight: "bold", marginBottom: 12, color: "#1e1b4b" }}>{plan.name}</h2>
 
-                <div style={{ marginBottom: 24, minHeight: 52 }}>
-                  {plan.priceLabel ? (
-                    <div>
-                      <span style={{ fontSize: 34, fontWeight: "bold", color: plan.color }}>{plan.priceLabel}</span>
-                      <span style={{ color: "#888", fontSize: 14 }}>{plan.period}</span>
+                <div style={{ marginBottom: 24, minHeight: 64 }}>
+                  {plan.monthlyPrice ? (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                      <div>
+                        <span style={{ fontSize: 28, fontWeight: "bold", color: plan.color }}>{plan.monthlyPrice}</span>
+                        <span style={{ color: "#888", fontSize: 13 }}>{" + KDV/ay"}</span>
+                      </div>
+                      <div>
+                        <span style={{ fontSize: 18, fontWeight: 600, color: plan.color }}>{plan.yearlyPrice}</span>
+                        <span style={{ color: "#888", fontSize: 13 }}>{" + KDV/yıl"}</span>
+                      </div>
                     </div>
                   ) : (
                     <div style={{ background: "#f9fafb", borderRadius: 10, padding: "10px 14px", display: "inline-block" }}>
