@@ -18,8 +18,11 @@ import {
   Truck,
   Settings,
   Building2,
+  PawPrint,
+  AlertTriangle,
 } from "lucide-react";
 import { useLang } from "@/lib/LangContext";
+import { useMode } from "@/lib/ModeContext";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -34,6 +37,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { lang, setLang, t } = useLang();
+  const { mode } = useMode();
 
   const menuItems = [
     { label: t.menuHome, path: "/", icon: Home },
@@ -122,6 +126,28 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               </Link>
             );
           })}
+          {mode === "pet" && (
+            <>
+              <Link href="/pet/kart" style={{
+                display: "flex", alignItems: "center", gap: 12,
+                padding: "10px 12px", borderRadius: 8, marginBottom: 4,
+                background: pathname.startsWith("/pet/kart") ? "#f97316" : "transparent",
+                color: "white", textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
+              }}>
+                <PawPrint size={18} />
+                Pet Kartları
+              </Link>
+              <Link href="/pet/skt" style={{
+                display: "flex", alignItems: "center", gap: 12,
+                padding: "10px 12px", borderRadius: 8, marginBottom: 4,
+                background: pathname === "/pet/skt" ? "#f97316" : "transparent",
+                color: "white", textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
+              }}>
+                <AlertTriangle size={18} />
+                SKT Takibi
+              </Link>
+            </>
+          )}
           {hasBranches && (
             <Link href="/subeler" style={{
               display: "flex", alignItems: "center", gap: 12,
