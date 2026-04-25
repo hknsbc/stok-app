@@ -57,12 +57,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       }
       setUserEmail(user.email ?? null);
       const { data: profile } = await supabase
-        .from("profiles").select("is_superadmin, tenant_id, plan").eq("id", user.id).single();
+        .from("profiles").select("is_superadmin, tenant_id").eq("id", user.id).single();
       setIsSuperAdmin(profile?.is_superadmin ?? false);
-      const isPro = profile?.plan === "profesyonel";
-      if (isPro) {
-        setHasBranches(true);
-      } else if (profile?.tenant_id) {
+      if (profile?.tenant_id) {
         const { data: tenant } = await supabase
           .from("tenants").select("has_branches").eq("id", profile.tenant_id).single();
         setHasBranches(tenant?.has_branches ?? false);

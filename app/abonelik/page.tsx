@@ -37,8 +37,8 @@ export default function Abonelik() {
     const fetchPlan = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data } = await supabase.from("profiles").select("plan").eq("id", user.id).single();
-      if (data?.plan) setCurrentPlan(data.plan);
+      const { data, error } = await supabase.from("profiles").select("plan").eq("id", user.id).single();
+      if (!error && data?.plan) setCurrentPlan(data.plan);
     };
     fetchPlan();
   }, []);
