@@ -14,6 +14,18 @@ export type FeatureSet = {
 };
 
 export const features: Record<AppMode, FeatureSet> = {
+  marine: {
+    barcode: true,
+    petCard: false,
+    loyaltyCard: false,
+    vetCard: false,
+    vetHealth: false,
+    appointments: false,
+    vaccineSchedule: false,
+    whatsappReminder: false,
+    expiryAlerts: true,
+    treatmentHistory: false,
+  },
   stok: {
     barcode: true,
     petCard: false,

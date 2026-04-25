@@ -10,8 +10,6 @@ import {
   FileText,
   CreditCard,
   Shield,
-  Menu,
-  X,
   LogOut,
   Home,
   User,
@@ -23,6 +21,7 @@ import {
 } from "lucide-react";
 import { useLang } from "@/lib/LangContext";
 import { useMode } from "@/lib/ModeContext";
+import Header from "@/components/layout/Header";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -36,8 +35,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [hasBranches, setHasBranches] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const { lang, setLang, t } = useLang();
-  const { mode } = useMode();
+  const { t } = useLang();
+  const { mode, theme } = useMode();
 
   const menuItems = [
     { label: t.menuHome, path: "/", icon: Home },
@@ -89,19 +88,20 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <div style={{ display: "flex", height: "100vh", background: "#f5f5f5" }}>
+      {/* ── Sidebar ── */}
       <div style={{
         width: sidebarOpen ? 240 : 0,
-        background: "#1a1a2e",
-        color: "white",
+        background: theme.sidebar,
+        color: theme.sidebarText,
         display: "flex",
         flexDirection: "column",
         transition: "width 0.3s",
         overflow: "hidden",
         flexShrink: 0,
       }}>
-        <div style={{ padding: "20px 16px", borderBottom: "1px solid #333", display: "flex", alignItems: "center", gap: 10 }}>
-          <Package size={24} color="#6366f1" />
-          <span style={{ fontSize: 18, fontWeight: "bold" }}>Stok Takip</span>
+        <div style={{ padding: "20px 16px", borderBottom: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 22 }}>{theme.logoEmoji}</span>
+          <span style={{ fontSize: 16, fontWeight: "bold", whiteSpace: "nowrap" }}>{theme.appName}</span>
         </div>
         <nav style={{ flex: 1, padding: "12px 8px", overflowY: "auto" }}>
           {menuItems.map((item) => {
@@ -115,8 +115,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 padding: "10px 12px",
                 borderRadius: 8,
                 marginBottom: 4,
-                background: isActive ? "#6366f1" : "transparent",
-                color: "white",
+                background: isActive ? theme.primary : "transparent",
+                color: theme.sidebarText,
                 textDecoration: "none",
                 fontSize: 14,
                 whiteSpace: "nowrap",
@@ -131,8 +131,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               <Link href="/pet/kart" style={{
                 display: "flex", alignItems: "center", gap: 12,
                 padding: "10px 12px", borderRadius: 8, marginBottom: 4,
-                background: pathname.startsWith("/pet/kart") ? "#f97316" : "transparent",
-                color: "white", textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
+                background: pathname.startsWith("/pet/kart") ? theme.primary : "transparent",
+                color: theme.sidebarText, textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
               }}>
                 <PawPrint size={18} />
                 Pet Kartları
@@ -140,8 +140,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               <Link href="/pet/skt" style={{
                 display: "flex", alignItems: "center", gap: 12,
                 padding: "10px 12px", borderRadius: 8, marginBottom: 4,
-                background: pathname === "/pet/skt" ? "#f97316" : "transparent",
-                color: "white", textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
+                background: pathname === "/pet/skt" ? theme.primary : "transparent",
+                color: theme.sidebarText, textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
               }}>
                 <AlertTriangle size={18} />
                 SKT Takibi
@@ -152,8 +152,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <Link href="/subeler" style={{
               display: "flex", alignItems: "center", gap: 12,
               padding: "10px 12px", borderRadius: 8, marginBottom: 4,
-              background: pathname === "/subeler" ? "#6366f1" : "transparent",
-              color: "white", textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
+              background: pathname === "/subeler" ? theme.primary : "transparent",
+              color: theme.sidebarText, textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
             }}>
               <Building2 size={18} />
               {t.menuSubeler}
@@ -163,21 +163,21 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <Link href="/admin" style={{
               display: "flex", alignItems: "center", gap: 12,
               padding: "10px 12px", borderRadius: 8, marginBottom: 4, marginTop: 8,
-              background: pathname === "/admin" ? "#6366f1" : "rgba(99,102,241,0.15)",
-              color: "white", textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
-              borderTop: "1px solid #333",
+              background: pathname === "/admin" ? theme.primary : `${theme.primary}26`,
+              color: theme.sidebarText, textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
+              borderTop: "1px solid rgba(255,255,255,0.1)",
             }}>
               <Settings size={18} />
               {t.menuAdmin}
             </Link>
           )}
         </nav>
-        <div style={{ padding: 16, borderTop: "1px solid #333" }}>
+        <div style={{ padding: 16, borderTop: "1px solid rgba(255,255,255,0.1)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-            <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#6366f1", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <User size={16} />
+            <div style={{ width: 32, height: 32, borderRadius: "50%", background: theme.primary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <User size={16} color="white" />
             </div>
-            <span style={{ fontSize: 12, color: "#ccc", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            <span style={{ fontSize: 12, color: theme.sidebarText, opacity: 0.7, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {userEmail ?? "Kullanici"}
             </span>
           </div>
@@ -187,7 +187,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             gap: 8,
             background: "transparent",
             border: "none",
-            color: "#aaa",
+            color: theme.sidebarText,
+            opacity: 0.6,
             cursor: "pointer",
             fontSize: 13,
             padding: "6px 0",
@@ -198,31 +199,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
       </div>
 
+      {/* ── Main content ── */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>
-        <div style={{
-          height: 60,
-          background: "white",
-          borderBottom: "1px solid #eee",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "0 20px",
-          flexShrink: 0,
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: "none", border: "none", cursor: "pointer" }}>
-              {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
-            <span style={{ fontSize: 16, fontWeight: 600 }}>{t.sysTitle}</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ display: "flex", gap: 6 }}>
-              <button onClick={() => setLang("tr")} style={{ padding: "4px 10px", borderRadius: 6, border: `2px solid ${lang === "tr" ? "#1a1a2e" : "#e5e7eb"}`, background: lang === "tr" ? "#1a1a2e" : "white", color: lang === "tr" ? "white" : "#888", fontSize: 12, cursor: "pointer", fontWeight: 600 }}>🇹🇷 TR</button>
-              <button onClick={() => setLang("en")} style={{ padding: "4px 10px", borderRadius: 6, border: `2px solid ${lang === "en" ? "#1a1a2e" : "#e5e7eb"}`, background: lang === "en" ? "#1a1a2e" : "white", color: lang === "en" ? "white" : "#888", fontSize: 12, cursor: "pointer", fontWeight: 600 }}>🇬🇧 EN</button>
-            </div>
-            <span style={{ fontSize: 13, color: "#aaa", fontWeight: 500 }}>Marssoft</span>
-          </div>
-        </div>
+        <Header sidebarOpen={sidebarOpen} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
         <div style={{ flex: 1, overflow: "auto", padding: 24 }}>
           {children}
         </div>

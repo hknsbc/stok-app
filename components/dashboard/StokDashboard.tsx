@@ -1,17 +1,16 @@
 "use client";
-// StokDashboard — placeholder that delegates to the existing stok system at app/page.tsx
-// The real stok dashboard lives at the root route (/) and remains completely untouched.
-// This component exists only so DashboardPage can import a named component for the stok mode.
 import Link from "next/link";
 import DashboardLayout from "@/components/DashboardLayout";
+import { useMode } from "@/lib/ModeContext";
 
 export default function StokDashboard() {
+  const { theme } = useMode();
   return (
     <DashboardLayout>
       <div style={{ padding: 32, textAlign: "center" }}>
-        <div style={{ fontSize: 48, marginBottom: 16 }}>📦</div>
+        <div style={{ fontSize: 48, marginBottom: 16 }}>{theme.logoEmoji}</div>
         <h2 style={{ fontSize: 22, fontWeight: "bold", marginBottom: 8 }}>
-          Stok Yönetim Sistemi
+          {theme.appTitle}
         </h2>
         <p style={{ color: "#888", marginBottom: 24 }}>
           Mevcut stok panelinize devam etmek için ana sayfaya gidin.

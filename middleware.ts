@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export type AppMode = "stok" | "pet" | "vet";
+export type AppMode = "stok" | "pet" | "vet" | "marine";
 
 const DOMAIN_MODE_MAP: Record<string, AppMode> = {
   "stok.marssoft.com.tr": "stok",
   "pet.marssoft.com.tr": "pet",
   "vet.marssoft.com.tr": "vet",
+  "marine.marssoft.com.tr": "marine",
 };
 
 export function middleware(request: NextRequest) {

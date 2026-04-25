@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 
-export type AppMode = "stok" | "pet" | "vet";
+export type AppMode = "stok" | "pet" | "vet" | "marine";
 
 // Server-only: reads the x-app-mode header injected by middleware.
 // Falls back to "stok" so stok.marssoft.com.tr always works as before.
