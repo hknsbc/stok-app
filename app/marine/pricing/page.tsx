@@ -68,7 +68,7 @@ const PLANS: Plan[] = [
     priceRange: "$399–699",
     popular: false,
     cta: "Contact Sales",
-    ctaHref: "mailto:sales@marssoft.com.tr?subject=Marine%20Enterprise%20Inquiry",
+    ctaHref: "mailto:pazarlama@marssoft.com.tr?subject=Marine%20Enterprise%20Inquiry",
     highlight: "#6366f1",
     features: [
       "Everything in Business",
@@ -276,7 +276,7 @@ export default function MarinePricingPage() {
 
       {/* ── Footer ── */}
       <footer className="text-center py-10 px-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)", color: "#475569" }}>
-        <p className="text-sm">© {new Date().getFullYear()} Marssoft · <a href="mailto:sales@marssoft.com.tr" className="no-underline" style={{ color: "#06b6d4" }}>sales@marssoft.com.tr</a></p>
+        <p className="text-sm">© {new Date().getFullYear()} Marssoft · <a href="mailto:pazarlama@marssoft.com.tr" className="no-underline" style={{ color: "#06b6d4" }}>pazarlama@marssoft.com.tr</a></p>
       </footer>
     </div>
   );
