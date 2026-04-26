@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useLang } from "@/lib/LangContext";
@@ -12,54 +12,74 @@ export default function AnaSayfa() {
   const [lisansDurumu, setLisansDurumu] = useState<string>("...");
   const [firmaAdi, setFirmaAdi] = useState<string | null>(null);
 
+  const fetchStats = useCallback(async (tid: string) => {
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+      .toISOString().split("T")[0];
+
+    const [cariRes, stokRes, satisRes] = await Promise.all([
+      supabase.from("customers").select("id", { count: "exact", head: true }).eq("tenant_id", tid),
+      supabase.from("products").select("price, stock").eq("tenant_id", tid),
+      supabase.from("sales").select("total").eq("tenant_id", tid).gte("date", monthStart),
+    ]);
+
+    if (cariRes.count !== null) setToplamCari(cariRes.count);
+
+    if (stokRes.data) {
+      const deger = stokRes.data.reduce(
+        (acc, p) => acc + Number(p.price || 0) * Number(p.stock || 0), 0
+      );
+      setStokDegeri(deger);
+    }
+
+    if (satisRes.data) {
+      const toplam = satisRes.data.reduce((acc, s) => acc + Number(s.total || 0), 0);
+      setBuAySatis(toplam);
+    }
+  }, []);
+
   useEffect(() => {
-    const fetchData = async () => {
-      const now = new Date();
-      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0];
+    let channel: ReturnType<typeof supabase.channel> | null = null;
 
-      const [cariRes, stokRes, satisRes, userRes] = await Promise.all([
-        supabase.from("customers").select("id", { count: "exact", head: true }),
-        supabase.from("products").select("price, stock"),
-        supabase.from("sales").select("total").gte("date", monthStart),
-        supabase.auth.getUser(),
-      ]);
+    const init = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-      if (cariRes.count !== null) setToplamCari(cariRes.count);
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("subscription_status, plan, company_name, tenant_id")
+        .eq("id", user.id)
+        .single();
 
-      if (stokRes.data) {
-        const deger = stokRes.data.reduce((acc, p) => acc + Number(p.price || 0) * Number(p.stock || 0), 0);
-        setStokDegeri(deger);
-      }
+      const tid = profile?.tenant_id as string | undefined;
+      if (!tid) return;
 
-      if (satisRes.data) {
-        const toplam = satisRes.data.reduce((acc, s) => acc + Number(s.total), 0);
-        setBuAySatis(toplam);
-      }
+      setFirmaAdi(profile?.company_name ?? user.email ?? null);
 
-      const user = userRes.data.user;
-      if (user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("subscription_status, plan, company_name")
-          .eq("id", user.id)
-          .single();
-
-        if (profile?.company_name) setFirmaAdi(profile.company_name);
-        else setFirmaAdi(user.email ?? null);
-
-        if (profile?.subscription_status === "active") {
-          setLisansDurumu(`${t.statusActive}${profile.plan ? ` (${profile.plan})` : ""}`);
-        } else if (profile?.subscription_status) {
-          setLisansDurumu(profile.subscription_status);
-        } else {
-          setLisansDurumu(t.statusActive);
-        }
+      if (profile?.subscription_status === "active") {
+        setLisansDurumu(`${t.statusActive}${profile.plan ? ` (${profile.plan})` : ""}`);
+      } else if (profile?.subscription_status) {
+        setLisansDurumu(profile.subscription_status);
       } else {
-        setLisansDurumu("-");
+        setLisansDurumu(t.statusActive);
       }
+
+      await fetchStats(tid);
+
+      channel = supabase
+        .channel("dashboard-live")
+        .on("postgres_changes", { event: "*", schema: "public", table: "products", filter: `tenant_id=eq.${tid}` }, () => fetchStats(tid))
+        .on("postgres_changes", { event: "*", schema: "public", table: "sales", filter: `tenant_id=eq.${tid}` }, () => fetchStats(tid))
+        .on("postgres_changes", { event: "*", schema: "public", table: "customers", filter: `tenant_id=eq.${tid}` }, () => fetchStats(tid))
+        .subscribe();
     };
-    fetchData();
-  }, [lang]);
+
+    init();
+
+    return () => {
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, [lang, fetchStats]);
 
   const locale = lang === "tr" ? "tr-TR" : "en-US";
   const fmt = (val: number | null, suffix = "") =>
@@ -76,6 +96,7 @@ export default function AnaSayfa() {
             </p>
           )}
         </div>
+
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 32 }}>
           <div style={{ background: "white", padding: 24, borderRadius: 12, boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
             <p style={{ color: "#888", fontSize: 13, marginBottom: 8 }}>{t.totalCustomers}</p>
@@ -91,9 +112,12 @@ export default function AnaSayfa() {
           </div>
           <div style={{ background: "white", padding: 24, borderRadius: 12, boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
             <p style={{ color: "#888", fontSize: 13, marginBottom: 8 }}>{t.licenseLabel}</p>
-            <p style={{ fontSize: 20, fontWeight: "bold", color: lisansDurumu.startsWith(t.statusActive) ? "#10b981" : "#f59e0b" }}>{lisansDurumu}</p>
+            <p style={{ fontSize: 20, fontWeight: "bold", color: lisansDurumu.startsWith(t.statusActive) ? "#10b981" : "#f59e0b" }}>
+              {lisansDurumu}
+            </p>
           </div>
         </div>
+
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
           <a href="/cari" style={{ background: "white", padding: 24, borderRadius: 12, boxShadow: "0 1px 4px rgba(0,0,0,0.08)", textDecoration: "none", color: "inherit" }}>
             <h2 style={{ fontSize: 18, fontWeight: "bold", marginBottom: 8 }}>{t.menuCari}</h2>
