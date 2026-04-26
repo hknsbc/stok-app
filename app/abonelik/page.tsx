@@ -75,7 +75,7 @@ export default function Abonelik() {
         <h1 style={{ fontSize: 28, fontWeight: "bold", marginBottom: 8 }}>{t.abonelikTitle}</h1>
         <p style={{ color: "#888", marginBottom: 32 }}>{t.abonelikSubtitle}</p>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 24, maxWidth: 640 }}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {plans.map((plan) => {
             const isCurrent = currentPlan === plan.key;
             return (

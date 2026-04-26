@@ -262,7 +262,15 @@ export default function Alislar() {
                 </tr>
               ))}
               {purchases.length === 0 && (
-                <tr><td colSpan={7} style={{ padding: 24, textAlign: "center", color: "#aaa", fontSize: 13 }}>{t.noPurchases}</td></tr>
+                <tr>
+                  <td colSpan={7}>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, padding: "52px 24px" }}>
+                      <div style={{ width: 56, height: 56, borderRadius: "50%", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26 }}>📥</div>
+                      <p style={{ fontSize: 15, fontWeight: 600, color: "#374151", margin: 0 }}>Henüz kayıt bulunmuyor.</p>
+                      <p style={{ fontSize: 13, color: "#9ca3af", margin: 0 }}>Kullanıma hazır.</p>
+                    </div>
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>

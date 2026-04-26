@@ -30,6 +30,7 @@ export default function YeniSatis() {
   const [barcodeMsg, setBarcodeMsg] = useState<{ text: string; ok: boolean } | null>(null);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [quickSearch, setQuickSearch] = useState("");
   const barcodeRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -87,6 +88,15 @@ export default function YeniSatis() {
   const removeFromCart = (productId: string) => {
     setCart((prev) => prev.filter((i) => i.product.id !== productId));
   };
+
+  const removeFromList = (id: string) => {
+    setProducts((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const filteredProducts = products.filter((p) =>
+    p.name.toLowerCase().includes(quickSearch.toLowerCase()) ||
+    (p.barcode ?? "").includes(quickSearch)
+  );
 
   const totalTutar = cart.reduce((acc, i) => acc + (i.product.selling_price || i.product.price) * i.quantity, 0);
 
@@ -164,6 +174,15 @@ export default function YeniSatis() {
 
             {urunListeAcik && (
               <div style={{ borderTop: "1px solid #f3f4f6" }}>
+                <div style={{ padding: "10px 16px", borderBottom: "1px solid #f3f4f6" }}>
+                  <input
+                    type="text"
+                    placeholder="Ürün ara..."
+                    value={quickSearch}
+                    onChange={(e) => setQuickSearch(e.target.value)}
+                    style={{ width: "100%", padding: "7px 12px", border: "1px solid #e5e7eb", borderRadius: 7, fontSize: 13, outline: "none", background: "#f9fafb" }}
+                  />
+                </div>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
                     <tr style={{ background: "#f9fafb" }}>
@@ -174,7 +193,7 @@ export default function YeniSatis() {
                     </tr>
                   </thead>
                   <tbody>
-                    {products.map((p) => {
+                    {filteredProducts.map((p) => {
                       const satisFiyati = p.selling_price != null && p.selling_price > 0 ? p.selling_price : p.price;
                       const stokYok = p.stock <= 0;
                       return (
@@ -183,28 +202,53 @@ export default function YeniSatis() {
                           <td style={{ padding: "10px 12px", fontSize: 13, textAlign: "right", color: stokYok ? "#aaa" : "#6366f1" }}>{satisFiyati.toFixed(2)} TL</td>
                           <td style={{ padding: "10px 12px", fontSize: 13, textAlign: "center", color: stokYok ? "#ef4444" : "#555" }}>{p.stock}</td>
                           <td style={{ padding: "10px 12px", textAlign: "center" }}>
-                            <button
-                              onClick={() => addToCart(p)}
-                              disabled={stokYok}
-                              style={{
-                                padding: "5px 14px",
-                                background: stokYok ? "#e5e7eb" : "#6366f1",
-                                color: stokYok ? "#aaa" : "white",
-                                border: "none",
-                                borderRadius: 6,
-                                cursor: stokYok ? "not-allowed" : "pointer",
-                                fontSize: 12,
-                                fontWeight: 600,
-                              }}
-                            >
-                              {t.addBtn}
-                            </button>
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, flexWrap: "wrap" }}>
+                              <button
+                                onClick={() => addToCart(p)}
+                                disabled={stokYok}
+                                style={{
+                                  padding: "5px 14px",
+                                  background: stokYok ? "#e5e7eb" : "#6366f1",
+                                  color: stokYok ? "#aaa" : "white",
+                                  border: "none",
+                                  borderRadius: 6,
+                                  cursor: stokYok ? "not-allowed" : "pointer",
+                                  fontSize: 12,
+                                  fontWeight: 600,
+                                }}
+                              >
+                                {t.addBtn}
+                              </button>
+                              <button
+                                onClick={() => removeFromList(p.id)}
+                                style={{
+                                  padding: "5px 14px",
+                                  background: "#ef4444",
+                                  color: "white",
+                                  border: "none",
+                                  borderRadius: 6,
+                                  cursor: "pointer",
+                                  fontSize: 12,
+                                  fontWeight: 600,
+                                }}
+                              >
+                                Sil
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );
                     })}
-                    {products.length === 0 && (
-                      <tr><td colSpan={4} style={{ padding: 20, textAlign: "center", color: "#aaa", fontSize: 13 }}>{t.noProductsFound}</td></tr>
+                    {filteredProducts.length === 0 && (
+                      <tr>
+                        <td colSpan={4}>
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, padding: "40px 24px" }}>
+                            <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>🔍</div>
+                            <p style={{ fontSize: 14, fontWeight: 600, color: "#374151", margin: 0 }}>Henüz kayıt bulunmuyor.</p>
+                            <p style={{ fontSize: 12, color: "#9ca3af", margin: 0 }}>Kullanıma hazır.</p>
+                          </div>
+                        </td>
+                      </tr>
                     )}
                   </tbody>
                 </table>
