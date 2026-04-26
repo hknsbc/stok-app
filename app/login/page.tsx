@@ -3,10 +3,12 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import { useLang } from "@/lib/LangContext";
+import { useMode } from "@/lib/ModeContext";
 
 export default function Login() {
   const router = useRouter();
   const { lang, setLang, t } = useLang();
+  const { theme } = useMode();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isRegister, setIsRegister] = useState(false);
@@ -116,8 +118,8 @@ export default function Login() {
           </div>
 
           <div style={{ textAlign: "center", marginBottom: 32 }}>
-            <div style={{ fontSize: 36, marginBottom: 8 }}>📦</div>
-            <h1 style={{ fontSize: 24, fontWeight: "bold", color: "#1a1a2e" }}>{t.loginTitle}</h1>
+            <div style={{ fontSize: 36, marginBottom: 8 }}>{theme.logoEmoji}</div>
+            <h1 style={{ fontSize: 24, fontWeight: "bold", color: "#1a1a2e" }}>{theme.appTitle}</h1>
             <p style={{ fontSize: 13, color: "#888", marginTop: 4 }}>{t.loginSubtitle}</p>
           </div>
 
