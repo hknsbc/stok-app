@@ -5,10 +5,14 @@ import { ModeProvider } from "@/lib/ModeContext";
 import { getMode } from "@/lib/getMode";
 import { themes } from "@/lib/theme";
 
-export const metadata: Metadata = {
-  title: "Stok Takip",
-  description: "Stok Yonetim Sistemi",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const mode = await getMode();
+  const theme = themes[mode];
+  return {
+    title: theme.appTitle,
+    description: theme.appTitle,
+  };
+}
 
 export default async function RootLayout({
   children,
