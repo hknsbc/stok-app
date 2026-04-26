@@ -12,24 +12,50 @@ export default function Abonelik() {
 
   const plans = [
     {
-      key: "profesyonel",
-      name: t.proPlanName,
-      color: "#10b981",
-      monthlyPrice: "1.990 TL",
-      yearlyPrice: "9.000 TL",
-      teklifAl: false,
-      popular: true,
-      features: t.proFeatures,
+      key: "pro",
+      name: "Pro",
+      color: "#06b6d4",
+      price: "99 USD / month",
+      contactUs: false,
+      popular: false,
+      features: [
+        "Tekne kartı",
+        "Bakım geçmişi",
+        "Parça stokları",
+        "Seri numarası takibi",
+        "İşçilik + malzeme maliyeti",
+        "WhatsApp hatırlatma",
+        "Mobil uyum",
+        "3 kolonlu dashboard",
+      ],
     },
     {
-      key: "kurumsal",
-      name: t.kurumPlanName,
+      key: "business",
+      name: "Business",
+      color: "#10b981",
+      price: "199 USD / month",
+      contactUs: false,
+      popular: true,
+      features: [
+        "Pro plan dahil",
+        "Çoklu kullanıcı",
+        "Çoklu şube",
+        "Gelişmiş raporlar",
+      ],
+    },
+    {
+      key: "enterprise",
+      name: "Enterprise",
       color: "#f59e0b",
-      monthlyPrice: null,
-      yearlyPrice: null,
-      teklifAl: true,
+      price: "399–699 USD / month",
+      contactUs: true,
       popular: false,
-      features: t.kurumFeatures,
+      features: [
+        "Business plan dahil",
+        "Marina/tersane özel modüller",
+        "Özel entegrasyonlar",
+        "Eğitim + onboarding",
+      ],
     },
   ];
 
@@ -76,22 +102,7 @@ export default function Abonelik() {
                 <h2 style={{ fontSize: 19, fontWeight: "bold", marginBottom: 12, color: "#1e1b4b" }}>{plan.name}</h2>
 
                 <div style={{ marginBottom: 24, minHeight: 64 }}>
-                  {plan.monthlyPrice ? (
-                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                      <div>
-                        <span style={{ fontSize: 28, fontWeight: "bold", color: plan.color }}>{plan.monthlyPrice}</span>
-                        <span style={{ color: "#888", fontSize: 13 }}>{" + KDV/ay"}</span>
-                      </div>
-                      <div>
-                        <span style={{ fontSize: 18, fontWeight: 600, color: plan.color }}>{plan.yearlyPrice}</span>
-                        <span style={{ color: "#888", fontSize: 13 }}>{" + KDV/yıl"}</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div style={{ background: "#f9fafb", borderRadius: 10, padding: "10px 14px", display: "inline-block" }}>
-                      <p style={{ margin: 0, fontSize: 13, color: "#555", fontWeight: 500 }}>{t.contactUs}</p>
-                    </div>
-                  )}
+                  <span style={{ fontSize: 26, fontWeight: "bold", color: plan.color }}>{plan.price}</span>
                 </div>
 
                 <ul style={{ listStyle: "none", padding: 0, margin: 0, marginBottom: 24, flex: 1 }}>
@@ -107,7 +118,7 @@ export default function Abonelik() {
                   <div style={{ width: "100%", padding: "10px 0", background: "#e5e7eb", color: "#555", borderRadius: 8, textAlign: "center", fontSize: 14, fontWeight: "bold" }}>
                     {t.currentPlan}
                   </div>
-                ) : plan.teklifAl ? (
+                ) : plan.contactUs ? (
                   <a href={TEKLIF_MAIL} style={{
                     display: "block", width: "100%", padding: "11px 0",
                     background: plan.color, color: "white", borderRadius: 8,
