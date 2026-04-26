@@ -26,6 +26,7 @@ import {
   Pill,
   ClipboardList,
   Receipt,
+  MessageCircle,
 } from "lucide-react";
 import { useLang } from "@/lib/LangContext";
 import { useMode } from "@/lib/ModeContext";
@@ -211,6 +212,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               }}>
                 <Receipt size={18} />
                 Faturalar
+              </Link>
+              <Link href="/vet/mesajlar" style={{
+                display: "flex", alignItems: "center", gap: 12,
+                padding: "10px 12px", borderRadius: 8, marginBottom: 4,
+                background: pathname.startsWith("/vet/mesajlar") ? theme.primary : "transparent",
+                color: theme.sidebarText, textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
+              }}>
+                <MessageCircle size={18} />
+                Mesaj Merkezi
               </Link>
             </>
           )}
