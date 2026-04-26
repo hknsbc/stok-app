@@ -18,6 +18,9 @@ import {
   Building2,
   PawPrint,
   AlertTriangle,
+  Anchor,
+  Wrench,
+  Layers,
 } from "lucide-react";
 import { useLang } from "@/lib/LangContext";
 import { useMode } from "@/lib/ModeContext";
@@ -126,6 +129,37 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               </Link>
             );
           })}
+          {mode === "marine" && (
+            <>
+              <Link href="/marine/tekne" style={{
+                display: "flex", alignItems: "center", gap: 12,
+                padding: "10px 12px", borderRadius: 8, marginBottom: 4,
+                background: pathname.startsWith("/marine/tekne") ? theme.primary : "transparent",
+                color: theme.sidebarText, textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
+              }}>
+                <Anchor size={18} />
+                Tekne Kartları
+              </Link>
+              <Link href="/marine/bakim" style={{
+                display: "flex", alignItems: "center", gap: 12,
+                padding: "10px 12px", borderRadius: 8, marginBottom: 4,
+                background: pathname.startsWith("/marine/bakim") ? theme.primary : "transparent",
+                color: theme.sidebarText, textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
+              }}>
+                <Wrench size={18} />
+                Bakım Kayıtları
+              </Link>
+              <Link href="/marine/parca" style={{
+                display: "flex", alignItems: "center", gap: 12,
+                padding: "10px 12px", borderRadius: 8, marginBottom: 4,
+                background: pathname.startsWith("/marine/parca") ? theme.primary : "transparent",
+                color: theme.sidebarText, textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
+              }}>
+                <Layers size={18} />
+                Parça Stokları
+              </Link>
+            </>
+          )}
           {mode === "pet" && (
             <>
               <Link href="/pet/kart" style={{
