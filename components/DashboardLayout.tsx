@@ -21,6 +21,11 @@ import {
   Anchor,
   Wrench,
   Layers,
+  Stethoscope,
+  Syringe,
+  Pill,
+  ClipboardList,
+  Receipt,
 } from "lucide-react";
 import { useLang } from "@/lib/LangContext";
 import { useMode } from "@/lib/ModeContext";
@@ -157,6 +162,55 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               }}>
                 <Layers size={18} />
                 Parça Stokları
+              </Link>
+            </>
+          )}
+          {mode === "vet" && (
+            <>
+              <Link href="/vet/hastalar" style={{
+                display: "flex", alignItems: "center", gap: 12,
+                padding: "10px 12px", borderRadius: 8, marginBottom: 4,
+                background: pathname.startsWith("/vet/hastalar") ? theme.primary : "transparent",
+                color: theme.sidebarText, textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
+              }}>
+                <Stethoscope size={18} />
+                Hasta Kartları
+              </Link>
+              <Link href="/vet/muayene" style={{
+                display: "flex", alignItems: "center", gap: 12,
+                padding: "10px 12px", borderRadius: 8, marginBottom: 4,
+                background: pathname.startsWith("/vet/muayene") ? theme.primary : "transparent",
+                color: theme.sidebarText, textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
+              }}>
+                <ClipboardList size={18} />
+                Muayeneler
+              </Link>
+              <Link href="/vet/asi" style={{
+                display: "flex", alignItems: "center", gap: 12,
+                padding: "10px 12px", borderRadius: 8, marginBottom: 4,
+                background: pathname.startsWith("/vet/asi") ? theme.primary : "transparent",
+                color: theme.sidebarText, textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
+              }}>
+                <Syringe size={18} />
+                Aşı Takvimi
+              </Link>
+              <Link href="/vet/stok" style={{
+                display: "flex", alignItems: "center", gap: 12,
+                padding: "10px 12px", borderRadius: 8, marginBottom: 4,
+                background: pathname.startsWith("/vet/stok") ? theme.primary : "transparent",
+                color: theme.sidebarText, textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
+              }}>
+                <Pill size={18} />
+                İlaç Stoku
+              </Link>
+              <Link href="/vet/fatura" style={{
+                display: "flex", alignItems: "center", gap: 12,
+                padding: "10px 12px", borderRadius: 8, marginBottom: 4,
+                background: pathname.startsWith("/vet/fatura") ? theme.primary : "transparent",
+                color: theme.sidebarText, textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
+              }}>
+                <Receipt size={18} />
+                Faturalar
               </Link>
             </>
           )}
