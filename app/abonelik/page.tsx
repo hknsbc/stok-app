@@ -78,8 +78,8 @@ const PLANS: Record<AppMode, Plan[]> = {
       key: "pro",
       name: "Pro",
       color: "#0ea5e9",
-      price: "2.490 TL + KDV",
-      priceNote: "aylık",
+      price: "9.000 TL + KDV",
+      priceNote: "yıllık · ~750 TL/ay",
       contactUs: false,
       popular: false,
       features: [
