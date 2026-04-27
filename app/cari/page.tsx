@@ -106,7 +106,8 @@ export default function Cari() {
           </form>
         )}
 
-        <table style={{ width: "100%", borderCollapse: "collapse", background: "white", borderRadius: 12 }}>
+        <div className="table-scroll" style={{ background: "white", borderRadius: 12, boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 480 }}>
           <thead>
             <tr>
               <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>{t.name}</th>
@@ -142,6 +143,7 @@ export default function Cari() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </DashboardLayout>
   );

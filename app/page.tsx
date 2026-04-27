@@ -97,7 +97,7 @@ export default function AnaSayfa() {
           )}
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 32 }}>
+        <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 32 }}>
           <div style={{ background: "white", padding: 24, borderRadius: 12, boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
             <p style={{ color: "#888", fontSize: 13, marginBottom: 8 }}>{t.totalCustomers}</p>
             <p style={{ fontSize: 28, fontWeight: "bold" }}>{fmt(toplamCari)}</p>
@@ -118,7 +118,7 @@ export default function AnaSayfa() {
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+        <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
           <a href="/cari" style={{ background: "white", padding: 24, borderRadius: 12, boxShadow: "0 1px 4px rgba(0,0,0,0.08)", textDecoration: "none", color: "inherit" }}>
             <h2 style={{ fontSize: 18, fontWeight: "bold", marginBottom: 8 }}>{t.menuCari}</h2>
             <p style={{ color: "#888", fontSize: 13 }}>{t.customerDesc}</p>

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -37,7 +37,8 @@ interface DashboardLayoutProps {
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
@@ -46,6 +47,18 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const router = useRouter();
   const { t } = useLang();
   const { mode, theme } = useMode();
+
+  // Detect mobile and set sidebar default
+  useEffect(() => {
+    const check = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      setSidebarOpen(!mobile);
+    };
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   const menuItems = [
     { label: t.menuHome, path: "/", icon: Home },
@@ -87,6 +100,25 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     router.push("/login");
   };
 
+  // Close sidebar on mobile after navigation
+  const handleNavClick = useCallback(() => {
+    if (isMobile) setSidebarOpen(false);
+  }, [isMobile]);
+
+  const navLinkStyle = (active: boolean) => ({
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    padding: "10px 12px",
+    borderRadius: 8,
+    marginBottom: 4,
+    background: active ? theme.primary : "transparent",
+    color: theme.sidebarText,
+    textDecoration: "none",
+    fontSize: 14,
+    whiteSpace: "nowrap" as const,
+  });
+
   if (!authChecked) {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "#f5f5f5" }}>
@@ -96,17 +128,43 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   return (
-    <div style={{ display: "flex", height: "100vh", background: "#f5f5f5" }}>
+    <div style={{ display: "flex", height: "100vh", background: "#f5f5f5", position: "relative" }}>
+
+      {/* ── Mobile backdrop ── */}
+      {isMobile && sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)",
+            zIndex: 40,
+          }}
+        />
+      )}
+
       {/* ── Sidebar ── */}
       <div style={{
-        width: sidebarOpen ? 240 : 0,
+        width: 240,
         background: theme.sidebar,
         color: theme.sidebarText,
         display: "flex",
         flexDirection: "column",
-        transition: "width 0.3s",
-        overflow: "hidden",
         flexShrink: 0,
+        // Mobile: fixed overlay; Desktop: static
+        ...(isMobile ? {
+          position: "fixed",
+          top: 0,
+          left: 0,
+          height: "100vh",
+          zIndex: 50,
+          transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)",
+          transition: "transform 0.28s ease",
+        } : {
+          position: "relative",
+          transform: sidebarOpen ? "translateX(0)" : "translateX(-240px)",
+          marginLeft: sidebarOpen ? 0 : -240,
+          transition: "transform 0.28s ease, margin-left 0.28s ease",
+          overflow: "hidden",
+        }),
       }}>
         <div style={{ padding: "20px 16px", borderBottom: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ fontSize: 22 }}>{theme.logoEmoji}</span>
@@ -117,19 +175,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             const Icon = item.icon;
             const isActive = pathname === item.path;
             return (
-              <Link key={item.path} href={item.path} style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                padding: "10px 12px",
-                borderRadius: 8,
-                marginBottom: 4,
-                background: isActive ? theme.primary : "transparent",
-                color: theme.sidebarText,
-                textDecoration: "none",
-                fontSize: 14,
-                whiteSpace: "nowrap",
-              }}>
+              <Link key={item.path} href={item.path} onClick={handleNavClick} style={navLinkStyle(isActive)}>
                 <Icon size={18} />
                 {item.label}
               </Link>
@@ -137,30 +183,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           })}
           {mode === "marine" && (
             <>
-              <Link href="/marine/tekne" style={{
-                display: "flex", alignItems: "center", gap: 12,
-                padding: "10px 12px", borderRadius: 8, marginBottom: 4,
-                background: pathname.startsWith("/marine/tekne") ? theme.primary : "transparent",
-                color: theme.sidebarText, textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
-              }}>
+              <Link href="/marine/tekne" onClick={handleNavClick} style={navLinkStyle(pathname.startsWith("/marine/tekne"))}>
                 <Anchor size={18} />
                 Tekne Kartları
               </Link>
-              <Link href="/marine/bakim" style={{
-                display: "flex", alignItems: "center", gap: 12,
-                padding: "10px 12px", borderRadius: 8, marginBottom: 4,
-                background: pathname.startsWith("/marine/bakim") ? theme.primary : "transparent",
-                color: theme.sidebarText, textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
-              }}>
+              <Link href="/marine/bakim" onClick={handleNavClick} style={navLinkStyle(pathname.startsWith("/marine/bakim"))}>
                 <Wrench size={18} />
                 Bakım Kayıtları
               </Link>
-              <Link href="/marine/parca" style={{
-                display: "flex", alignItems: "center", gap: 12,
-                padding: "10px 12px", borderRadius: 8, marginBottom: 4,
-                background: pathname.startsWith("/marine/parca") ? theme.primary : "transparent",
-                color: theme.sidebarText, textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
-              }}>
+              <Link href="/marine/parca" onClick={handleNavClick} style={navLinkStyle(pathname.startsWith("/marine/parca"))}>
                 <Layers size={18} />
                 Parça Stokları
               </Link>
@@ -168,57 +199,27 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           )}
           {mode === "vet" && (
             <>
-              <Link href="/vet/hastalar" style={{
-                display: "flex", alignItems: "center", gap: 12,
-                padding: "10px 12px", borderRadius: 8, marginBottom: 4,
-                background: pathname.startsWith("/vet/hastalar") ? theme.primary : "transparent",
-                color: theme.sidebarText, textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
-              }}>
+              <Link href="/vet/hastalar" onClick={handleNavClick} style={navLinkStyle(pathname.startsWith("/vet/hastalar"))}>
                 <Stethoscope size={18} />
                 Hasta Kartları
               </Link>
-              <Link href="/vet/muayene" style={{
-                display: "flex", alignItems: "center", gap: 12,
-                padding: "10px 12px", borderRadius: 8, marginBottom: 4,
-                background: pathname.startsWith("/vet/muayene") ? theme.primary : "transparent",
-                color: theme.sidebarText, textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
-              }}>
+              <Link href="/vet/muayene" onClick={handleNavClick} style={navLinkStyle(pathname.startsWith("/vet/muayene"))}>
                 <ClipboardList size={18} />
                 Muayeneler
               </Link>
-              <Link href="/vet/asi" style={{
-                display: "flex", alignItems: "center", gap: 12,
-                padding: "10px 12px", borderRadius: 8, marginBottom: 4,
-                background: pathname.startsWith("/vet/asi") ? theme.primary : "transparent",
-                color: theme.sidebarText, textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
-              }}>
+              <Link href="/vet/asi" onClick={handleNavClick} style={navLinkStyle(pathname.startsWith("/vet/asi"))}>
                 <Syringe size={18} />
                 Aşı Takvimi
               </Link>
-              <Link href="/vet/stok" style={{
-                display: "flex", alignItems: "center", gap: 12,
-                padding: "10px 12px", borderRadius: 8, marginBottom: 4,
-                background: pathname.startsWith("/vet/stok") ? theme.primary : "transparent",
-                color: theme.sidebarText, textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
-              }}>
+              <Link href="/vet/stok" onClick={handleNavClick} style={navLinkStyle(pathname.startsWith("/vet/stok"))}>
                 <Pill size={18} />
                 İlaç Stoku
               </Link>
-              <Link href="/vet/fatura" style={{
-                display: "flex", alignItems: "center", gap: 12,
-                padding: "10px 12px", borderRadius: 8, marginBottom: 4,
-                background: pathname.startsWith("/vet/fatura") ? theme.primary : "transparent",
-                color: theme.sidebarText, textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
-              }}>
+              <Link href="/vet/fatura" onClick={handleNavClick} style={navLinkStyle(pathname.startsWith("/vet/fatura"))}>
                 <Receipt size={18} />
                 Faturalar
               </Link>
-              <Link href="/vet/mesajlar" style={{
-                display: "flex", alignItems: "center", gap: 12,
-                padding: "10px 12px", borderRadius: 8, marginBottom: 4,
-                background: pathname.startsWith("/vet/mesajlar") ? theme.primary : "transparent",
-                color: theme.sidebarText, textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
-              }}>
+              <Link href="/vet/mesajlar" onClick={handleNavClick} style={navLinkStyle(pathname.startsWith("/vet/mesajlar"))}>
                 <MessageCircle size={18} />
                 Mesaj Merkezi
               </Link>
@@ -226,44 +227,28 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           )}
           {mode === "pet" && (
             <>
-              <Link href="/pet/kart" style={{
-                display: "flex", alignItems: "center", gap: 12,
-                padding: "10px 12px", borderRadius: 8, marginBottom: 4,
-                background: pathname.startsWith("/pet/kart") ? theme.primary : "transparent",
-                color: theme.sidebarText, textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
-              }}>
+              <Link href="/pet/kart" onClick={handleNavClick} style={navLinkStyle(pathname.startsWith("/pet/kart"))}>
                 <PawPrint size={18} />
                 Pet Kartları
               </Link>
-              <Link href="/pet/skt" style={{
-                display: "flex", alignItems: "center", gap: 12,
-                padding: "10px 12px", borderRadius: 8, marginBottom: 4,
-                background: pathname === "/pet/skt" ? theme.primary : "transparent",
-                color: theme.sidebarText, textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
-              }}>
+              <Link href="/pet/skt" onClick={handleNavClick} style={navLinkStyle(pathname === "/pet/skt")}>
                 <AlertTriangle size={18} />
                 SKT Takibi
               </Link>
             </>
           )}
           {hasBranches && (
-            <Link href="/subeler" style={{
-              display: "flex", alignItems: "center", gap: 12,
-              padding: "10px 12px", borderRadius: 8, marginBottom: 4,
-              background: pathname === "/subeler" ? theme.primary : "transparent",
-              color: theme.sidebarText, textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
-            }}>
+            <Link href="/subeler" onClick={handleNavClick} style={navLinkStyle(pathname === "/subeler")}>
               <Building2 size={18} />
               {t.menuSubeler}
             </Link>
           )}
           {isSuperAdmin && (
-            <Link href="/admin" style={{
-              display: "flex", alignItems: "center", gap: 12,
-              padding: "10px 12px", borderRadius: 8, marginBottom: 4, marginTop: 8,
-              background: pathname === "/admin" ? theme.primary : `${theme.primary}26`,
-              color: theme.sidebarText, textDecoration: "none", fontSize: 14, whiteSpace: "nowrap",
+            <Link href="/admin" onClick={handleNavClick} style={{
+              ...navLinkStyle(pathname === "/admin"),
+              marginTop: 8,
               borderTop: "1px solid rgba(255,255,255,0.1)",
+              background: pathname === "/admin" ? theme.primary : `${theme.primary}26`,
             }}>
               <Settings size={18} />
               {t.menuAdmin}
@@ -300,7 +285,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* ── Main content ── */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>
         <Header sidebarOpen={sidebarOpen} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-        <div style={{ flex: 1, overflow: "auto", padding: 24 }}>
+        <div style={{ flex: 1, overflow: "auto", padding: "16px" }} className="main-content">
           {children}
         </div>
       </div>

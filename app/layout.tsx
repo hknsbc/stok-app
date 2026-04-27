@@ -25,6 +25,7 @@ export default async function RootLayout({
   return (
     <html lang="tr">
       <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
         {/* Inject theme CSS variables so any inline-style component can reference them */}
         <style>{`
           :root {

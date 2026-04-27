@@ -229,8 +229,8 @@ export default function Alislar() {
         )}
 
         {/* ── Alışlar Tablosu ── */}
-        <div style={{ background: "white", borderRadius: 12, boxShadow: "0 1px 4px rgba(0,0,0,0.08)", overflow: "hidden" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <div className="table-scroll" style={{ background: "white", borderRadius: 12, boxShadow: "0 1px 4px rgba(0,0,0,0.08)", overflow: "hidden" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 500 }}>
             <thead>
               <tr style={{ background: "#f9fafb" }}>
                 <th style={th}>{t.date}</th>
