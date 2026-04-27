@@ -335,11 +335,6 @@ export default function Abonelik() {
                   {plan.priceNote && (
                     <div style={{ fontSize: 13, color: "#888", marginTop: 3 }}>{plan.priceNote}</div>
                   )}
-                  {!plan.contactUs && mode === "pet" && plan.key === "pro" && (
-                    <div style={{ marginTop: 6, display: "inline-block", padding: "3px 10px", background: "#fef3c7", borderRadius: 12, fontSize: 12, fontWeight: 600, color: "#d97706" }}>
-                      KDV dahil değildir
-                    </div>
-                  )}
                 </div>
 
                 {/* Features */}
