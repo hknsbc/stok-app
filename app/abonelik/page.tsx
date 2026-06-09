@@ -335,24 +335,12 @@ export default function Abonelik() {
 
                 {/* Features */}
                 <ul style={{ listStyle: "none", padding: 0, margin: 0, marginBottom: 24, flex: 1 }}>
-                  {plan.features.map((f) => {
-                    const isSoon = plan.soonFeatures?.includes(f);
-                    return (
-                      <li key={f} style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 9, fontSize: 14, color: isSoon ? "#9ca3af" : "#374151" }}>
-                        <span style={{ color: isSoon ? "#d1d5db" : plan.color, fontWeight: "bold", fontSize: 15, flexShrink: 0, marginTop: 1 }}>✓</span>
-                        <span style={{ flex: 1 }}>{f}</span>
-                        {isSoon && (
-                          <span style={{
-                            fontSize: 10, fontWeight: 700, color: "#f97316",
-                            background: "#fff7ed", border: "1px solid #fed7aa",
-                            borderRadius: 4, padding: "1px 6px", flexShrink: 0, marginTop: 2,
-                          }}>
-                            Yakında
-                          </span>
-                        )}
-                      </li>
-                    );
-                  })}
+                  {plan.features.map((f) => (
+                    <li key={f} style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 9, fontSize: 14, color: "#374151" }}>
+                      <span style={{ color: plan.color, fontWeight: "bold", fontSize: 15, flexShrink: 0, marginTop: 1 }}>✓</span>
+                      {f}
+                    </li>
+                  ))}
                 </ul>
 
                 {/* CTA */}
