@@ -27,6 +27,8 @@ import {
   ClipboardList,
   Receipt,
   MessageCircle,
+  Wallet,
+  CalendarCheck,
 } from "lucide-react";
 import { useLang } from "@/lib/LangContext";
 import { useMode } from "@/lib/ModeContext";
@@ -234,6 +236,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               <Link href="/pet/skt" onClick={handleNavClick} style={navLinkStyle(pathname === "/pet/skt")}>
                 <AlertTriangle size={18} />
                 SKT Takibi
+              </Link>
+              <Link href="/pet/kasa" onClick={handleNavClick} style={navLinkStyle(pathname === "/pet/kasa")}>
+                <Wallet size={18} />
+                Kasa
+              </Link>
+              <Link href="/pet/gunsonu" onClick={handleNavClick} style={navLinkStyle(pathname === "/pet/gunsonu")}>
+                <CalendarCheck size={18} />
+                Gün Sonu
               </Link>
             </>
           )}
