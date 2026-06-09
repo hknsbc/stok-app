@@ -8,7 +8,7 @@ import { useMode } from "@/lib/ModeContext";
 export default function Login() {
   const router = useRouter();
   const { lang, setLang, t } = useLang();
-  const { theme } = useMode();
+  const { mode, theme } = useMode();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isRegister, setIsRegister] = useState(false);
@@ -36,6 +36,7 @@ export default function Login() {
 
     if (isRegister) {
       const isPro = selectedPlan === "profesyonel";
+      const isPetTrial = mode === "pet";
       const { data: signUpData, error } = await supabase.auth.signUp({
         email,
         password,
@@ -43,9 +44,12 @@ export default function Login() {
       });
       if (error) { setError(error.message); setLoading(false); return; }
       if (signUpData.user) {
+        const trialExpiry = new Date();
+        trialExpiry.setDate(trialExpiry.getDate() + 7);
         await supabase.from("profiles").update({
           plan: selectedPlan,
-          is_active: false,
+          is_active: isPetTrial ? true : false,
+          ...(isPetTrial ? { subscription_expires_at: trialExpiry.toISOString() } : {}),
         }).eq("id", signUpData.user.id);
         if (isPro) {
           const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", signUpData.user.id).single();
@@ -54,7 +58,9 @@ export default function Login() {
           }
         }
       }
-      alert(t.successRegister);
+      alert(isPetTrial
+        ? "7 günlük ücretsiz denemeniz başlatıldı! Hemen giriş yapabilirsiniz."
+        : t.successRegister);
       setLoading(false);
       return;
     }
@@ -148,7 +154,24 @@ export default function Login() {
                 style={{ padding: 12, border: "1px solid #e5e7eb", borderRadius: 8, fontSize: 14, outline: "none" }} />
             )}
 
-            {isRegister && !isForgotPassword && (
+            {isRegister && !isForgotPassword && mode === "pet" && (
+              <div style={{
+                background: "linear-gradient(135deg, #fff7ed, #fef3c7)",
+                border: "2px solid #f97316",
+                borderRadius: 12, padding: "14px 16px",
+                display: "flex", flexDirection: "column", gap: 6,
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 20 }}>🐾</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: "#c2410c" }}>7 Gün Ücretsiz Deneyin!</span>
+                </div>
+                <p style={{ margin: 0, fontSize: 12, color: "#92400e", lineHeight: 1.5 }}>
+                  Kayıt olun, hemen aktif olsun. Kredi kartı gerekmez. 7 gün boyunca tüm özellikleri ücretsiz kullanın.
+                </p>
+              </div>
+            )}
+
+            {isRegister && !isForgotPassword && mode !== "pet" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 <p style={{ margin: 0, fontSize: 12, color: "#888", fontWeight: 600 }}>{t.selectPlan}</p>
                 <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", border: `2px solid ${selectedPlan === "temel" ? "#6366f1" : "#e5e7eb"}`, borderRadius: 8, cursor: "pointer" }}>
@@ -169,8 +192,8 @@ export default function Login() {
             )}
 
             <button type="submit" disabled={loading}
-              style={{ padding: 12, background: "#1a1a2e", color: "white", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600, marginTop: 4 }}>
-              {loading ? t.loginLoading : isForgotPassword ? t.sendResetLink : isRegister ? t.signUp : t.signIn}
+              style={{ padding: 12, background: isRegister && mode === "pet" ? "#f97316" : "#1a1a2e", color: "white", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600, marginTop: 4 }}>
+              {loading ? t.loginLoading : isForgotPassword ? t.sendResetLink : isRegister ? (mode === "pet" ? "7 Gün Ücretsiz Başla →" : t.signUp) : t.signIn}
             </button>
           </form>
 

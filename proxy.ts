@@ -9,7 +9,7 @@ const DOMAIN_MODE_MAP: Record<string, AppMode> = {
   "marine.marssoft.com.tr": "marine",
 };
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const host = request.headers.get("host") ?? "";
   const hostname = host.split(":")[0];
 
