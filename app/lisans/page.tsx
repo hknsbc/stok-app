@@ -3,17 +3,26 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useLang } from "@/lib/LangContext";
+import { useMode } from "@/lib/ModeContext";
 
 type LicenseInfo = {
   plan: string | null;
   subscription_status: string | null;
   license_expires_at: string | null;
+  subscription_expires_at: string | null;
   email: string | null;
   tenant_id: string | null;
 };
 
+const PET_PLAN_NAMES: Record<string, string> = {
+  profesyonel: "Profesyonel Plan",
+  is: "İş Planı",
+  temel: "Deneme",
+};
+
 export default function Lisans() {
   const { t, lang } = useLang();
+  const { mode } = useMode();
   const [info, setInfo] = useState<LicenseInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -23,13 +32,14 @@ export default function Lisans() {
       if (!user) { setLoading(false); return; }
       const { data } = await supabase
         .from("profiles")
-        .select("plan, subscription_status, license_expires_at, tenant_id")
+        .select("plan, subscription_status, license_expires_at, subscription_expires_at, tenant_id")
         .eq("id", user.id)
         .single();
       setInfo({
         plan: data?.plan ?? null,
         subscription_status: data?.subscription_status ?? null,
         license_expires_at: data?.license_expires_at ?? null,
+        subscription_expires_at: data?.subscription_expires_at ?? null,
         email: user.email ?? null,
         tenant_id: data?.tenant_id ?? null,
       });
@@ -84,7 +94,9 @@ export default function Lisans() {
                 <div style={{ background: "#f9fafb", padding: 16, borderRadius: 10 }}>
                   <p style={{ color: "#888", fontSize: 12, margin: "0 0 4px" }}>{t.planLabel}</p>
                   <p style={{ fontWeight: "bold", margin: 0, textTransform: "capitalize" }}>
-                    {info?.plan ?? t.temelPlanName}
+                    {mode === "pet"
+                      ? (PET_PLAN_NAMES[info?.plan ?? ""] ?? "Deneme")
+                      : (info?.plan ?? t.temelPlanName)}
                   </p>
                 </div>
                 <div style={{ background: "#f9fafb", padding: 16, borderRadius: 10 }}>
@@ -96,9 +108,18 @@ export default function Lisans() {
                 <div style={{ background: "#f9fafb", padding: 16, borderRadius: 10 }}>
                   <p style={{ color: "#888", fontSize: 12, margin: "0 0 4px" }}>{t.validUntil}</p>
                   <p style={{ fontWeight: "bold", margin: 0 }}>
-                    {info?.license_expires_at
-                      ? new Date(info.license_expires_at).toLocaleDateString(locale)
-                      : t.unlimited}
+                    {(() => {
+                      const expiresAt = info?.subscription_expires_at ?? info?.license_expires_at;
+                      if (!expiresAt) return t.unlimited;
+                      const d = new Date(expiresAt);
+                      const isTrialSoon = mode === "pet" && (d.getTime() - Date.now()) < 3 * 24 * 60 * 60 * 1000;
+                      return (
+                        <span style={{ color: isTrialSoon ? "#ef4444" : "inherit" }}>
+                          {d.toLocaleDateString(locale)}
+                          {mode === "pet" && info?.plan === "temel" && " (Deneme)"}
+                        </span>
+                      );
+                    })()}
                   </p>
                 </div>
                 <div style={{ background: "#f9fafb", padding: 16, borderRadius: 10 }}>

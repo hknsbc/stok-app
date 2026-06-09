@@ -17,58 +17,54 @@ type Plan = {
   contactUs: boolean;
   popular: boolean;
   features: string[];
+  soonFeatures?: string[];
 };
 
 const PLANS: Record<AppMode, Plan[]> = {
   pet: [
     {
-      key: "pro",
-      name: "Pro",
+      key: "profesyonel",
+      name: "Profesyonel",
       color: "#f97316",
       price: "15.588 TL + KDV",
       priceNote: "yıllık · ~1.299 TL/ay",
       contactUs: false,
       popular: false,
       features: [
-        "Sınırsız pet kartı",
-        "SKT takibi",
-        "WhatsApp otomatik hatırlatma",
-        "Müşteri sadakat kartı",
+        "Cari yönetimi",
         "Ürün & stok yönetimi",
-        "Satış & alış kayıtları",
-        "Mobil uyumlu panel",
+        "Alışlar & satışlar",
+        "Pet Kartları",
+        "SKT takibi",
+        "Temel raporlar",
+        "Barkod okutma",
         "1 kullanıcı",
+        "Kasa / gün sonu raporu",
+        "WhatsApp bildirimi",
       ],
+      soonFeatures: ["Kasa / gün sonu raporu", "WhatsApp bildirimi"],
     },
     {
-      key: "business",
-      name: "Business",
+      key: "is",
+      name: "İş Planı",
       color: "#10b981",
       price: "Fiyat Alınız",
       contactUs: true,
       popular: true,
       features: [
-        "Pro plan dahil",
-        "Çoklu kullanıcı",
-        "Zincir mağaza yönetimi",
-        "Gelişmiş raporlar & analizler",
-        "Özel WhatsApp kampanyaları",
-        "Öncelikli destek",
+        "Profesyonel plan dahil",
+        "Çoklu şube yönetimi",
+        "Şubeler arası stok transferi",
+        "Merkezi raporlama",
+        "Kullanıcı yetkilendirme (kasiyer/müdür/sahip)",
+        "Hedef / performans takibi",
       ],
-    },
-    {
-      key: "enterprise",
-      name: "Enterprise",
-      color: "#8b5cf6",
-      price: "Fiyat Alınız",
-      contactUs: true,
-      popular: false,
-      features: [
-        "Business plan dahil",
-        "Özel modüller",
-        "Özel entegrasyonlar",
-        "Eğitim + onboarding",
-        "SLA garantisi",
+      soonFeatures: [
+        "Çoklu şube yönetimi",
+        "Şubeler arası stok transferi",
+        "Merkezi raporlama",
+        "Kullanıcı yetkilendirme (kasiyer/müdür/sahip)",
+        "Hedef / performans takibi",
       ],
     },
   ],
@@ -292,7 +288,7 @@ export default function Abonelik() {
         </div>
 
         {/* Plan cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className={mode === "pet" ? "grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl" : "grid grid-cols-1 md:grid-cols-3 gap-6"}>
           {plans.map((plan) => {
             const isCurrent = currentPlan === plan.key;
             return (
@@ -339,12 +335,24 @@ export default function Abonelik() {
 
                 {/* Features */}
                 <ul style={{ listStyle: "none", padding: 0, margin: 0, marginBottom: 24, flex: 1 }}>
-                  {plan.features.map((f) => (
-                    <li key={f} style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 9, fontSize: 14, color: "#374151" }}>
-                      <span style={{ color: plan.color, fontWeight: "bold", fontSize: 15, flexShrink: 0, marginTop: 1 }}>✓</span>
-                      {f}
-                    </li>
-                  ))}
+                  {plan.features.map((f) => {
+                    const isSoon = plan.soonFeatures?.includes(f);
+                    return (
+                      <li key={f} style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 9, fontSize: 14, color: isSoon ? "#9ca3af" : "#374151" }}>
+                        <span style={{ color: isSoon ? "#d1d5db" : plan.color, fontWeight: "bold", fontSize: 15, flexShrink: 0, marginTop: 1 }}>✓</span>
+                        <span style={{ flex: 1 }}>{f}</span>
+                        {isSoon && (
+                          <span style={{
+                            fontSize: 10, fontWeight: 700, color: "#f97316",
+                            background: "#fff7ed", border: "1px solid #fed7aa",
+                            borderRadius: 4, padding: "1px 6px", flexShrink: 0, marginTop: 2,
+                          }}>
+                            Yakında
+                          </span>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
 
                 {/* CTA */}
