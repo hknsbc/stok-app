@@ -58,9 +58,14 @@ export default function Login() {
           }
         }
       }
-      alert(isPetTrial
-        ? "7 günlük ücretsiz denemeniz başlatıldı! Hemen giriş yapabilirsiniz."
-        : t.successRegister);
+      if (isPetTrial) {
+        const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
+        if (!signInErr && signInData.user) {
+          router.push("/");
+          return;
+        }
+      }
+      alert(t.successRegister);
       setLoading(false);
       return;
     }
