@@ -3,8 +3,26 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useLang } from "@/lib/LangContext";
+import { useMode } from "@/lib/ModeContext";
+import PetLandingPage from "@/components/pet/PetLandingPage";
 
-export default function AnaSayfa() {
+export default function Page() {
+  const { mode } = useMode();
+  const [authState, setAuthState] = useState<"loading" | "authed" | "guest">("loading");
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setAuthState(user ? "authed" : "guest");
+    });
+  }, []);
+
+  if (mode === "pet" && authState === "guest") return <PetLandingPage />;
+  if (mode === "pet" && authState === "loading") return <div style={{ minHeight: "100vh", background: "#F8FAFC" }} />;
+
+  return <AnaSayfa />;
+}
+
+function AnaSayfa() {
   const { t, lang } = useLang();
   const [toplamCari, setToplamCari] = useState<number | null>(null);
   const [stokDegeri, setStokDegeri] = useState<number | null>(null);
