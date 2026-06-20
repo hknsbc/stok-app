@@ -11,6 +11,9 @@ const NAVY = "#1E3A8A";
 const RED   = "#EF4444";
 const ORANGE = "#F97316";
 const BG    = "#F8FAFC";
+const VET_DEEP  = "#0C4A6E";
+const VET_BLUE  = "#0EA5E9";
+const VET_GREEN = "#10B981";
 
 // ── Inline SVGs (reused from PetLandingPage, kept self-contained) ───────────
 function PawPrint({ size = 28, color = NAVY, opacity = 1 }: { size?: number; color?: string; opacity?: number }) {
@@ -121,6 +124,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
 
   const isPet = mode === "pet";
+  const isVet = mode === "vet";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,7 +144,7 @@ export default function Login() {
 
     if (isRegister) {
       const isPro = selectedPlan === "profesyonel";
-      const isPetTrial = isPet;
+      const isPetTrial = isPet || isVet;
       const { data: signUpData, error } = await supabase.auth.signUp({
         email,
         password,
@@ -280,7 +284,104 @@ export default function Login() {
     </div>
   );
 
-  // ── DEFAULT LEFT PANEL (non-pet) ─────────────────────────────────────────
+  // ── VET LEFT PANEL ───────────────────────────────────────────────────────
+  const VetLeftPanel = () => (
+    <div style={{
+      flex: 1,
+      background: `linear-gradient(145deg, ${VET_DEEP} 0%, #0A3D5C 60%, #072B42 100%)`,
+      display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center",
+      padding: "48px 40px", position: "relative", overflow: "hidden",
+    }}>
+      {/* Medical cross pattern */}
+      <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} aria-hidden>
+        <defs>
+          <pattern id="vetLoginPat" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
+            <g opacity={0.07} fill="white">
+              <rect x="34" y="26" width="12" height="28" rx="3"/>
+              <rect x="26" y="34" width="28" height="12" rx="3"/>
+            </g>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#vetLoginPat)" />
+      </svg>
+
+      <Link href="/" style={{ position: "absolute", top: 24, left: 24, display: "flex", alignItems: "center", gap: 6, color: "rgba(255,255,255,0.65)", textDecoration: "none", fontSize: 13, fontWeight: 500, zIndex: 2 }}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        Ana Sayfa
+      </Link>
+
+      <div style={{ position: "relative", zIndex: 1, textAlign: "center", width: "100%" }}>
+        {/* Logo */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 28 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: VET_BLUE, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/>
+              <path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/>
+              <circle cx="20" cy="10" r="2"/>
+            </svg>
+          </div>
+          <span style={{ fontSize: 26, fontWeight: 900, color: "white", letterSpacing: "-0.5px" }}>
+            Vet<span style={{ color: VET_BLUE }}>Panel</span>
+          </span>
+        </div>
+
+        <h2 style={{ fontSize: 26, fontWeight: 800, color: "white", lineHeight: 1.3, marginBottom: 10 }}>
+          Veteriner Kliniğinizi<br />
+          <span style={{ color: VET_BLUE }}>Kolayca Yönetin</span>
+        </h2>
+        <p style={{ fontSize: 14, color: "rgba(255,255,255,0.65)", maxWidth: 300, margin: "0 auto 32px", lineHeight: 1.6 }}>
+          Hasta kayıtları, aşı takvimi, ilaç stoku ve faturalamanızı tek yerden kontrol edin.
+        </p>
+
+        {/* Large stethoscope illustration */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 32 }}>
+          <svg viewBox="0 0 200 180" fill="none" style={{ width: 200, filter: "drop-shadow(0 12px 32px rgba(0,0,0,0.3))" }}>
+            {/* Stethoscope tube */}
+            <path d="M40 30 Q40 80 80 90 Q120 100 130 140" stroke={VET_BLUE} strokeWidth="8" strokeLinecap="round" fill="none"/>
+            <path d="M100 30 Q100 80 80 90" stroke={VET_BLUE} strokeWidth="8" strokeLinecap="round" fill="none"/>
+            {/* Ear pieces */}
+            <circle cx="40" cy="24" r="10" fill={VET_BLUE}/>
+            <circle cx="100" cy="24" r="10" fill={VET_BLUE}/>
+            <circle cx="40" cy="24" r="5" fill="white" opacity="0.4"/>
+            <circle cx="100" cy="24" r="5" fill="white" opacity="0.4"/>
+            {/* Head */}
+            <circle cx="130" cy="150" r="22" fill="white" opacity="0.15" stroke={VET_BLUE} strokeWidth="3"/>
+            <circle cx="130" cy="150" r="14" fill={VET_BLUE}/>
+            <circle cx="125" cy="145" r="4" fill="white" opacity="0.4"/>
+            {/* Cat sitting next to stethoscope */}
+            <ellipse cx="55" cy="155" rx="28" ry="22" fill={ORANGE}/>
+            <circle cx="55" cy="120" r="22" fill={ORANGE}/>
+            <polygon points="38,106 30,84 50,103" fill={ORANGE}/>
+            <polygon points="39,104 33,88 48,101" fill="#FCA5A5"/>
+            <polygon points="72,106 80,84 60,103" fill={ORANGE}/>
+            <polygon points="71,104 77,88 62,101" fill="#FCA5A5"/>
+            <ellipse cx="48" cy="118" rx="7" ry="8" fill="white"/>
+            <ellipse cx="62" cy="118" rx="7" ry="8" fill="white"/>
+            <circle cx="49" cy="119" r="4" fill={VET_BLUE}/>
+            <circle cx="63" cy="119" r="4" fill={VET_BLUE}/>
+            <circle cx="49" cy="119" r="2" fill="#111"/>
+            <circle cx="63" cy="119" r="2" fill="#111"/>
+            <path d="M51,130 L55,135 L59,130 Z" fill="#EC4899"/>
+          </svg>
+        </div>
+
+        <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+          {[{ icon: "🐾", label: "Hasta Kartları" }, { icon: "💉", label: "Aşı Takvimi" }, { icon: "📋", label: "Reçete & Fatura" }].map((f) => (
+            <div key={f.label} style={{ background: "rgba(255,255,255,0.12)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 20, padding: "6px 14px", display: "flex", alignItems: "center", gap: 6, color: "white", fontSize: 13, fontWeight: 500 }}>
+              <span>{f.icon}</span> {f.label}
+            </div>
+          ))}
+        </div>
+
+        <div style={{ marginTop: 24, display: "inline-flex", alignItems: "center", gap: 8, background: `${VET_GREEN}25`, border: `1px solid ${VET_GREEN}60`, borderRadius: 12, padding: "10px 20px" }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={VET_GREEN} strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <span style={{ fontSize: 13, color: VET_GREEN, fontWeight: 700 }}>7 gün ücretsiz · Kredi kartı gerekmez</span>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── DEFAULT LEFT PANEL (non-pet, non-vet) ────────────────────────────────
   const DefaultLeftPanel = () => (
     <div style={{
       flex: 1,
@@ -305,21 +406,22 @@ export default function Login() {
   );
 
   // ── FORM PANEL ───────────────────────────────────────────────────────────
-  const accentColor = isPet ? ORANGE : "#1a1a2e";
-  const accentLink  = isPet ? ORANGE : "#6366f1";
+  const accentColor = isPet ? ORANGE : isVet ? VET_DEEP : "#1a1a2e";
+  const accentLink  = isPet ? ORANGE : isVet ? VET_BLUE : "#6366f1";
+  const pageBg      = isPet ? BG : isVet ? "#F0F9FF" : "#f0f4ff";
 
   return (
-    <div style={{ display: "flex", height: "100vh", background: isPet ? BG : "#f0f4ff" }}>
+    <div style={{ display: "flex", height: "100vh", background: pageBg }}>
 
       {/* Left */}
-      {isPet ? <PetLeftPanel /> : <DefaultLeftPanel />}
+      {isPet ? <PetLeftPanel /> : isVet ? <VetLeftPanel /> : <DefaultLeftPanel />}
 
       {/* Right: Form */}
       <div style={{
         width: 480, display: "flex", justifyContent: "center", alignItems: "center",
         padding: 48,
-        background: isPet ? "white" : "white",
-        borderLeft: isPet ? `1px solid #E2E8F0` : "none",
+        background: "white",
+        borderLeft: (isPet || isVet) ? `1px solid #E2E8F0` : "none",
       }}>
         <div style={{ width: "100%", maxWidth: 360 }}>
 
@@ -338,14 +440,27 @@ export default function Login() {
                   Pet<span style={{ color: ORANGE }}>Panel</span>
                 </span>
               </div>
+            ) : isVet ? (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 6 }}>
+                <div style={{ width: 28, height: 28, borderRadius: 7, background: VET_DEEP, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/>
+                    <path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/>
+                    <circle cx="20" cy="10" r="2"/>
+                  </svg>
+                </div>
+                <span style={{ fontSize: 22, fontWeight: 900, color: VET_DEEP, letterSpacing: "-0.5px" }}>
+                  Vet<span style={{ color: VET_BLUE }}>Panel</span>
+                </span>
+              </div>
             ) : (
               <div style={{ fontSize: 36, marginBottom: 8 }}>{theme.logoEmoji}</div>
             )}
-            {!isPet && <h1 style={{ fontSize: 24, fontWeight: "bold", color: "#1a1a2e" }}>{theme.appTitle}</h1>}
+            {!isPet && !isVet && <h1 style={{ fontSize: 24, fontWeight: "bold", color: "#1a1a2e" }}>{theme.appTitle}</h1>}
             <p style={{ fontSize: 13, color: "#9CA3AF", marginTop: 4 }}>{t.loginSubtitle}</p>
           </div>
 
-          <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20, color: NAVY }}>
+          <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20, color: isPet ? NAVY : isVet ? VET_DEEP : "#1a1a2e" }}>
             {isForgotPassword ? t.forgotPasswordTitle : isRegister ? t.signUp : t.signIn}
           </h2>
 
@@ -376,22 +491,32 @@ export default function Login() {
 
             {/* Pet trial banner */}
             {isRegister && !isForgotPassword && isPet && (
-              <div style={{
-                background: "linear-gradient(135deg, #FFF7ED, #FEF3C7)",
-                border: `2px solid ${ORANGE}`, borderRadius: 12, padding: "14px 16px",
-              }}>
+              <div style={{ background: "linear-gradient(135deg, #FFF7ED, #FEF3C7)", border: `2px solid ${ORANGE}`, borderRadius: 12, padding: "14px 16px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                   <PawPrint size={18} color={ORANGE} />
                   <span style={{ fontSize: 14, fontWeight: 700, color: "#C2410C" }}>7 Gün Ücretsiz Deneyin!</span>
                 </div>
-                <p style={{ margin: 0, fontSize: 12, color: "#92400E", lineHeight: 1.5 }}>
-                  Kayıt olun, hemen aktif olsun. Kredi kartı gerekmez.
-                </p>
+                <p style={{ margin: 0, fontSize: 12, color: "#92400E", lineHeight: 1.5 }}>Kayıt olun, hemen aktif olsun. Kredi kartı gerekmez.</p>
               </div>
             )}
 
-            {/* Non-pet plan selector */}
-            {isRegister && !isForgotPassword && !isPet && (
+            {/* Vet trial banner */}
+            {isRegister && !isForgotPassword && isVet && (
+              <div style={{ background: "linear-gradient(135deg, #E0F2FE, #EDE9FE)", border: `2px solid ${VET_BLUE}`, borderRadius: 12, padding: "14px 16px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={VET_BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/>
+                    <path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/>
+                    <circle cx="20" cy="10" r="2"/>
+                  </svg>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: VET_DEEP }}>7 Gün Ücretsiz Deneyin!</span>
+                </div>
+                <p style={{ margin: 0, fontSize: 12, color: "#0369A1", lineHeight: 1.5 }}>Kayıt olun, hemen aktif olsun. Kredi kartı gerekmez.</p>
+              </div>
+            )}
+
+            {/* Non-pet/vet plan selector */}
+            {isRegister && !isForgotPassword && !isPet && !isVet && (
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 <p style={{ margin: 0, fontSize: 12, color: "#888", fontWeight: 600 }}>{t.selectPlan}</p>
                 <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", border: `2px solid ${selectedPlan === "temel" ? "#6366f1" : "#e5e7eb"}`, borderRadius: 8, cursor: "pointer" }}>
@@ -415,11 +540,19 @@ export default function Login() {
               type="submit" disabled={loading}
               style={{
                 padding: "13px 0",
-                background: isRegister && isPet ? ORANGE : (isPet ? NAVY : "#1a1a2e"),
+                background: isPet
+                  ? (isRegister ? ORANGE : NAVY)
+                  : isVet
+                    ? (isRegister ? VET_BLUE : VET_DEEP)
+                    : "#1a1a2e",
                 color: "white", borderRadius: 8, border: "none", cursor: loading ? "not-allowed" : "pointer",
                 fontSize: 15, fontWeight: 700, marginTop: 4,
                 opacity: loading ? 0.7 : 1,
-                boxShadow: isPet ? `0 4px 14px ${isRegister ? ORANGE : NAVY}40` : "none",
+                boxShadow: isPet
+                  ? `0 4px 14px ${isRegister ? ORANGE : NAVY}40`
+                  : isVet
+                    ? `0 4px 14px ${isRegister ? VET_BLUE : VET_DEEP}40`
+                    : "none",
               }}
             >
               {loading
@@ -427,7 +560,7 @@ export default function Login() {
                 : isForgotPassword
                   ? t.sendResetLink
                   : isRegister
-                    ? (isPet ? "7 Gün Ücretsiz Başla →" : t.signUp)
+                    ? ((isPet || isVet) ? "7 Gün Ücretsiz Başla →" : t.signUp)
                     : t.signIn}
             </button>
           </form>

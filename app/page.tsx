@@ -5,6 +5,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { useLang } from "@/lib/LangContext";
 import { useMode } from "@/lib/ModeContext";
 import PetLandingPage from "@/components/pet/PetLandingPage";
+import VetLandingPage from "@/components/vet/VetLandingPage";
 
 export default function Page() {
   const { mode } = useMode();
@@ -18,6 +19,9 @@ export default function Page() {
 
   if (mode === "pet" && authState === "guest") return <PetLandingPage />;
   if (mode === "pet" && authState === "loading") return <div style={{ minHeight: "100vh", background: "#F8FAFC" }} />;
+
+  if (mode === "vet" && authState === "guest") return <VetLandingPage />;
+  if (mode === "vet" && authState === "loading") return <div style={{ minHeight: "100vh", background: "#F0F9FF" }} />;
 
   return <AnaSayfa />;
 }
