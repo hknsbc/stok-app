@@ -17,6 +17,9 @@ const VET_GREEN = "#10B981";
 const STOK_INDIGO = "#6366F1";
 const STOK_DARK   = "#1E1B4B";
 const STOK_GREEN  = "#10B981";
+const MARINE_CYAN = "#06B6D4";
+const MARINE_DEEP = "#0C2340";
+const MARINE_TEAL = "#0E7490";
 
 // ── Inline SVGs (reused from PetLandingPage, kept self-contained) ───────────
 function PawPrint({ size = 28, color = NAVY, opacity = 1 }: { size?: number; color?: string; opacity?: number }) {
@@ -126,9 +129,10 @@ export default function Login() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const isPet  = mode === "pet";
-  const isVet  = mode === "vet";
-  const isStok = mode === "stok";
+  const isPet    = mode === "pet";
+  const isVet    = mode === "vet";
+  const isStok   = mode === "stok";
+  const isMarine = mode === "marine";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -482,6 +486,100 @@ export default function Login() {
     </div>
   );
 
+  // ── MARINE LEFT PANEL ────────────────────────────────────────────────────
+  const MarineLeftPanel = () => (
+    <div style={{
+      flex: 1,
+      background: `linear-gradient(145deg, ${MARINE_DEEP} 0%, #0A3D5C 60%, #072B42 100%)`,
+      display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center",
+      padding: "48px 40px", position: "relative", overflow: "hidden",
+    }}>
+      {/* Wave pattern */}
+      <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} aria-hidden>
+        <defs>
+          <pattern id="marineLoginWave" x="0" y="0" width="120" height="40" patternUnits="userSpaceOnUse">
+            <path d="M0 20 Q15 8 30 20 Q45 32 60 20 Q75 8 90 20 Q105 32 120 20" stroke={MARINE_CYAN} strokeWidth="1" fill="none" opacity="0.08"/>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#marineLoginWave)" />
+      </svg>
+
+      <Link href="/" style={{ position: "absolute", top: 24, left: 24, display: "flex", alignItems: "center", gap: 6, color: "rgba(255,255,255,0.65)", textDecoration: "none", fontSize: 13, fontWeight: 500, zIndex: 2 }}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        Ana Sayfa
+      </Link>
+
+      <div style={{ position: "relative", zIndex: 1, textAlign: "center", width: "100%" }}>
+        {/* Logo */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 28 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: MARINE_CYAN, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="5" r="3"/>
+              <line x1="12" y1="22" x2="12" y2="8"/>
+              <path d="M5 12H2a10 10 0 0 0 20 0h-3"/>
+            </svg>
+          </div>
+          <span style={{ fontSize: 26, fontWeight: 900, color: "white", letterSpacing: "-0.5px" }}>
+            Marine<span style={{ color: MARINE_CYAN }}>Panel</span>
+          </span>
+        </div>
+
+        <h2 style={{ fontSize: 26, fontWeight: 800, color: "white", lineHeight: 1.3, marginBottom: 10 }}>
+          Marina & Tekne<br />
+          <span style={{ color: MARINE_CYAN }}>Yönetimini Dijitalleştirin</span>
+        </h2>
+        <p style={{ fontSize: 14, color: "rgba(255,255,255,0.65)", maxWidth: 300, margin: "0 auto 32px", lineHeight: 1.6 }}>
+          Tekne kayıtları, periyodik bakım, parça stoku ve servis faturalamanız tek yerden.
+        </p>
+
+        {/* Boat illustration */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 32 }}>
+          <svg viewBox="0 0 240 160" fill="none" style={{ width: 220, filter: "drop-shadow(0 12px 32px rgba(0,0,0,0.4))" }}>
+            {/* Ocean */}
+            <path d="M0 118 Q30 110 60 118 Q90 126 120 118 Q150 110 180 118 Q210 126 240 118 L240 160 L0 160 Z" fill={MARINE_CYAN} opacity="0.2"/>
+            <path d="M0 130 Q40 122 80 130 Q120 138 160 130 Q200 122 240 130 L240 160 L0 160 Z" fill={MARINE_TEAL} opacity="0.4"/>
+            {/* Hull */}
+            <path d="M30 118 Q40 126 120 126 Q200 126 210 118 L195 104 L45 104 Z" fill="white"/>
+            <path d="M30 118 Q40 126 120 126 Q200 126 210 118 L195 104 L45 104 Z" stroke="#CBD5E1" strokeWidth="1.5" fill="none"/>
+            <path d="M45 115 Q120 122 195 115" stroke={MARINE_CYAN} strokeWidth="3.5" strokeLinecap="round"/>
+            {/* Cabin */}
+            <rect x="80" y="80" width="100" height="26" rx="5" fill={MARINE_DEEP}/>
+            {[90, 113, 145, 168].map((x, i) => (
+              <rect key={i} x={x} y="85" width="17" height="12" rx="2" fill={MARINE_CYAN} opacity="0.65"/>
+            ))}
+            {/* Mast */}
+            <rect x="119" y="22" width="3" height="82" rx="1.5" fill={MARINE_DEEP}/>
+            {/* Sails */}
+            <path d="M121 26 L195 82 L121 82 Z" fill="white" stroke="#CBD5E1" strokeWidth="0.8"/>
+            <path d="M121 44 L75 82 L121 82 Z" fill="white" stroke="#CBD5E1" strokeWidth="0.8"/>
+            {/* Flag */}
+            <path d="M122 22 L142 28 L122 34 Z" fill={MARINE_CYAN}/>
+            {/* Sun */}
+            <circle cx="34" cy="36" r="16" fill="#FDE68A" opacity="0.9"/>
+            {/* Seagulls */}
+            <path d="M170 26 Q174 22 178 26" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+            <path d="M185 14 Q190 10 195 14" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+            {/* Water reflection */}
+            <ellipse cx="120" cy="150" rx="80" ry="5" fill={MARINE_CYAN} opacity="0.12"/>
+          </svg>
+        </div>
+
+        <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+          {[{ icon: "⛵", label: "Tekne Kartı" }, { icon: "🔧", label: "Bakım Takibi" }, { icon: "🧾", label: "Servis & Fatura" }].map((f) => (
+            <div key={f.label} style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 20, padding: "6px 14px", display: "flex", alignItems: "center", gap: 6, color: "white", fontSize: 13, fontWeight: 500 }}>
+              <span>{f.icon}</span> {f.label}
+            </div>
+          ))}
+        </div>
+
+        <div style={{ marginTop: 24, display: "inline-flex", alignItems: "center", gap: 8, background: `${MARINE_CYAN}25`, border: `1px solid ${MARINE_CYAN}60`, borderRadius: 12, padding: "10px 20px" }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={MARINE_CYAN} strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <span style={{ fontSize: 13, color: MARINE_CYAN, fontWeight: 700 }}>14 gün ücretsiz · Kredi kartı gerekmez</span>
+        </div>
+      </div>
+    </div>
+  );
+
   // ── DEFAULT LEFT PANEL (non-pet, non-vet) ────────────────────────────────
   const DefaultLeftPanel = () => (
     <div style={{
@@ -507,22 +605,22 @@ export default function Login() {
   );
 
   // ── FORM PANEL ───────────────────────────────────────────────────────────
-  const accentColor = isPet ? ORANGE : isVet ? VET_DEEP : isStok ? STOK_DARK : "#1a1a2e";
-  const accentLink  = isPet ? ORANGE : isVet ? VET_BLUE : isStok ? STOK_INDIGO : "#6366f1";
-  const pageBg      = isPet ? BG : isVet ? "#F0F9FF" : isStok ? "#F5F3FF" : "#f0f4ff";
+  const accentColor = isPet ? ORANGE : isVet ? VET_DEEP : isStok ? STOK_DARK : isMarine ? MARINE_DEEP : "#1a1a2e";
+  const accentLink  = isPet ? ORANGE : isVet ? VET_BLUE : isStok ? STOK_INDIGO : isMarine ? MARINE_CYAN : "#6366f1";
+  const pageBg      = isPet ? BG : isVet ? "#F0F9FF" : isStok ? "#F5F3FF" : isMarine ? "#ECFEFF" : "#f0f4ff";
 
   return (
     <div style={{ display: "flex", height: "100vh", background: pageBg }}>
 
       {/* Left */}
-      {isPet ? <PetLeftPanel /> : isVet ? <VetLeftPanel /> : isStok ? <StokLeftPanel /> : <DefaultLeftPanel />}
+      {isPet ? <PetLeftPanel /> : isVet ? <VetLeftPanel /> : isStok ? <StokLeftPanel /> : isMarine ? <MarineLeftPanel /> : <DefaultLeftPanel />}
 
       {/* Right: Form */}
       <div style={{
         width: 480, display: "flex", justifyContent: "center", alignItems: "center",
         padding: 48,
         background: "white",
-        borderLeft: (isPet || isVet || isStok) ? `1px solid #E2E8F0` : "none",
+        borderLeft: (isPet || isVet || isStok || isMarine) ? `1px solid #E2E8F0` : "none",
       }}>
         <div style={{ width: "100%", maxWidth: 360 }}>
 
@@ -567,14 +665,27 @@ export default function Login() {
                   Stok<span style={{ color: STOK_INDIGO }}>Panel</span>
                 </span>
               </div>
+            ) : isMarine ? (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 6 }}>
+                <div style={{ width: 28, height: 28, borderRadius: 7, background: MARINE_DEEP, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={MARINE_CYAN} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="5" r="3"/>
+                    <line x1="12" y1="22" x2="12" y2="8"/>
+                    <path d="M5 12H2a10 10 0 0 0 20 0h-3"/>
+                  </svg>
+                </div>
+                <span style={{ fontSize: 22, fontWeight: 900, color: MARINE_DEEP, letterSpacing: "-0.5px" }}>
+                  Marine<span style={{ color: MARINE_CYAN }}>Panel</span>
+                </span>
+              </div>
             ) : (
               <div style={{ fontSize: 36, marginBottom: 8 }}>{theme.logoEmoji}</div>
             )}
-            {!isPet && !isVet && !isStok && <h1 style={{ fontSize: 24, fontWeight: "bold", color: "#1a1a2e" }}>{theme.appTitle}</h1>}
+            {!isPet && !isVet && !isStok && !isMarine && <h1 style={{ fontSize: 24, fontWeight: "bold", color: "#1a1a2e" }}>{theme.appTitle}</h1>}
             <p style={{ fontSize: 13, color: "#9CA3AF", marginTop: 4 }}>{t.loginSubtitle}</p>
           </div>
 
-          <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20, color: isPet ? NAVY : isVet ? VET_DEEP : isStok ? STOK_DARK : "#1a1a2e" }}>
+          <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20, color: isPet ? NAVY : isVet ? VET_DEEP : isStok ? STOK_DARK : isMarine ? MARINE_DEEP : "#1a1a2e" }}>
             {isForgotPassword ? t.forgotPasswordTitle : isRegister ? t.signUp : t.signIn}
           </h2>
 
@@ -660,7 +771,9 @@ export default function Login() {
                     ? (isRegister ? VET_BLUE : VET_DEEP)
                     : isStok
                       ? STOK_INDIGO
-                      : "#1a1a2e",
+                      : isMarine
+                        ? MARINE_CYAN
+                        : "#1a1a2e",
                 color: "white", borderRadius: 8, border: "none", cursor: loading ? "not-allowed" : "pointer",
                 fontSize: 15, fontWeight: 700, marginTop: 4,
                 opacity: loading ? 0.7 : 1,
@@ -670,7 +783,9 @@ export default function Login() {
                     ? `0 4px 14px ${isRegister ? VET_BLUE : VET_DEEP}40`
                     : isStok
                       ? `0 4px 14px ${STOK_INDIGO}40`
-                      : "none",
+                      : isMarine
+                        ? `0 4px 14px ${MARINE_CYAN}40`
+                        : "none",
               }}
             >
               {loading

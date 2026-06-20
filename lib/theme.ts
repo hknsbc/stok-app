@@ -52,9 +52,9 @@ export const themes: Record<AppMode, AppTheme> = {
     accent: "#0891b2",
     sidebar: "#0c2340",
     sidebarText: "#ffffff",
-    appName: "MarineApp",
-    appTitle: "Marine Bakım & Stok Sistemi",
-    panelTitle: "Marine Paneli",
+    appName: "MarinePanel",
+    appTitle: "MarinePanel - Marina & Tekne Yönetim Sistemi",
+    panelTitle: "MarinePanel",
     logoEmoji: "⚓",
   },
 };

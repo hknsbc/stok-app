@@ -7,6 +7,7 @@ import { useMode } from "@/lib/ModeContext";
 import PetLandingPage from "@/components/pet/PetLandingPage";
 import VetLandingPage from "@/components/vet/VetLandingPage";
 import StokLandingPage from "@/components/stok/StokLandingPage";
+import MarineLandingPage from "@/components/marine/MarineLandingPage";
 
 export default function Page() {
   const { mode } = useMode();
@@ -26,6 +27,9 @@ export default function Page() {
 
   if (mode === "stok" && authState === "guest") return <StokLandingPage />;
   if (mode === "stok" && authState === "loading") return <div style={{ minHeight: "100vh", background: "#F5F3FF" }} />;
+
+  if (mode === "marine" && authState === "guest") return <MarineLandingPage />;
+  if (mode === "marine" && authState === "loading") return <div style={{ minHeight: "100vh", background: "#F0F9FF" }} />;
 
   return <AnaSayfa />;
 }
