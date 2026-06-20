@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useLang } from "@/lib/LangContext";
 import { useMode } from "@/lib/ModeContext";
 
-// ── Pet branding colours ────────────────────────────────────────────────────
+// ── Branding colours ─────────────────────────────────────────────────────────
 const NAVY = "#1E3A8A";
 const RED   = "#EF4444";
 const ORANGE = "#F97316";
@@ -14,6 +14,9 @@ const BG    = "#F8FAFC";
 const VET_DEEP  = "#0C4A6E";
 const VET_BLUE  = "#0EA5E9";
 const VET_GREEN = "#10B981";
+const STOK_INDIGO = "#6366F1";
+const STOK_DARK   = "#1E1B4B";
+const STOK_GREEN  = "#10B981";
 
 // ── Inline SVGs (reused from PetLandingPage, kept self-contained) ───────────
 function PawPrint({ size = 28, color = NAVY, opacity = 1 }: { size?: number; color?: string; opacity?: number }) {
@@ -123,8 +126,9 @@ export default function Login() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const isPet = mode === "pet";
-  const isVet = mode === "vet";
+  const isPet  = mode === "pet";
+  const isVet  = mode === "vet";
+  const isStok = mode === "stok";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -381,6 +385,103 @@ export default function Login() {
     </div>
   );
 
+  // ── STOK LEFT PANEL ──────────────────────────────────────────────────────
+  const StokLeftPanel = () => (
+    <div style={{
+      flex: 1,
+      background: `linear-gradient(145deg, ${STOK_DARK} 0%, #2D2A6E 60%, #1E1B4B 100%)`,
+      display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center",
+      padding: "48px 40px", position: "relative", overflow: "hidden",
+    }}>
+      {/* Dot-grid pattern */}
+      <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} aria-hidden>
+        <defs>
+          <pattern id="stokLoginDot" x="0" y="0" width="28" height="28" patternUnits="userSpaceOnUse">
+            <circle cx="2" cy="2" r="1.5" fill="white" opacity="0.05"/>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#stokLoginDot)" />
+      </svg>
+
+      <Link href="/" style={{ position: "absolute", top: 24, left: 24, display: "flex", alignItems: "center", gap: 6, color: "rgba(255,255,255,0.65)", textDecoration: "none", fontSize: 13, fontWeight: 500, zIndex: 2 }}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        Ana Sayfa
+      </Link>
+
+      <div style={{ position: "relative", zIndex: 1, textAlign: "center", width: "100%" }}>
+        {/* Logo */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 28 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: STOK_INDIGO, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+              <line x1="12" y1="22.08" x2="12" y2="12"/>
+            </svg>
+          </div>
+          <span style={{ fontSize: 26, fontWeight: 900, color: "white", letterSpacing: "-0.5px" }}>
+            Stok<span style={{ color: STOK_INDIGO }}>Panel</span>
+          </span>
+        </div>
+
+        <h2 style={{ fontSize: 26, fontWeight: 800, color: "white", lineHeight: 1.3, marginBottom: 10 }}>
+          Stoğunuzu<br />
+          <span style={{ color: "#A5B4FC" }}>Tam Kontrol Altına Alın</span>
+        </h2>
+        <p style={{ fontSize: 14, color: "rgba(255,255,255,0.65)", maxWidth: 300, margin: "0 auto 32px", lineHeight: 1.6 }}>
+          Ürün girişinden satışa, alışlardan raporlamaya kadar tüm stok süreçleriniz tek panelde.
+        </p>
+
+        {/* Warehouse illustration */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 32 }}>
+          <svg viewBox="0 0 240 160" fill="none" style={{ width: 220, filter: "drop-shadow(0 12px 32px rgba(0,0,0,0.4))" }}>
+            {/* Shelf rails */}
+            <rect x="10" y="40" width="220" height="7" rx="3" fill="#A5B4FC" opacity="0.5"/>
+            <rect x="10" y="100" width="220" height="7" rx="3" fill="#A5B4FC" opacity="0.5"/>
+            <rect x="10" y="40" width="7" height="67" rx="3" fill="#818CF8" opacity="0.4"/>
+            <rect x="117" y="40" width="7" height="67" rx="3" fill="#818CF8" opacity="0.4"/>
+            <rect x="223" y="40" width="7" height="67" rx="3" fill="#818CF8" opacity="0.4"/>
+            {/* Top row boxes */}
+            <rect x="20" y="12" width="50" height="28" rx="5" fill={STOK_INDIGO}/>
+            <line x1="20" y1="26" x2="70" y2="26" stroke="white" strokeWidth="1" opacity="0.3"/>
+            <line x1="45" y1="12" x2="45" y2="40" stroke="white" strokeWidth="1" opacity="0.3"/>
+            <rect x="80" y="18" width="40" height="22" rx="5" fill="#818CF8"/>
+            <rect x="130" y="14" width="46" height="26" rx="5" fill="#4F46E5"/>
+            <line x1="153" y1="14" x2="153" y2="40" stroke="white" strokeWidth="1" opacity="0.3"/>
+            <rect x="185" y="18" width="38" height="22" rx="5" fill={STOK_INDIGO}/>
+            {/* Bottom row boxes */}
+            <rect x="20" y="72" width="60" height="28" rx="5" fill="#4F46E5"/>
+            <rect x="90" y="68" width="48" height="32" rx="5" fill={STOK_INDIGO}/>
+            <line x1="90" y1="84" x2="138" y2="84" stroke="white" strokeWidth="1" opacity="0.3"/>
+            <rect x="148" y="72" width="42" height="28" rx="5" fill="#818CF8"/>
+            <rect x="200" y="70" width="30" height="30" rx="5" fill="#4F46E5"/>
+            {/* Barcode on center box */}
+            <rect x="94" y="74" width="16" height="10" rx="1" fill="white" opacity="0.9"/>
+            {[96,98,100,102,104,106,108].map((x, i) => (
+              <line key={i} x1={x} y1="75" x2={x} y2="83" stroke={STOK_INDIGO} strokeWidth={i % 2 === 0 ? 1.2 : 0.8}/>
+            ))}
+            {/* Scanner beam */}
+            <line x1="88" y1="70" x2="140" y2="70" stroke={STOK_GREEN} strokeWidth="1.5" opacity="0.9" strokeDasharray="3 2"/>
+            {/* Glow */}
+            <ellipse cx="120" cy="150" rx="100" ry="10" fill={STOK_INDIGO} opacity="0.1"/>
+          </svg>
+        </div>
+
+        <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+          {[{ icon: "📦", label: "Stok Takip" }, { icon: "📊", label: "Raporlar" }, { icon: "🏷️", label: "Barkod Satış" }].map((f) => (
+            <div key={f.label} style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 20, padding: "6px 14px", display: "flex", alignItems: "center", gap: 6, color: "white", fontSize: 13, fontWeight: 500 }}>
+              <span>{f.icon}</span> {f.label}
+            </div>
+          ))}
+        </div>
+
+        <div style={{ marginTop: 24, display: "inline-flex", alignItems: "center", gap: 8, background: `${STOK_INDIGO}30`, border: `1px solid ${STOK_INDIGO}70`, borderRadius: 12, padding: "10px 20px" }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A5B4FC" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <span style={{ fontSize: 13, color: "#A5B4FC", fontWeight: 700 }}>14 gün ücretsiz · Kredi kartı gerekmez</span>
+        </div>
+      </div>
+    </div>
+  );
+
   // ── DEFAULT LEFT PANEL (non-pet, non-vet) ────────────────────────────────
   const DefaultLeftPanel = () => (
     <div style={{
@@ -406,22 +507,22 @@ export default function Login() {
   );
 
   // ── FORM PANEL ───────────────────────────────────────────────────────────
-  const accentColor = isPet ? ORANGE : isVet ? VET_DEEP : "#1a1a2e";
-  const accentLink  = isPet ? ORANGE : isVet ? VET_BLUE : "#6366f1";
-  const pageBg      = isPet ? BG : isVet ? "#F0F9FF" : "#f0f4ff";
+  const accentColor = isPet ? ORANGE : isVet ? VET_DEEP : isStok ? STOK_DARK : "#1a1a2e";
+  const accentLink  = isPet ? ORANGE : isVet ? VET_BLUE : isStok ? STOK_INDIGO : "#6366f1";
+  const pageBg      = isPet ? BG : isVet ? "#F0F9FF" : isStok ? "#F5F3FF" : "#f0f4ff";
 
   return (
     <div style={{ display: "flex", height: "100vh", background: pageBg }}>
 
       {/* Left */}
-      {isPet ? <PetLeftPanel /> : isVet ? <VetLeftPanel /> : <DefaultLeftPanel />}
+      {isPet ? <PetLeftPanel /> : isVet ? <VetLeftPanel /> : isStok ? <StokLeftPanel /> : <DefaultLeftPanel />}
 
       {/* Right: Form */}
       <div style={{
         width: 480, display: "flex", justifyContent: "center", alignItems: "center",
         padding: 48,
         background: "white",
-        borderLeft: (isPet || isVet) ? `1px solid #E2E8F0` : "none",
+        borderLeft: (isPet || isVet || isStok) ? `1px solid #E2E8F0` : "none",
       }}>
         <div style={{ width: "100%", maxWidth: 360 }}>
 
@@ -453,14 +554,27 @@ export default function Login() {
                   Vet<span style={{ color: VET_BLUE }}>Panel</span>
                 </span>
               </div>
+            ) : isStok ? (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 6 }}>
+                <div style={{ width: 28, height: 28, borderRadius: 7, background: STOK_INDIGO, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                    <line x1="12" y1="22.08" x2="12" y2="12"/>
+                  </svg>
+                </div>
+                <span style={{ fontSize: 22, fontWeight: 900, color: STOK_DARK, letterSpacing: "-0.5px" }}>
+                  Stok<span style={{ color: STOK_INDIGO }}>Panel</span>
+                </span>
+              </div>
             ) : (
               <div style={{ fontSize: 36, marginBottom: 8 }}>{theme.logoEmoji}</div>
             )}
-            {!isPet && !isVet && <h1 style={{ fontSize: 24, fontWeight: "bold", color: "#1a1a2e" }}>{theme.appTitle}</h1>}
+            {!isPet && !isVet && !isStok && <h1 style={{ fontSize: 24, fontWeight: "bold", color: "#1a1a2e" }}>{theme.appTitle}</h1>}
             <p style={{ fontSize: 13, color: "#9CA3AF", marginTop: 4 }}>{t.loginSubtitle}</p>
           </div>
 
-          <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20, color: isPet ? NAVY : isVet ? VET_DEEP : "#1a1a2e" }}>
+          <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20, color: isPet ? NAVY : isVet ? VET_DEEP : isStok ? STOK_DARK : "#1a1a2e" }}>
             {isForgotPassword ? t.forgotPasswordTitle : isRegister ? t.signUp : t.signIn}
           </h2>
 
@@ -544,7 +658,9 @@ export default function Login() {
                   ? (isRegister ? ORANGE : NAVY)
                   : isVet
                     ? (isRegister ? VET_BLUE : VET_DEEP)
-                    : "#1a1a2e",
+                    : isStok
+                      ? STOK_INDIGO
+                      : "#1a1a2e",
                 color: "white", borderRadius: 8, border: "none", cursor: loading ? "not-allowed" : "pointer",
                 fontSize: 15, fontWeight: 700, marginTop: 4,
                 opacity: loading ? 0.7 : 1,
@@ -552,7 +668,9 @@ export default function Login() {
                   ? `0 4px 14px ${isRegister ? ORANGE : NAVY}40`
                   : isVet
                     ? `0 4px 14px ${isRegister ? VET_BLUE : VET_DEEP}40`
-                    : "none",
+                    : isStok
+                      ? `0 4px 14px ${STOK_INDIGO}40`
+                      : "none",
               }}
             >
               {loading

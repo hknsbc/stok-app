@@ -6,6 +6,7 @@ import { useLang } from "@/lib/LangContext";
 import { useMode } from "@/lib/ModeContext";
 import PetLandingPage from "@/components/pet/PetLandingPage";
 import VetLandingPage from "@/components/vet/VetLandingPage";
+import StokLandingPage from "@/components/stok/StokLandingPage";
 
 export default function Page() {
   const { mode } = useMode();
@@ -22,6 +23,9 @@ export default function Page() {
 
   if (mode === "vet" && authState === "guest") return <VetLandingPage />;
   if (mode === "vet" && authState === "loading") return <div style={{ minHeight: "100vh", background: "#F0F9FF" }} />;
+
+  if (mode === "stok" && authState === "guest") return <StokLandingPage />;
+  if (mode === "stok" && authState === "loading") return <div style={{ minHeight: "100vh", background: "#F5F3FF" }} />;
 
   return <AnaSayfa />;
 }
