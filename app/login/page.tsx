@@ -759,8 +759,8 @@ export default function Login() {
               </div>
             )}
 
-            {/* Non-pet/vet plan selector */}
-            {isRegister && !isForgotPassword && !isPet && !isVet && (
+            {/* Non-pet/vet plan selector (Stok'ta kaldırıldı) */}
+            {isRegister && !isForgotPassword && !isPet && !isVet && !isStok && (
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 <p style={{ margin: 0, fontSize: 12, color: "#888", fontWeight: 600 }}>{t.selectPlan}</p>
                 <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", border: `2px solid ${selectedPlan === "temel" ? "#6366f1" : "#e5e7eb"}`, borderRadius: 8, cursor: "pointer" }}>
