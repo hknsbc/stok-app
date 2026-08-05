@@ -183,7 +183,7 @@ export default function AdminPanel() {
     <DashboardLayout>
       <div>
         {/* Header + tabs */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <h1 style={{ fontSize: 26, fontWeight: "bold", margin: 0 }}>⚙️ {t.adminTitle}</h1>
             <span style={{
@@ -214,7 +214,7 @@ export default function AdminPanel() {
         {activeTab === "overview" && (
           <>
             {/* Stats cards */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24 }}>
+            <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24 }}>
               {statCards.map((s) => (
                 <div key={s.label} style={{
                   background: "white", borderRadius: 14, padding: "20px 22px",

@@ -21,24 +21,30 @@ export default function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "0 20px",
+        padding: "0 12px",
         flexShrink: 0,
+        gap: 8,
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 16, minWidth: 0, flex: 1 }}>
         <button
           onClick={onToggleSidebar}
-          style={{ background: "none", border: "none", cursor: "pointer" }}
+          style={{ background: "none", border: "none", cursor: "pointer", flexShrink: 0 }}
           aria-label="Menüyü aç/kapat"
         >
           {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
-        <span style={{ fontSize: 16, fontWeight: 600, color: "#1e1b4b" }}>
+        <span
+          style={{
+            fontSize: 16, fontWeight: 600, color: "#1e1b4b",
+            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0,
+          }}
+        >
           {theme.appTitle}
         </span>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
         <div style={{ display: "flex", gap: 6 }}>
           <button
             onClick={() => setLang("tr")}
@@ -65,7 +71,7 @@ export default function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
             🇬🇧 EN
           </button>
         </div>
-        <span style={{ fontSize: 13, color: "#aaa", fontWeight: 500 }}>Marssoft</span>
+        <span className="hide-mobile" style={{ fontSize: 13, color: "#aaa", fontWeight: 500 }}>Marssoft</span>
       </div>
     </div>
   );

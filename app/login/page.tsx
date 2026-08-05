@@ -216,7 +216,7 @@ export default function Login() {
 
   // ── PET LEFT PANEL ────────────────────────────────────────────────────────
   const PetLeftPanel = () => (
-    <div style={{
+    <div className="login-left" style={{
       flex: 1,
       background: `linear-gradient(145deg, ${NAVY} 0%, #1a3270 60%, #162a5e 100%)`,
       display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center",
@@ -294,7 +294,7 @@ export default function Login() {
 
   // ── VET LEFT PANEL ───────────────────────────────────────────────────────
   const VetLeftPanel = () => (
-    <div style={{
+    <div className="login-left" style={{
       flex: 1,
       background: `linear-gradient(145deg, ${VET_DEEP} 0%, #0A3D5C 60%, #072B42 100%)`,
       display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center",
@@ -391,7 +391,7 @@ export default function Login() {
 
   // ── STOK LEFT PANEL ──────────────────────────────────────────────────────
   const StokLeftPanel = () => (
-    <div style={{
+    <div className="login-left" style={{
       flex: 1,
       background: `linear-gradient(145deg, ${STOK_DARK} 0%, #2D2A6E 60%, #1E1B4B 100%)`,
       display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center",
@@ -488,7 +488,7 @@ export default function Login() {
 
   // ── MARINE LEFT PANEL ────────────────────────────────────────────────────
   const MarineLeftPanel = () => (
-    <div style={{
+    <div className="login-left" style={{
       flex: 1,
       background: `linear-gradient(145deg, ${MARINE_DEEP} 0%, #0A3D5C 60%, #072B42 100%)`,
       display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center",
@@ -582,7 +582,7 @@ export default function Login() {
 
   // ── DEFAULT LEFT PANEL (non-pet, non-vet) ────────────────────────────────
   const DefaultLeftPanel = () => (
-    <div style={{
+    <div className="login-left" style={{
       flex: 1,
       background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
       display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center",
@@ -610,13 +610,13 @@ export default function Login() {
   const pageBg      = isPet ? BG : isVet ? "#F0F9FF" : isStok ? "#F5F3FF" : isMarine ? "#ECFEFF" : "#f0f4ff";
 
   return (
-    <div style={{ display: "flex", height: "100vh", background: pageBg }}>
+    <div className="login-shell" style={{ display: "flex", height: "100vh", background: pageBg }}>
 
       {/* Left */}
       {isPet ? <PetLeftPanel /> : isVet ? <VetLeftPanel /> : isStok ? <StokLeftPanel /> : isMarine ? <MarineLeftPanel /> : <DefaultLeftPanel />}
 
       {/* Right: Form */}
-      <div style={{
+      <div className="login-right" style={{
         width: 480, display: "flex", justifyContent: "center", alignItems: "center",
         padding: 48,
         background: "white",

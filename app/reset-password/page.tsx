@@ -39,8 +39,8 @@ export default function ResetPassword() {
   };
 
   return (
-    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", background: "#f0f4ff" }}>
-      <div style={{ background: "white", padding: 40, borderRadius: 12, width: 360, boxShadow: "0 2px 12px rgba(0,0,0,0.1)" }}>
+    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", background: "#f0f4ff", padding: 20, boxSizing: "border-box" }}>
+      <div style={{ background: "white", padding: 40, borderRadius: 12, width: "100%", maxWidth: 360, boxShadow: "0 2px 12px rgba(0,0,0,0.1)", boxSizing: "border-box" }}>
         <div style={{ textAlign: "center", marginBottom: 24 }}>
           <div style={{ fontSize: 28, marginBottom: 4 }}>🔐</div>
           <h1 style={{ fontSize: 22, fontWeight: "bold" }}>{t.resetTitle}</h1>

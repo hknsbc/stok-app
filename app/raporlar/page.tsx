@@ -156,7 +156,7 @@ export default function Raporlar() {
           {loading ? t.loading : `${t.periodLabel} ${filterLabel}${filter === "ay_sec" ? ` (${customMonth})` : ""} — ${satislar.length} ${t.salesRecords}`}
         </p>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 14, marginBottom: 28 }}>
+        <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 14, marginBottom: 28 }}>
           {[
             { label: t.totalRevenue, value: summary.ciro.toFixed(2) + " TL", color: "#6366f1" },
             { label: t.totalCost, value: summary.maliyet.toFixed(2) + " TL", color: "#f59e0b" },

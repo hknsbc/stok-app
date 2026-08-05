@@ -137,7 +137,7 @@ export default function YeniSatis() {
 
   return (
     <DashboardLayout>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: 24, alignItems: "start" }}>
+      <div className="pos-grid" style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: 24, alignItems: "start" }}>
 
         <div>
           <h1 style={{ fontSize: 26, fontWeight: "bold", marginBottom: 20 }}>{t.yeniSatisTitle}</h1>
@@ -257,7 +257,7 @@ export default function YeniSatis() {
           </div>
         </div>
 
-        <div style={{ position: "sticky", top: 24 }}>
+        <div className="pos-cart" style={{ position: "sticky", top: 24 }}>
           <div style={{ background: "white", borderRadius: 14, boxShadow: "0 2px 12px rgba(0,0,0,0.1)", overflow: "hidden" }}>
             <div style={{ background: "#1a1a2e", color: "white", padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ fontWeight: "bold", fontSize: 16 }}>{t.cart}</span>
