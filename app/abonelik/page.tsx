@@ -128,10 +128,10 @@ const PLANS: Record<AppMode, Plan[]> = {
       key: "pro",
       name: "Pro",
       color: "#6366f1",
-      price: "990 TL + KDV",
+      price: "2.990 TL + KDV",
       priceNote: "aylık",
       contactUs: false,
-      popular: false,
+      popular: true,
       features: [
         "Sınırsız ürün & stok",
         "Barkod okuyucu desteği",
@@ -143,24 +143,6 @@ const PLANS: Record<AppMode, Plan[]> = {
       ],
     },
     {
-      key: "business",
-      name: "Business",
-      color: "#10b981",
-      price: "2.490 TL + KDV",
-      priceNote: "aylık",
-      contactUs: false,
-      popular: true,
-      features: [
-        "Pro plan dahil",
-        "Çoklu kullanıcı (10'a kadar)",
-        "Çoklu şube desteği",
-        "Gelişmiş raporlar & analizler",
-        "REST API erişimi",
-        "Toplu veri import / export",
-        "Öncelikli destek",
-      ],
-    },
-    {
       key: "enterprise",
       name: "Enterprise",
       color: "#f59e0b",
@@ -168,7 +150,7 @@ const PLANS: Record<AppMode, Plan[]> = {
       contactUs: true,
       popular: false,
       features: [
-        "Business plan dahil",
+        "Pro plan dahil",
         "Sınırsız kullanıcı & şube",
         "Özel modüller & entegrasyonlar",
         "ERP / muhasebe entegrasyonu",
@@ -288,7 +270,7 @@ export default function Abonelik() {
         </div>
 
         {/* Plan cards */}
-        <div className={mode === "pet" ? "grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl" : "grid grid-cols-1 md:grid-cols-3 gap-6"}>
+        <div className={plans.length <= 2 ? "grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl" : "grid grid-cols-1 md:grid-cols-3 gap-6"}>
           {plans.map((plan) => {
             const isCurrent = currentPlan === plan.key;
             return (
