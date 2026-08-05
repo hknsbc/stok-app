@@ -45,6 +45,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [hasBranches, setHasBranches] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [tenantId, setTenantId] = useState<string | null>(null);
   const pathname = usePathname();
   const router = useRouter();
   const { t } = useLang();
@@ -83,9 +85,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         return;
       }
       setUserEmail(user.email ?? null);
+      setUserId(user.id);
       const { data: profile } = await supabase
         .from("profiles").select("is_superadmin, tenant_id").eq("id", user.id).single();
       setIsSuperAdmin(profile?.is_superadmin ?? false);
+      setTenantId(profile?.tenant_id ?? null);
       if (profile?.tenant_id) {
         const { data: tenant } = await supabase
           .from("tenants").select("has_branches").eq("id", profile.tenant_id).single();
@@ -95,6 +99,37 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     };
     checkAuth();
   }, [router]);
+
+  // Kullanım takibi (sadece Stok paneli): hangi sayfaya girildiği
+  useEffect(() => {
+    if (mode !== "stok" || !userId || !tenantId) return;
+    const logPageview = async () => {
+      const { supabase } = await import("@/lib/supabase");
+      await supabase.from("usage_events").insert({
+        tenant_id: tenantId,
+        user_id: userId,
+        event_type: "pageview",
+        path: pathname,
+      });
+    };
+    logPageview();
+  }, [pathname, mode, userId, tenantId]);
+
+  // Kullanım takibi: sekme aktifken 60sn'de bir "hala buradayım" sinyali
+  useEffect(() => {
+    if (mode !== "stok" || !userId || !tenantId) return;
+    const sendHeartbeat = async () => {
+      if (document.visibilityState !== "visible") return;
+      const { supabase } = await import("@/lib/supabase");
+      await supabase.from("usage_events").insert({
+        tenant_id: tenantId,
+        user_id: userId,
+        event_type: "heartbeat",
+      });
+    };
+    const interval = setInterval(sendHeartbeat, 60000);
+    return () => clearInterval(interval);
+  }, [mode, userId, tenantId]);
 
   const handleLogout = async () => {
     const { supabase } = await import("@/lib/supabase");

@@ -33,10 +33,18 @@ type Stats = {
   planCounts: Record<string, number>;
 };
 
+type UsageSummary = {
+  features: string[];
+  activeMinutes: number;
+  score: number;
+  status: "ok" | "needs_help";
+};
+
 export default function AdminPanel() {
   const { t, lang } = useLang();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
+  const [usage, setUsage] = useState<Record<string, UsageSummary>>({});
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState<string | null>(null);
   const [editStart, setEditStart] = useState<Record<string, string>>({});
@@ -58,6 +66,7 @@ export default function AdminPanel() {
       await Promise.all([
         fetchUsers(session.access_token),
         fetchStats(session.access_token),
+        fetchUsage(session.access_token),
       ]);
     };
     init();
@@ -87,6 +96,13 @@ export default function AdminPanel() {
       headers: { Authorization: `Bearer ${tok}` },
     });
     if (res.ok) setStats(await res.json());
+  };
+
+  const fetchUsage = async (tok: string) => {
+    const res = await fetch("/api/admin/usage", {
+      headers: { Authorization: `Bearer ${tok}` },
+    });
+    if (res.ok) setUsage(await res.json());
   };
 
   const apiPatch = async (id: string, body: object) => {
@@ -315,13 +331,17 @@ export default function AdminPanel() {
         {activeTab === "users" && (
           <div style={{ background: "white", borderRadius: 14, boxShadow: "0 1px 6px rgba(0,0,0,0.08)", overflow: "hidden" }}>
             <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 860 }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1240 }}>
                 <thead>
                   <tr style={{ background: "#f9fafb" }}>
                     <th style={th}>{t.adminEmailCol}</th>
                     <th style={th}>{t.adminRegDate}</th>
                     <th style={th}>{t.adminStatus}</th>
                     <th style={th}>{t.adminPlan}</th>
+                    <th style={th}>Özellikler</th>
+                    <th style={th}>Süre</th>
+                    <th style={th}>Demo Puanı</th>
+                    <th style={th}>Durum</th>
                     <th style={th}>{t.adminSubDates}</th>
                     <th style={th}>{t.adminToggle}</th>
                     <th style={th}>{t.adminDeleteCol}</th>
@@ -373,6 +393,53 @@ export default function AdminPanel() {
                           }}>
                             {planLabels[u.plan ?? ""] ?? u.plan ?? "—"}
                           </span>
+                        </td>
+                        <td style={{ ...td, minWidth: 160 }}>
+                          {usage[u.id]?.features.length ? (
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                              {usage[u.id].features.map((f) => (
+                                <span key={f} style={{
+                                  padding: "2px 8px", borderRadius: 12, fontSize: 11, fontWeight: 500,
+                                  background: "#ede9fe", color: "#6366f1",
+                                }}>
+                                  {f}
+                                </span>
+                              ))}
+                            </div>
+                          ) : "—"}
+                        </td>
+                        <td style={td}>
+                          {usage[u.id]
+                            ? `${Math.floor(usage[u.id].activeMinutes / 60)}sa ${usage[u.id].activeMinutes % 60}dk`
+                            : "—"}
+                        </td>
+                        <td style={td}>
+                          {usage[u.id] ? (
+                            <span style={{
+                              display: "inline-flex", alignItems: "center", gap: 6,
+                              fontWeight: 700, fontSize: 13,
+                              color: usage[u.id].score >= 3 ? "#16a34a" : usage[u.id].score >= 2 ? "#d97706" : "#dc2626",
+                            }}>
+                              <span style={{
+                                width: 8, height: 8, borderRadius: "50%",
+                                background: usage[u.id].score >= 3 ? "#16a34a" : usage[u.id].score >= 2 ? "#d97706" : "#dc2626",
+                              }} />
+                              {usage[u.id].score}/5
+                            </span>
+                          ) : "—"}
+                        </td>
+                        <td style={td}>
+                          {usage[u.id] ? (
+                            usage[u.id].status === "ok" ? (
+                              <span style={{ padding: "3px 10px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: "#dcfce7", color: "#16a34a" }}>
+                                ✅ Her şey yolunda
+                              </span>
+                            ) : (
+                              <span style={{ padding: "3px 10px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: "#fef3c7", color: "#b45309" }}>
+                                ⚠️ Yardıma ihtiyacı var
+                              </span>
+                            )
+                          ) : "—"}
                         </td>
                         <td style={{ ...td, minWidth: 280 }}>
                           <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
@@ -457,7 +524,7 @@ export default function AdminPanel() {
                   })}
                   {users.length === 0 && (
                     <tr>
-                      <td colSpan={7} style={{ padding: 28, textAlign: "center", color: "#aaa" }}>
+                      <td colSpan={11} style={{ padding: 28, textAlign: "center", color: "#aaa" }}>
                         {t.adminNoUsers}
                       </td>
                     </tr>

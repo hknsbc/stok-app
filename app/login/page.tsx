@@ -125,6 +125,8 @@ export default function Login() {
   const [isRegister, setIsRegister] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<"temel" | "profesyonel">("temel");
+  const [phone, setPhone] = useState("");
+  const [companyName, setCompanyName] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
@@ -165,6 +167,7 @@ export default function Login() {
         await supabase.from("profiles").update({
           plan: selectedPlan,
           is_active: isPetTrial ? true : false,
+          ...(isStok ? { phone, company_name: companyName } : {}),
           ...(isPetTrial ? { subscription_expires_at: trialExpiry.toISOString() } : {}),
         }).eq("id", signUpData.user.id);
         if (isPro) {
@@ -712,6 +715,22 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)} required
                 style={{ padding: 12, border: "1px solid #E5E7EB", borderRadius: 8, fontSize: 14, outline: "none", fontFamily: "inherit" }}
               />
+            )}
+
+            {/* Stok: telefon + firma adı (kayıt) */}
+            {isRegister && !isForgotPassword && isStok && (
+              <>
+                <input
+                  type="tel" placeholder="Telefon" value={phone}
+                  onChange={(e) => setPhone(e.target.value)} required
+                  style={{ padding: 12, border: "1px solid #E5E7EB", borderRadius: 8, fontSize: 14, outline: "none", fontFamily: "inherit" }}
+                />
+                <input
+                  type="text" placeholder="Firma Adı" value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)} required
+                  style={{ padding: 12, border: "1px solid #E5E7EB", borderRadius: 8, fontSize: 14, outline: "none", fontFamily: "inherit" }}
+                />
+              </>
             )}
 
             {/* Pet trial banner */}
