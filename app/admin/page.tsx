@@ -14,6 +14,8 @@ type AdminUser = {
   subscription_starts_at: string | null;
   subscription_expires_at: string | null;
   plan: string | null;
+  company_name: string | null;
+  phone: string | null;
 };
 
 type ExpiringSoon = {
@@ -35,9 +37,18 @@ type Stats = {
 
 type UsageSummary = {
   features: string[];
+  featureCounts: Record<string, number>;
   activeMinutes: number;
-  score: number;
+  retentionScore: number;
+  purchaseLikelihood: number;
   status: "ok" | "needs_help";
+  firstSeenAt: string | null;
+  mostActiveDay: string | null;
+  milestones: {
+    firstLogin: boolean;
+    demoStarted: boolean;
+    tookAction: boolean;
+  };
 };
 
 export default function AdminPanel() {
@@ -51,6 +62,7 @@ export default function AdminPanel() {
   const [editExpiry, setEditExpiry] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"overview" | "users">("overview");
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -331,7 +343,7 @@ export default function AdminPanel() {
         {activeTab === "users" && (
           <div style={{ background: "white", borderRadius: 14, boxShadow: "0 1px 6px rgba(0,0,0,0.08)", overflow: "hidden" }}>
             <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1240 }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1340 }}>
                 <thead>
                   <tr style={{ background: "#f9fafb" }}>
                     <th style={th}>{t.adminEmailCol}</th>
@@ -345,6 +357,7 @@ export default function AdminPanel() {
                     <th style={th}>{t.adminSubDates}</th>
                     <th style={th}>{t.adminToggle}</th>
                     <th style={th}>{t.adminDeleteCol}</th>
+                    <th style={th}>Analitik</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -418,13 +431,13 @@ export default function AdminPanel() {
                             <span style={{
                               display: "inline-flex", alignItems: "center", gap: 6,
                               fontWeight: 700, fontSize: 13,
-                              color: usage[u.id].score >= 3 ? "#16a34a" : usage[u.id].score >= 2 ? "#d97706" : "#dc2626",
+                              color: usage[u.id].retentionScore >= 3 ? "#16a34a" : usage[u.id].retentionScore >= 2 ? "#d97706" : "#dc2626",
                             }}>
                               <span style={{
                                 width: 8, height: 8, borderRadius: "50%",
-                                background: usage[u.id].score >= 3 ? "#16a34a" : usage[u.id].score >= 2 ? "#d97706" : "#dc2626",
+                                background: usage[u.id].retentionScore >= 3 ? "#16a34a" : usage[u.id].retentionScore >= 2 ? "#d97706" : "#dc2626",
                               }} />
-                              {usage[u.id].score}/5
+                              {usage[u.id].retentionScore}/5
                             </span>
                           ) : "—"}
                         </td>
@@ -519,12 +532,25 @@ export default function AdminPanel() {
                             {t.delete}
                           </button>
                         </td>
+                        <td style={td}>
+                          <button
+                            onClick={() => setSelectedUserId(u.id)}
+                            style={{
+                              padding: "6px 14px",
+                              background: "#ede9fe", color: "#6366f1",
+                              border: "none", borderRadius: 8,
+                              cursor: "pointer", fontSize: 12, fontWeight: 600,
+                            }}
+                          >
+                            📊 Analitik
+                          </button>
+                        </td>
                       </tr>
                     );
                   })}
                   {users.length === 0 && (
                     <tr>
-                      <td colSpan={11} style={{ padding: 28, textAlign: "center", color: "#aaa" }}>
+                      <td colSpan={12} style={{ padding: 28, textAlign: "center", color: "#aaa" }}>
                         {t.adminNoUsers}
                       </td>
                     </tr>
@@ -534,6 +560,138 @@ export default function AdminPanel() {
             </div>
           </div>
         )}
+
+        {selectedUserId && (() => {
+          const selectedUser = users.find((u) => u.id === selectedUserId);
+          const u = usage[selectedUserId];
+          if (!selectedUser) return null;
+          const sortedFeatures = u ? Object.entries(u.featureCounts).sort((a, b) => b[1] - a[1]) : [];
+          const maxFeatureCount = sortedFeatures.length ? sortedFeatures[0][1] : 1;
+          const topFeatures = sortedFeatures.slice(0, 3).map(([label]) => label);
+          const activeHours = u ? (u.activeMinutes / 60).toFixed(1) : "0.0";
+
+          const milestoneRow = (label: string, achieved: boolean) => (
+            <span key={label} style={{
+              flex: 1, textAlign: "center", padding: "8px 12px", borderRadius: 10, fontSize: 12, fontWeight: 600,
+              background: achieved ? "#dcfce7" : "#f3f4f6",
+              color: achieved ? "#16a34a" : "#9ca3af",
+            }}>
+              {achieved ? "✓" : "✗"} {label}
+            </span>
+          );
+
+          const scoreCard = (icon: string, label: string, value: number, color: string) => (
+            <div style={{ background: "#f9fafb", borderRadius: 12, padding: 16, flex: 1 }}>
+              <div style={{ fontSize: 13, color: "#555", fontWeight: 600, marginBottom: 8 }}>{icon} {label}</div>
+              <div style={{ fontSize: 26, fontWeight: "bold", marginBottom: 8 }}>
+                {value}<span style={{ fontSize: 14, color: "#888", fontWeight: 500 }}>/5</span>
+              </div>
+              <div style={{ background: "#e5e7eb", borderRadius: 20, height: 6, overflow: "hidden" }}>
+                <div style={{ width: `${(value / 5) * 100}%`, background: color, height: "100%", borderRadius: 20 }} />
+              </div>
+            </div>
+          );
+
+          return (
+            <div
+              onClick={() => setSelectedUserId(null)}
+              style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                style={{ background: "white", borderRadius: 18, padding: 28, width: "100%", maxWidth: 560, maxHeight: "90vh", overflowY: "auto", boxShadow: "0 8px 40px rgba(0,0,0,0.25)" }}
+              >
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <div style={{ width: 44, height: 44, borderRadius: 12, background: "#ede9fe", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>
+                      📊
+                    </div>
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <h2 style={{ fontSize: 18, fontWeight: "bold", margin: 0 }}>
+                          {selectedUser.company_name || selectedUser.email}
+                        </h2>
+                        <span style={{
+                          padding: "2px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600,
+                          background: selectedUser.is_active ? "#dcfce7" : "#fee2e2",
+                          color: selectedUser.is_active ? "#16a34a" : "#dc2626",
+                        }}>
+                          {selectedUser.is_active ? "Aktif Kullanıcı" : "Pasif Kullanıcı"}
+                        </span>
+                      </div>
+                      <p style={{ margin: "2px 0 0", fontSize: 13, color: "#888" }}>Kullanım Analitiği</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSelectedUserId(null)}
+                    style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, color: "#888", lineHeight: 1 }}
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {!u ? (
+                  <p style={{ color: "#888", fontSize: 14, textAlign: "center", padding: "24px 0" }}>
+                    Henüz kullanım verisi yok.
+                  </p>
+                ) : (
+                  <>
+                    <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
+                      {scoreCard("🔥", "Bağlılık Puanı (Retention)", u.retentionScore, "#f59e0b")}
+                      {scoreCard("🎯", "Satın Alma İhtimali", u.purchaseLikelihood, "#6366f1")}
+                    </div>
+
+                    <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
+                      {[
+                        { label: "Aktif Dakika", value: u.activeMinutes },
+                        { label: "Açık Kalma (saat)", value: activeHours },
+                        { label: "Kullanılan Özellik", value: u.features.length },
+                      ].map((s) => (
+                        <div key={s.label} style={{ flex: 1, background: "#f9fafb", borderRadius: 12, padding: "14px 12px", textAlign: "center" }}>
+                          <div style={{ fontSize: 22, fontWeight: "bold" }}>{s.value}</div>
+                          <div style={{ fontSize: 12, color: "#888", marginTop: 2 }}>{s.label}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div style={{ background: "#f9fafb", borderRadius: 12, padding: 16, marginBottom: 16, fontSize: 13 }}>
+                      <div style={{ fontWeight: 700, marginBottom: 8 }}>Kullanım Geçmişi</div>
+                      <div style={{ color: "#555", marginBottom: 4 }}>
+                        İlk kullanım: <strong>{u.firstSeenAt ? new Date(u.firstSeenAt).toLocaleDateString(locale) : "—"}</strong>
+                      </div>
+                      <div style={{ color: "#555", marginBottom: 4 }}>
+                        En aktif dönem: <strong>{u.mostActiveDay ? new Date(u.mostActiveDay).toLocaleDateString(locale) : "—"}</strong>
+                      </div>
+                      <div style={{ color: "#555" }}>
+                        En çok kullanılan modüller: <strong>{topFeatures.length ? topFeatures.join(", ") : "—"}</strong>
+                      </div>
+                    </div>
+
+                    <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+                      {milestoneRow("İlk Giriş", u.milestones.firstLogin)}
+                      {milestoneRow("Demo Başladı", u.milestones.demoStarted)}
+                      {milestoneRow("İşlem Yaptı", u.milestones.tookAction)}
+                    </div>
+
+                    <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 10 }}>Özellik Kullanım Sayıları</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {sortedFeatures.length === 0 && <p style={{ color: "#aaa", fontSize: 13 }}>Henüz özellik kullanımı yok.</p>}
+                      {sortedFeatures.map(([label, count]) => (
+                        <div key={label} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <div style={{ width: 90, fontSize: 12, color: "#374151", flexShrink: 0 }}>{label}</div>
+                          <div style={{ flex: 1, background: "#f3f4f6", borderRadius: 20, height: 10, overflow: "hidden" }}>
+                            <div style={{ width: `${(count / maxFeatureCount) * 100}%`, background: "#6366f1", height: "100%", borderRadius: 20 }} />
+                          </div>
+                          <div style={{ width: 24, fontSize: 12, fontWeight: 700, textAlign: "right" }}>{count}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          );
+        })()}
       </div>
     </DashboardLayout>
   );

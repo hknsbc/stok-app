@@ -22,6 +22,8 @@ export async function GET(request: Request) {
     subscription_starts_at: profileMap[u.id]?.subscription_starts_at ?? null,
     subscription_expires_at: profileMap[u.id]?.subscription_expires_at ?? null,
     plan: profileMap[u.id]?.plan ?? null,
+    company_name: profileMap[u.id]?.company_name ?? null,
+    phone: profileMap[u.id]?.phone ?? null,
   }));
 
   return Response.json(result);
