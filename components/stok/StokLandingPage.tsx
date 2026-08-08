@@ -408,23 +408,13 @@ function Pricing() {
   const plans = [
     {
       name: "Pro",
-      price: "990",
+      price: "2.990",
       note: "TL + KDV / ay",
       color: INDIGO,
-      popular: false,
-      cta: "Hemen Başla",
-      ctaHref: "/login",
-      features: ["Sınırsız ürün & stok", "Barkod okuyucu desteği", "Alış & satış yönetimi", "Cari hesap takibi", "Temel raporlar", "Mobil uyumlu panel", "1 kullanıcı"],
-    },
-    {
-      name: "Business",
-      price: "2.490",
-      note: "TL + KDV / ay",
-      color: GREEN,
       popular: true,
       cta: "Hemen Başla",
       ctaHref: "/login",
-      features: ["Pro plan dahil", "Çoklu kullanıcı (10'a kadar)", "Çoklu şube desteği", "Gelişmiş raporlar & analizler", "REST API erişimi", "Toplu veri import / export", "Öncelikli destek"],
+      features: ["Sınırsız ürün & stok", "Barkod okuyucu desteği", "Alış & satış yönetimi", "Cari hesap takibi", "Temel raporlar", "Mobil uyumlu panel", "1 kullanıcı"],
     },
     {
       name: "Enterprise",
@@ -434,7 +424,7 @@ function Pricing() {
       popular: false,
       cta: "Fiyat Al",
       ctaHref: "mailto:pazarlama@marssoft.com.tr?subject=StokPanel Enterprise Fiyat Talebi",
-      features: ["Business plan dahil", "Sınırsız kullanıcı & şube", "Özel modüller & entegrasyonlar", "ERP / muhasebe entegrasyonu", "Eğitim + onboarding", "SLA garantisi"],
+      features: ["Pro plan dahil", "Sınırsız kullanıcı & şube", "Özel modüller & entegrasyonlar", "ERP / muhasebe entegrasyonu", "Eğitim + onboarding", "SLA garantisi"],
     },
   ];
 
@@ -450,7 +440,7 @@ function Pricing() {
           <p style={{ fontSize: 16, color: GRAY }}>14 gün ücretsiz dene, beğenirsen devam et.</p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
+        <div className="stok-3col" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 24, maxWidth: 620, margin: "0 auto" }}>
           {plans.map((plan) => (
             <div key={plan.name} style={{ position: "relative" }}>
               {plan.popular && (
@@ -537,7 +527,7 @@ function Testimonials() {
     {
       name: "Hasan A.",
       co: "AlphaStok Depo, Ankara",
-      text: "Business planıyla 4 depomuzun stoğunu tek panelden görüyoruz. Çoklu kullanıcı desteği olmasa bu işi yapamazdık.",
+      text: "Enterprise planıyla 4 depomuzun stoğunu tek panelden görüyoruz. Çoklu kullanıcı desteği olmasa bu işi yapamazdık.",
       stars: 5,
     },
   ];
@@ -584,7 +574,7 @@ function FAQ() {
     { q: "StokPanel nedir?", a: "StokPanel, her ölçekteki işletme için geliştirilmiş bulut tabanlı stok ve satış yönetim yazılımıdır. Ürün takibinden barkodlu satışa, alış faturasından cari hesap yönetimine kadar tüm operasyonlarınızı tek panelden yürütebilirsiniz." },
     { q: "14 günlük deneme nasıl çalışır?", a: "Kayıt olduğunuzda 14 günlük deneme hemen başlar. Kredi kartı girmenize gerek yoktur. Deneme süresince seçtiğiniz plana göre tüm özelliklere erişirsiniz." },
     { q: "Mevcut ürün ve müşteri verilerimi nasıl aktarabilirim?", a: "Excel veya CSV formatındaki ürün, müşteri ve tedarikçi listelerinizi sisteme toplu olarak yükleyebilirsiniz. Teknik destek ekibimiz aktarım sürecinde ücretsiz yardımcı olur." },
-    { q: "Birden fazla kullanıcı ve şube kullanılabilir mi?", a: "Pro plan tek kullanıcı içerir. Business planında 10 kullanıcıya ve çoklu şubeye destek verilir. Enterprise planında ise kullanıcı ve şube sayısı sınırsızdır." },
+    { q: "Birden fazla kullanıcı ve şube kullanılabilir mi?", a: "Pro plan tek kullanıcı içerir. Çoklu kullanıcı ve çoklu şube desteği için Enterprise plana geçebilirsiniz; kullanıcı ve şube sayısı sınırsızdır." },
     { q: "Muhasebe veya ERP programıyla entegrasyon var mı?", a: "Enterprise planda özel entegrasyon geliştirme seçeneği sunulmaktadır. Mevcut desteklenen entegrasyonlar için destek ekibimizle iletişime geçebilirsiniz." },
     { q: "Aboneliğimi istediğim zaman iptal edebilir miyim?", a: "Evet. Aylık planlarda bir sonraki fatura dönemi başlamadan iptal etmeniz yeterlidir. Kalan süre için ücret iadesi yapılmaz; ancak iptal tarihine kadar sistemi kullanmaya devam edersiniz." },
   ];
