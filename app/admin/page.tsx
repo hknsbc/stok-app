@@ -38,7 +38,8 @@ type Stats = {
 type UsageSummary = {
   features: string[];
   featureCounts: Record<string, number>;
-  activeMinutes: number;
+  todayMinutes: number;
+  totalMinutes: number;
   retentionScore: number;
   purchaseLikelihood: number;
   status: "ok" | "needs_help";
@@ -423,7 +424,7 @@ export default function AdminPanel() {
                         </td>
                         <td style={td}>
                           {usage[u.id]
-                            ? `${Math.floor(usage[u.id].activeMinutes / 60)}sa ${usage[u.id].activeMinutes % 60}dk`
+                            ? `${Math.floor(usage[u.id].totalMinutes / 60)}sa ${usage[u.id].totalMinutes % 60}dk`
                             : "—"}
                         </td>
                         <td style={td}>
@@ -568,7 +569,7 @@ export default function AdminPanel() {
           const sortedFeatures = u ? Object.entries(u.featureCounts).sort((a, b) => b[1] - a[1]) : [];
           const maxFeatureCount = sortedFeatures.length ? sortedFeatures[0][1] : 1;
           const topFeatures = sortedFeatures.slice(0, 3).map(([label]) => label);
-          const activeHours = u ? (u.activeMinutes / 60).toFixed(1) : "0.0";
+          const totalHours = u ? (u.totalMinutes / 60).toFixed(1) : "0.0";
 
           const milestoneRow = (label: string, achieved: boolean) => (
             <span key={label} style={{
@@ -643,8 +644,9 @@ export default function AdminPanel() {
 
                     <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
                       {[
-                        { label: "Aktif Dakika", value: u.activeMinutes },
-                        { label: "Açık Kalma (saat)", value: activeHours },
+                        { label: "Bugün (dakika)", value: u.todayMinutes },
+                        { label: "Toplam (dakika)", value: u.totalMinutes },
+                        { label: "Açık Kalma (saat)", value: totalHours },
                         { label: "Kullanılan Özellik", value: u.features.length },
                       ].map((s) => (
                         <div key={s.label} style={{ flex: 1, background: "#f9fafb", borderRadius: 12, padding: "14px 12px", textAlign: "center" }}>
