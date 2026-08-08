@@ -408,11 +408,11 @@ function Pricing() {
   const plans = [
     {
       name: "Pro",
-      price: "2.990",
-      note: "TL + KDV / ay",
+      price: "2.990 TL + KDV",
+      note: "aylık",
       color: INDIGO,
       popular: true,
-      cta: "Hemen Başla",
+      cta: "Başla",
       ctaHref: "/login",
       features: ["Sınırsız ürün & stok", "Barkod okuyucu desteği", "Alış & satış yönetimi", "Cari hesap takibi", "Temel raporlar", "Mobil uyumlu panel", "1 kullanıcı"],
     },
@@ -422,7 +422,7 @@ function Pricing() {
       note: "Şirketinize özel",
       color: AMBER,
       popular: false,
-      cta: "Fiyat Al",
+      cta: "Fiyat Alın",
       ctaHref: "mailto:pazarlama@marssoft.com.tr?subject=StokPanel Enterprise Fiyat Talebi",
       features: ["Pro plan dahil", "Sınırsız kullanıcı & şube", "Özel modüller & entegrasyonlar", "ERP / muhasebe entegrasyonu", "Eğitim + onboarding", "SLA garantisi"],
     },
@@ -457,9 +457,7 @@ function Pricing() {
                 <h3 style={{ fontSize: 22, fontWeight: 800, color: DARK, marginBottom: 8 }}>{plan.name}</h3>
                 {plan.price ? (
                   <div style={{ marginBottom: 24 }}>
-                    <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
-                      <span style={{ fontSize: 42, fontWeight: 900, color: plan.color, letterSpacing: "-1px" }}>{plan.price}</span>
-                    </div>
+                    <div style={{ fontSize: 26, fontWeight: 800, color: plan.color, letterSpacing: "-0.5px" }}>{plan.price}</div>
                     <div style={{ fontSize: 13, color: GRAY, marginTop: 2 }}>{plan.note}</div>
                   </div>
                 ) : (
