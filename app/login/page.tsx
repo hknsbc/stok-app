@@ -127,6 +127,8 @@ export default function Login() {
   const [selectedPlan, setSelectedPlan] = useState<"temel" | "profesyonel">("temel");
   const [phone, setPhone] = useState("");
   const [companyName, setCompanyName] = useState("");
+  const [marketingConsent, setMarketingConsent] = useState(false);
+  const [requiredConsent, setRequiredConsent] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
@@ -153,31 +155,29 @@ export default function Login() {
     }
 
     if (isRegister) {
-      const isPro = selectedPlan === "profesyonel";
-      const isPetTrial = isPet || isVet;
-      const { data: signUpData, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { plan: selectedPlan, has_branches: isPro } },
-      });
-      if (error) { setError(error.message); setLoading(false); return; }
-      if (signUpData.user) {
-        const trialExpiry = new Date();
-        trialExpiry.setDate(trialExpiry.getDate() + 7);
-        await supabase.from("profiles").update({
-          plan: selectedPlan,
-          is_active: isPetTrial ? true : false,
-          ...(isStok ? { phone, company_name: companyName } : {}),
-          ...(isPetTrial ? { subscription_expires_at: trialExpiry.toISOString() } : {}),
-        }).eq("id", signUpData.user.id);
-        if (isPro) {
-          const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", signUpData.user.id).single();
-          if (profile?.tenant_id) {
-            await supabase.from("tenants").update({ has_branches: true }).eq("id", profile.tenant_id);
-          }
-        }
+      if (!requiredConsent) {
+        setError(t.registerErrorConsent);
+        setLoading(false);
+        return;
       }
-      if (isPetTrial) {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          password,
+          mode,
+          phone: isStok ? phone : undefined,
+          companyName: isStok ? companyName : undefined,
+          selectedPlan,
+          marketingConsent,
+          requiredConsent,
+        }),
+      });
+      const result = await res.json();
+      if (!res.ok) { setError(result.error ?? t.errorFailed); setLoading(false); return; }
+
+      if (result.autoLogin) {
         const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
         if (!signInErr && signInData.user) { router.push("/"); return; }
       }
@@ -780,8 +780,41 @@ export default function Login() {
               </div>
             )}
 
+            {/* KVKK onayları (kayıt) */}
+            {isRegister && !isForgotPassword && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <label style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 12, color: "#555", cursor: "pointer" }}>
+                  <input
+                    type="checkbox"
+                    checked={marketingConsent}
+                    onChange={(e) => setMarketingConsent(e.target.checked)}
+                    style={{ marginTop: 2 }}
+                  />
+                  <span>{t.marketingConsentLabel}</span>
+                </label>
+                <label style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 12, color: "#555", cursor: "pointer" }}>
+                  <input
+                    type="checkbox"
+                    checked={requiredConsent}
+                    onChange={(e) => setRequiredConsent(e.target.checked)}
+                    required
+                    style={{ marginTop: 2 }}
+                  />
+                  <span>
+                    {t.legalConsentPrefix}
+                    <a href="/terms" target="_blank" rel="noopener noreferrer" style={{ color: accentLink, fontWeight: 600 }}>{t.legalConsentTerms}</a>
+                    {t.legalConsentAnd1}
+                    <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ color: accentLink, fontWeight: 600 }}>{t.legalConsentPrivacy}</a>
+                    {t.legalConsentAnd2}
+                    <a href="/aydinlatma-metni" target="_blank" rel="noopener noreferrer" style={{ color: accentLink, fontWeight: 600 }}>{t.legalConsentKvkk}</a>
+                    {t.legalConsentSuffix}
+                  </span>
+                </label>
+              </div>
+            )}
+
             <button
-              type="submit" disabled={loading}
+              type="submit" disabled={loading || (isRegister && !requiredConsent)}
               style={{
                 padding: "13px 0",
                 background: isPet
@@ -793,9 +826,10 @@ export default function Login() {
                       : isMarine
                         ? MARINE_CYAN
                         : "#1a1a2e",
-                color: "white", borderRadius: 8, border: "none", cursor: loading ? "not-allowed" : "pointer",
+                color: "white", borderRadius: 8, border: "none",
+                cursor: loading || (isRegister && !requiredConsent) ? "not-allowed" : "pointer",
                 fontSize: 15, fontWeight: 700, marginTop: 4,
-                opacity: loading ? 0.7 : 1,
+                opacity: loading || (isRegister && !requiredConsent) ? 0.6 : 1,
                 boxShadow: isPet
                   ? `0 4px 14px ${isRegister ? ORANGE : NAVY}40`
                   : isVet

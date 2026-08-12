@@ -49,13 +49,18 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/kvkk" className="text-sidebar-accent-foreground/70 hover:text-sidebar-primary transition-colors">
-                  {lang === "tr" ? "Gizlilik Politikası (KVKK)" : "Privacy Policy (KVKK)"}
+                <Link href="/privacy" className="text-sidebar-accent-foreground/70 hover:text-sidebar-primary transition-colors">
+                  {lang === "tr" ? "Gizlilik Politikası" : "Privacy Policy"}
                 </Link>
               </li>
               <li>
                 <Link href="/terms" className="text-sidebar-accent-foreground/70 hover:text-sidebar-primary transition-colors">
-                  {lang === "tr" ? "Kullanıcı Sözleşmesi" : "Terms of Service"}
+                  {lang === "tr" ? "Kullanım Şartları" : "Terms of Service"}
+                </Link>
+              </li>
+              <li>
+                <Link href="/aydinlatma-metni" className="text-sidebar-accent-foreground/70 hover:text-sidebar-primary transition-colors">
+                  {lang === "tr" ? "KVKK Aydınlatma Metni" : "KVKK Disclosure"}
                 </Link>
               </li>
             </ul>

@@ -33,6 +33,15 @@ export const translations = {
     sendResetLink: "Sıfırlama Bağlantısı Gönder",
     resetSent: "Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.",
     backToLogin: "Giriş sayfasına dön",
+    marketingConsentLabel: "Ticari iletileri (kampanya, duyuru vb.) almak istiyorum.",
+    legalConsentPrefix: "",
+    legalConsentTerms: "Kullanım Şartları",
+    legalConsentAnd1: ", ",
+    legalConsentPrivacy: "Gizlilik Politikası",
+    legalConsentAnd2: " ve ",
+    legalConsentKvkk: "Aydınlatma Metni",
+    legalConsentSuffix: "'ni okudum ve kabul ediyorum.",
+    registerErrorConsent: "Devam etmek için Kullanım Şartları, Gizlilik Politikası ve Aydınlatma Metni'ni kabul etmelisiniz.",
 
     // Layout
     loading: "Yükleniyor...",
@@ -287,6 +296,15 @@ export const translations = {
     sendResetLink: "Send Reset Link",
     resetSent: "Password reset link has been sent to your email address.",
     backToLogin: "Back to login",
+    marketingConsentLabel: "I want to receive marketing communications (offers, news, etc.).",
+    legalConsentPrefix: "I have read and accept the ",
+    legalConsentTerms: "Terms of Service",
+    legalConsentAnd1: ", ",
+    legalConsentPrivacy: "Privacy Policy",
+    legalConsentAnd2: " and ",
+    legalConsentKvkk: "KVKK Disclosure",
+    legalConsentSuffix: ".",
+    registerErrorConsent: "You must accept the Terms of Service, Privacy Policy and KVKK Disclosure to continue.",
 
     // Layout
     loading: "Loading...",
