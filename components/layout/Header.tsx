@@ -72,7 +72,7 @@ export default function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
           <span
             className="header-marquee"
             style={{
-              display: "inline-flex", alignItems: "center", gap: 14, fontSize: 18,
+              display: "inline-flex", alignItems: "center", gap: "3cm", fontSize: 18,
               whiteSpace: "nowrap", paddingLeft: "100%",
             }}
           >
