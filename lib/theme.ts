@@ -19,9 +19,9 @@ export const themes: Record<AppMode, AppTheme> = {
     accent: "#4f46e5",
     sidebar: "#1a1a2e",
     sidebarText: "#ffffff",
-    appName: "Stok Takip",
-    appTitle: "Stok Yönetim Sistemi",
-    panelTitle: "Stok Paneli",
+    appName: "StokPanel",
+    appTitle: "StokPanel - Stok Yönetim Sistemi",
+    panelTitle: "StokPanel",
     logoEmoji: "📦",
   },
   pet: {

@@ -2,9 +2,11 @@
 import Link from "next/link";
 import { Heart } from "lucide-react";
 import { useLang } from "@/lib/LangContext";
+import { useMode } from "@/lib/ModeContext";
 
 export default function Footer() {
   const { t, lang } = useLang();
+  const { theme } = useMode();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -13,7 +15,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           <div className="space-y-3">
             <h3 className="font-bold text-sidebar-foreground text-lg">
-              Stok Takip
+              {theme.appName}
             </h3>
             <p className="text-sm text-sidebar-accent-foreground/70">
               {lang === "tr" ? "Profesyonel stok yönetim ve satış takip sistemi" : "Professional stock management and sales tracking system"}
@@ -31,7 +33,7 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <a href="mailto:support@staktakip.com" className="text-sidebar-accent-foreground/70 hover:text-sidebar-primary transition-colors">
+                <a href="mailto:pazarlama@marssoft.com.tr" className="text-sidebar-accent-foreground/70 hover:text-sidebar-primary transition-colors">
                   {lang === "tr" ? "Destek" : "Support"}
                 </a>
               </li>
@@ -71,12 +73,12 @@ export default function Footer() {
 
         <div className="flex flex-col md:flex-row items-center justify-between">
           <p className="text-sm text-sidebar-accent-foreground/60">
-            © {currentYear} Stok Takip {lang === "tr" ? "Sistemi. Tüm hakları saklıdır." : "System. All rights reserved."}
+            © {currentYear} {theme.appName} {lang === "tr" ? "Sistemi. Tüm hakları saklıdır." : "System. All rights reserved."}
           </p>
           <div className="flex items-center gap-1 text-sm text-sidebar-accent-foreground/60 mt-4 md:mt-0">
             Made with
             <Heart className="w-4 h-4 text-red-500 fill-red-500" />
-            by Stok Takip Team
+            by Marssoft
           </div>
         </div>
       </div>

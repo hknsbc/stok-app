@@ -48,6 +48,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [hasBranches, setHasBranches] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [tenantId, setTenantId] = useState<string | null>(null);
+  const [companyName, setCompanyName] = useState<string | null>(null);
   const pathname = usePathname();
   const router = useRouter();
   const { t } = useLang();
@@ -88,9 +89,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       setUserEmail(user.email ?? null);
       setUserId(user.id);
       const { data: profile } = await supabase
-        .from("profiles").select("is_superadmin, tenant_id").eq("id", user.id).single();
+        .from("profiles").select("is_superadmin, tenant_id, company_name").eq("id", user.id).single();
       setIsSuperAdmin(profile?.is_superadmin ?? false);
       setTenantId(profile?.tenant_id ?? null);
+      setCompanyName(profile?.company_name ?? null);
       if (profile?.tenant_id) {
         const { data: tenant } = await supabase
           .from("tenants").select("has_branches").eq("id", profile.tenant_id).single();
@@ -204,9 +206,19 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           overflow: "hidden",
         }),
       }}>
-        <div style={{ padding: "20px 16px", borderBottom: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 22 }}>{theme.logoEmoji}</span>
-          <span style={{ fontSize: 16, fontWeight: "bold", whiteSpace: "nowrap" }}>{theme.appName}</span>
+        <div style={{ padding: "20px 16px", borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: 22 }}>{theme.logoEmoji}</span>
+            <span style={{ fontSize: 16, fontWeight: "bold", whiteSpace: "nowrap" }}>{theme.appName}</span>
+          </div>
+          {companyName && (
+            <div style={{
+              marginTop: 6, fontSize: 12, color: theme.sidebarText, opacity: 0.75,
+              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+            }}>
+              🏢 {companyName}
+            </div>
+          )}
         </div>
         <nav style={{ flex: 1, padding: "12px 8px", overflowY: "auto" }}>
           {menuItems.map((item) => {

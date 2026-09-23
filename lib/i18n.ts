@@ -3,7 +3,7 @@ export type Lang = "tr" | "en";
 export const translations = {
   tr: {
     // Login
-    loginTitle: "Stok Takip",
+    loginTitle: "StokPanel",
     loginSubtitle: "by Marssoft",
     signIn: "Giriş Yap",
     signUp: "Kayıt Ol",
@@ -255,7 +255,7 @@ export const translations = {
 
     // Reset Password
     resetTitle: "Yeni Şifre Belirle",
-    resetSubtitle: "Stok Takip · Marssoft",
+    resetSubtitle: "StokPanel · Marssoft",
     resetNewPassword: "Yeni Şifre",
     resetConfirmPassword: "Yeni Şifre Tekrar",
     resetLoading: "Lütfen bekleyin...",
@@ -266,7 +266,7 @@ export const translations = {
   },
   en: {
     // Login
-    loginTitle: "Stock Tracking",
+    loginTitle: "StokPanel",
     loginSubtitle: "by Marssoft",
     signIn: "Sign In",
     signUp: "Sign Up",
@@ -518,7 +518,7 @@ export const translations = {
 
     // Reset Password
     resetTitle: "Set New Password",
-    resetSubtitle: "Stock Tracking · Marssoft",
+    resetSubtitle: "StokPanel · Marssoft",
     resetNewPassword: "New Password",
     resetConfirmPassword: "Confirm New Password",
     resetLoading: "Please wait...",
