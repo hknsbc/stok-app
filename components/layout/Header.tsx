@@ -10,7 +10,7 @@ interface HeaderProps {
 
 function ForkliftIcon({ color }: { color: string }) {
   return (
-    <svg width="30" height="22" viewBox="0 0 34 24" style={{ flexShrink: 0 }} aria-hidden>
+    <svg width="28" height="20" viewBox="0 0 34 24" style={{ flexShrink: 0 }} aria-hidden>
       {/* gövde */}
       <rect x="14" y="10" width="14" height="9" rx="2" fill={color} opacity="0.9" />
       {/* kabin çerçevesi */}
@@ -24,6 +24,24 @@ function ForkliftIcon({ color }: { color: string }) {
       {/* tekerlekler */}
       <circle cx="18" cy="20.5" r="2.3" fill={color} />
       <circle cx="26" cy="20.5" r="2.3" fill={color} />
+    </svg>
+  );
+}
+
+function VanIcon({ color }: { color: string }) {
+  return (
+    <svg width="30" height="18" viewBox="0 0 34 22" style={{ flexShrink: 0 }} aria-hidden>
+      {/* kargo kasası */}
+      <rect x="0" y="4" width="22" height="10" rx="2" fill={color} opacity="0.9" />
+      {/* kabin */}
+      <rect x="20" y="7" width="10" height="7" rx="2" fill={color} opacity="0.9" />
+      {/* ön cam */}
+      <rect x="23" y="8.5" width="5" height="3.5" rx="0.6" fill="white" opacity="0.35" />
+      {/* tampon hattı */}
+      <rect x="0" y="13.5" width="32" height="1.8" rx="0.9" fill={color} opacity="0.9" />
+      {/* tekerlekler */}
+      <circle cx="7" cy="17" r="2.4" fill={color} />
+      <circle cx="25" cy="17" r="2.4" fill={color} />
     </svg>
   );
 }
@@ -54,16 +72,21 @@ export default function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
         >
           {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
-        <ForkliftIcon color={theme.sidebarText} />
         <div style={{ overflow: "hidden", minWidth: 0, flex: 1 }}>
           <span
             className="header-marquee"
             style={{
-              display: "inline-block", fontSize: 16, fontWeight: 600, color: theme.sidebarText,
-              whiteSpace: "nowrap", paddingLeft: "100%",
+              display: "inline-flex", alignItems: "center", gap: 10, fontSize: 16, fontWeight: 600,
+              color: theme.sidebarText, whiteSpace: "nowrap", paddingLeft: "100%",
             }}
           >
-            {theme.logoEmoji} {theme.appTitle} {theme.logoEmoji} {theme.appTitle} {theme.logoEmoji}
+            <ForkliftIcon color={theme.sidebarText} />
+            <span>{theme.appTitle}</span>
+            <VanIcon color={theme.sidebarText} />
+            <span>{theme.appTitle}</span>
+            <ForkliftIcon color={theme.sidebarText} />
+            <span>{theme.appTitle}</span>
+            <VanIcon color={theme.sidebarText} />
           </span>
         </div>
       </div>
