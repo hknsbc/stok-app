@@ -42,7 +42,7 @@ export default function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
               whiteSpace: "nowrap", paddingLeft: "100%",
             }}
           >
-            {theme.appTitle}
+            {theme.logoEmoji} {theme.appTitle} {theme.logoEmoji} {theme.appTitle} {theme.logoEmoji}
           </span>
         </div>
       </div>
