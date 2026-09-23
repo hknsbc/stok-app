@@ -9,7 +9,6 @@ import {
   BarChart3,
   FileText,
   CreditCard,
-  Shield,
   LogOut,
   Home,
   User,
@@ -73,7 +72,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { label: t.menuYeniSatis, path: "/yeni-satis", icon: ShoppingCart },
     { label: t.menuRaporlar, path: "/raporlar", icon: FileText },
     { label: t.menuAbonelik, path: "/abonelik", icon: CreditCard },
-    { label: t.menuLisans, path: "/lisans", icon: Shield },
   ];
 
   useEffect(() => {

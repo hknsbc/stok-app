@@ -217,6 +217,21 @@ const PLANS: Record<AppMode, Plan[]> = {
   ],
 };
 
+const PET_PLAN_NAMES: Record<string, string> = {
+  profesyonel: "Profesyonel Plan",
+  is: "İş Planı",
+  temel: "Deneme",
+};
+
+type LicenseInfo = {
+  plan: string | null;
+  subscription_status: string | null;
+  license_expires_at: string | null;
+  subscription_expires_at: string | null;
+  email: string | null;
+  tenant_id: string | null;
+};
+
 const MODE_META: Record<AppMode, { title: string; subtitle: string; badge: string }> = {
   pet: {
     title: "Petshop Abonelik Planları",
@@ -241,9 +256,11 @@ const MODE_META: Record<AppMode, { title: string; subtitle: string; badge: strin
 };
 
 export default function Abonelik() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const { mode } = useMode();
   const [currentPlan, setCurrentPlan] = useState<string | null>(null);
+  const [license, setLicense] = useState<LicenseInfo | null>(null);
+  const [licenseLoading, setLicenseLoading] = useState(true);
 
   const plans = PLANS[mode] ?? PLANS.stok;
   const meta = MODE_META[mode] ?? MODE_META.stok;
@@ -251,12 +268,40 @@ export default function Abonelik() {
   useEffect(() => {
     const fetchPlan = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data, error } = await supabase.from("profiles").select("plan").eq("id", user.id).single();
+      if (!user) { setLicenseLoading(false); return; }
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("plan, subscription_status, license_expires_at, subscription_expires_at, tenant_id")
+        .eq("id", user.id)
+        .single();
       if (!error && data?.plan) setCurrentPlan(data.plan);
+      setLicense({
+        plan: data?.plan ?? null,
+        subscription_status: data?.subscription_status ?? null,
+        license_expires_at: data?.license_expires_at ?? null,
+        subscription_expires_at: data?.subscription_expires_at ?? null,
+        email: user.email ?? null,
+        tenant_id: data?.tenant_id ?? null,
+      });
+      setLicenseLoading(false);
     };
     fetchPlan();
   }, []);
+
+  const statusColor = (status: string | null) => {
+    if (status === "active") return "#10b981";
+    if (status === "expired") return "#ef4444";
+    return "#f59e0b";
+  };
+
+  const statusLabel = (status: string | null) => {
+    if (status === "active") return t.statusActive;
+    if (status === "expired") return t.statusExpired;
+    if (status === "trial") return t.statusTrial;
+    return t.statusUnknown;
+  };
+
+  const locale = lang === "tr" ? "tr-TR" : "en-US";
 
   return (
     <DashboardLayout>
@@ -269,6 +314,61 @@ export default function Abonelik() {
           <h1 style={{ fontSize: 28, fontWeight: "bold", marginBottom: 8 }}>{meta.title}</h1>
           <p style={{ color: "#888", fontSize: 15 }}>{meta.subtitle}</p>
         </div>
+
+        {/* Lisans durumu */}
+        {!licenseLoading && license && (
+          <div style={{ background: "white", borderRadius: 16, padding: 28, boxShadow: "0 1px 4px rgba(0,0,0,0.08)", marginBottom: 32 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 22, flexWrap: "wrap" }}>
+              <div style={{
+                width: 48, height: 48, borderRadius: "50%",
+                background: statusColor(license.subscription_status),
+                display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, color: "white", flexShrink: 0,
+              }}>
+                {license.subscription_status === "active" ? "✓" : "!"}
+              </div>
+              <div>
+                <p style={{ fontSize: 12, color: "#888", margin: 0 }}>{t.lisansStatusLabel}</p>
+                <p style={{ fontSize: 18, fontWeight: "bold", color: statusColor(license.subscription_status), margin: 0 }}>
+                  {statusLabel(license.subscription_status)}
+                </p>
+              </div>
+            </div>
+
+            <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
+              <div style={{ background: "#f9fafb", padding: 14, borderRadius: 10 }}>
+                <p style={{ color: "#888", fontSize: 11, margin: "0 0 4px" }}>{t.planLabel}</p>
+                <p style={{ fontWeight: "bold", margin: 0, fontSize: 13, textTransform: "capitalize" }}>
+                  {mode === "pet" ? (PET_PLAN_NAMES[license.plan ?? ""] ?? "Deneme") : (license.plan ?? t.temelPlanName)}
+                </p>
+              </div>
+              <div style={{ background: "#f9fafb", padding: 14, borderRadius: 10 }}>
+                <p style={{ color: "#888", fontSize: 11, margin: "0 0 4px" }}>{t.email}</p>
+                <p style={{ fontWeight: "bold", margin: 0, fontSize: 12, wordBreak: "break-all" }}>{license.email ?? "-"}</p>
+              </div>
+              <div style={{ background: "#f9fafb", padding: 14, borderRadius: 10 }}>
+                <p style={{ color: "#888", fontSize: 11, margin: "0 0 4px" }}>{t.validUntil}</p>
+                <p style={{ fontWeight: "bold", margin: 0, fontSize: 13 }}>
+                  {(() => {
+                    const expiresAt = license.subscription_expires_at ?? license.license_expires_at;
+                    if (!expiresAt) return t.unlimited;
+                    const d = new Date(expiresAt);
+                    const isTrialSoon = mode === "pet" && (d.getTime() - Date.now()) < 3 * 24 * 60 * 60 * 1000;
+                    return (
+                      <span style={{ color: isTrialSoon ? "#ef4444" : "inherit" }}>
+                        {d.toLocaleDateString(locale)}
+                        {mode === "pet" && license.plan === "temel" && " (Deneme)"}
+                      </span>
+                    );
+                  })()}
+                </p>
+              </div>
+              <div style={{ background: "#f9fafb", padding: 14, borderRadius: 10 }}>
+                <p style={{ color: "#888", fontSize: 11, margin: "0 0 4px" }}>{t.tenantId}</p>
+                <p style={{ fontWeight: "bold", margin: 0, fontSize: 10, wordBreak: "break-all" }}>{license.tenant_id ?? "-"}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Plan cards */}
         <div className={plans.length <= 2 ? "grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl" : "grid grid-cols-1 md:grid-cols-3 gap-6"}>
