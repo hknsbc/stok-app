@@ -16,8 +16,8 @@ export default function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
     <div
       style={{
         height: 60,
-        background: "white",
-        borderBottom: "1px solid #eee",
+        background: theme.sidebar,
+        borderBottom: "1px solid rgba(255,255,255,0.1)",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
@@ -29,14 +29,14 @@ export default function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
       <div style={{ display: "flex", alignItems: "center", gap: 16, minWidth: 0, flex: 1 }}>
         <button
           onClick={onToggleSidebar}
-          style={{ background: "none", border: "none", cursor: "pointer", flexShrink: 0 }}
+          style={{ background: "none", border: "none", cursor: "pointer", flexShrink: 0, color: theme.sidebarText }}
           aria-label="Menüyü aç/kapat"
         >
           {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
         <span
           style={{
-            fontSize: 16, fontWeight: 600, color: "#1e1b4b",
+            fontSize: 16, fontWeight: 600, color: theme.sidebarText,
             overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0,
           }}
         >
@@ -50,9 +50,9 @@ export default function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
             onClick={() => setLang("tr")}
             style={{
               padding: "4px 10px", borderRadius: 6,
-              border: `2px solid ${lang === "tr" ? theme.primary : "#e5e7eb"}`,
-              background: lang === "tr" ? theme.primary : "white",
-              color: lang === "tr" ? "white" : "#888",
+              border: `2px solid ${lang === "tr" ? theme.primary : "rgba(255,255,255,0.2)"}`,
+              background: lang === "tr" ? theme.primary : "transparent",
+              color: lang === "tr" ? "white" : theme.sidebarText,
               fontSize: 12, cursor: "pointer", fontWeight: 600,
             }}
           >
@@ -62,16 +62,16 @@ export default function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
             onClick={() => setLang("en")}
             style={{
               padding: "4px 10px", borderRadius: 6,
-              border: `2px solid ${lang === "en" ? theme.primary : "#e5e7eb"}`,
-              background: lang === "en" ? theme.primary : "white",
-              color: lang === "en" ? "white" : "#888",
+              border: `2px solid ${lang === "en" ? theme.primary : "rgba(255,255,255,0.2)"}`,
+              background: lang === "en" ? theme.primary : "transparent",
+              color: lang === "en" ? "white" : theme.sidebarText,
               fontSize: 12, cursor: "pointer", fontWeight: 600,
             }}
           >
             🇬🇧 EN
           </button>
         </div>
-        <span className="hide-mobile" style={{ fontSize: 13, color: "#aaa", fontWeight: 500 }}>Marssoft</span>
+        <span className="hide-mobile" style={{ fontSize: 13, color: theme.sidebarText, opacity: 0.6, fontWeight: 500 }}>Marssoft</span>
       </div>
     </div>
   );
