@@ -203,14 +203,29 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <span style={{ fontSize: 17, fontWeight: "bold", whiteSpace: "nowrap" }}>{theme.appName}</span>
           </div>
           {companyName && (
-            <div style={{
-              marginTop: 6, fontSize: 12, color: theme.sidebarText, opacity: 0.75,
-              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-            }}>
-              🏢 {companyName}
+            <div style={{ marginTop: 6, overflow: "hidden" }}>
+              <span
+                className="sidebar-marquee"
+                style={{
+                  display: "inline-block", fontSize: 12, color: theme.sidebarText, opacity: 0.75,
+                  whiteSpace: "nowrap", paddingLeft: "100%",
+                }}
+              >
+                🏢 {companyName}
+              </span>
             </div>
           )}
         </div>
+
+        <style>{`
+          @keyframes sidebar-marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+          }
+          .sidebar-marquee {
+            animation: sidebar-marquee 14s linear infinite;
+          }
+        `}</style>
         <nav style={{ flex: 1, padding: "12px 8px", overflowY: "auto" }}>
           {menuItems.map((item) => {
             const Icon = item.icon;
