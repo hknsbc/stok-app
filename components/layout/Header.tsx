@@ -8,6 +8,26 @@ interface HeaderProps {
   onToggleSidebar: () => void;
 }
 
+function ForkliftIcon({ color }: { color: string }) {
+  return (
+    <svg width="30" height="22" viewBox="0 0 34 24" style={{ flexShrink: 0 }} aria-hidden>
+      {/* gövde */}
+      <rect x="14" y="10" width="14" height="9" rx="2" fill={color} opacity="0.9" />
+      {/* kabin çerçevesi */}
+      <path d="M16 10V5h8" stroke={color} strokeWidth="2" strokeLinecap="round" fill="none" />
+      {/* direk (mast) */}
+      <rect x="10" y="2" width="2.2" height="18" fill={color} />
+      {/* çatal */}
+      <rect x="2" y="16" width="9" height="2" fill={color} />
+      {/* kaldırılmış koli */}
+      <rect className="forklift-box" x="1" y="6" width="9" height="8" rx="1" fill={color} opacity="0.55" stroke={color} strokeWidth="1.3" />
+      {/* tekerlekler */}
+      <circle cx="18" cy="20.5" r="2.3" fill={color} />
+      <circle cx="26" cy="20.5" r="2.3" fill={color} />
+    </svg>
+  );
+}
+
 export default function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
   const { theme } = useMode();
   const { lang, setLang } = useLang();
@@ -34,6 +54,7 @@ export default function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
         >
           {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
+        <ForkliftIcon color={theme.sidebarText} />
         <div style={{ overflow: "hidden", minWidth: 0, flex: 1 }}>
           <span
             className="header-marquee"
@@ -54,6 +75,14 @@ export default function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
         }
         .header-marquee {
           animation: header-marquee 14s linear infinite;
+        }
+        @keyframes forklift-box-bob {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-1.5px); }
+        }
+        .forklift-box {
+          animation: forklift-box-bob 1.6s ease-in-out infinite;
+          transform-origin: center;
         }
       `}</style>
 
