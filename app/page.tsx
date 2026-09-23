@@ -34,13 +34,17 @@ export default function Page() {
   return <AnaSayfa />;
 }
 
+type KritikUrun = { id: string; name: string; stock: number; min_stock: number };
+
 function AnaSayfa() {
   const { t, lang } = useLang();
+  const { mode } = useMode();
   const [toplamCari, setToplamCari] = useState<number | null>(null);
   const [stokDegeri, setStokDegeri] = useState<number | null>(null);
   const [buAySatis, setBuAySatis] = useState<number | null>(null);
   const [lisansDurumu, setLisansDurumu] = useState<string>("...");
   const [firmaAdi, setFirmaAdi] = useState<string | null>(null);
+  const [kritikUrunler, setKritikUrunler] = useState<KritikUrun[]>([]);
 
   const fetchStats = useCallback(async (tid: string) => {
     const now = new Date();
@@ -49,7 +53,7 @@ function AnaSayfa() {
 
     const [cariRes, stokRes, satisRes] = await Promise.all([
       supabase.from("customers").select("id", { count: "exact", head: true }).eq("tenant_id", tid),
-      supabase.from("products").select("price, stock").eq("tenant_id", tid),
+      supabase.from("products").select("id, name, price, stock, min_stock").eq("tenant_id", tid),
       supabase.from("sales").select("total").eq("tenant_id", tid).gte("date", monthStart),
     ]);
 
@@ -60,6 +64,12 @@ function AnaSayfa() {
         (acc, p) => acc + Number(p.price || 0) * Number(p.stock || 0), 0
       );
       setStokDegeri(deger);
+
+      const kritik = stokRes.data
+        .filter((p) => Number(p.stock ?? 0) <= Number(p.min_stock ?? 5))
+        .sort((a, b) => Number(a.stock ?? 0) - Number(b.stock ?? 0))
+        .map((p) => ({ id: p.id, name: p.name, stock: Number(p.stock ?? 0), min_stock: Number(p.min_stock ?? 5) }));
+      setKritikUrunler(kritik);
     }
 
     if (satisRes.data) {
@@ -126,6 +136,36 @@ function AnaSayfa() {
             </p>
           )}
         </div>
+
+        {mode === "stok" && kritikUrunler.length > 0 && (
+          <a href="/stok" style={{
+            display: "block", textDecoration: "none", color: "inherit",
+            background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 12,
+            padding: "16px 20px", marginBottom: 24,
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <span style={{ fontSize: 18 }}>⚠️</span>
+              <span style={{ fontSize: 15, fontWeight: 700, color: "#dc2626" }}>
+                {kritikUrunler.length} ürün kritik stok seviyesinde
+              </span>
+            </div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {kritikUrunler.slice(0, 6).map((p) => (
+                <span key={p.id} style={{
+                  background: "white", border: "1px solid #fecaca", borderRadius: 20,
+                  padding: "3px 12px", fontSize: 12, color: "#991b1b", fontWeight: 500,
+                }}>
+                  {p.name} ({p.stock} / min {p.min_stock})
+                </span>
+              ))}
+              {kritikUrunler.length > 6 && (
+                <span style={{ fontSize: 12, color: "#991b1b", alignSelf: "center" }}>
+                  +{kritikUrunler.length - 6} daha
+                </span>
+              )}
+            </div>
+          </a>
+        )}
 
         <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 32 }}>
           <div style={{ background: "white", padding: 24, borderRadius: 12, boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
