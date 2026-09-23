@@ -19,6 +19,7 @@ type CartItem = {
 };
 
 type OdemeYontemi = "nakit" | "kredi_kart";
+type Warehouse = { id: string; name: string; is_default: boolean };
 
 export default function YeniSatis() {
   const { t } = useLang();
@@ -31,12 +32,28 @@ export default function YeniSatis() {
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [quickSearch, setQuickSearch] = useState("");
+  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+  const [warehouseId, setWarehouseId] = useState("");
   const barcodeRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchProducts();
+    fetchWarehouses();
     barcodeRef.current?.focus();
   }, []);
+
+  const fetchWarehouses = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single();
+    if (!profile?.tenant_id) return;
+    const { data } = await supabase.from("warehouses").select("id, name, is_default").eq("tenant_id", profile.tenant_id).order("name");
+    if (data) {
+      setWarehouses(data);
+      const def = data.find((w) => w.is_default) ?? data[0];
+      if (def) setWarehouseId(def.id);
+    }
+  };
 
   const fetchProducts = async () => {
     const { data, error } = await supabase.from("products").select("*");
@@ -102,12 +119,28 @@ export default function YeniSatis() {
 
   const handleOnay = async () => {
     if (cart.length === 0) return;
+    if (!warehouseId) { alert("Lütfen bir depo seçin."); return; }
     setSaving(true);
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { alert(t.loginRequired); setSaving(false); return; }
     const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single();
     if (!profile?.tenant_id) { alert(t.tenantNotFound); setSaving(false); return; }
+
+    // Seçilen depoda yeterli stok var mı kontrol et
+    const { data: stockRows } = await supabase
+      .from("product_stock").select("product_id, quantity")
+      .eq("warehouse_id", warehouseId)
+      .in("product_id", cart.map((i) => i.product.id));
+    const stockMap = new Map((stockRows ?? []).map((r) => [r.product_id, r.quantity]));
+    for (const item of cart) {
+      const available = stockMap.get(item.product.id) ?? 0;
+      if (item.quantity > available) {
+        alert(`${item.product.name}: seçili depoda yalnızca ${available} adet var.`);
+        setSaving(false);
+        return;
+      }
+    }
 
     const today = new Date().toISOString().split("T")[0];
     const paymentNote = odeme === "nakit" ? t.cash.replace("💵 ", "") : t.creditCard.replace("💳 ", "");
@@ -121,10 +154,18 @@ export default function YeniSatis() {
       date: today,
       notes: `Payment: ${paymentNote}`,
       tenant_id: profile.tenant_id,
+      warehouse_id: warehouseId,
     }));
 
     const { error } = await supabase.from("sales").insert(inserts);
     if (error) { alert(`${t.errorPrefix} ${error.message}`); setSaving(false); return; }
+
+    // Seçili depodaki product_stock'u düş (products.stock toplamı ayrı trigger'la yönetiliyor, dokunulmuyor)
+    for (const item of cart) {
+      const remaining = (stockMap.get(item.product.id) ?? 0) - item.quantity;
+      await supabase.from("product_stock").update({ quantity: remaining, updated_at: new Date().toISOString() })
+        .eq("product_id", item.product.id).eq("warehouse_id", warehouseId);
+    }
 
     setCart([]);
     setSuccess(true);
@@ -308,6 +349,18 @@ export default function YeniSatis() {
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: 18, fontWeight: "bold", marginBottom: 16 }}>
                 <span>{t.totalAmount}</span><span style={{ color: "#6366f1" }}>{totalTutar.toFixed(2)} TL</span>
               </div>
+
+              <label style={{ fontSize: 12, color: "#555", fontWeight: 600, display: "block", marginBottom: 6 }}>🏬 Depo</label>
+              <select
+                value={warehouseId}
+                onChange={(e) => setWarehouseId(e.target.value)}
+                style={{ width: "100%", padding: "8px 10px", border: "1px solid #ddd", borderRadius: 8, fontSize: 13, marginBottom: 14 }}
+              >
+                <option value="">Depo seçin</option>
+                {warehouses.map((w) => (
+                  <option key={w.id} value={w.id}>{w.name}{w.is_default ? " (varsayılan)" : ""}</option>
+                ))}
+              </select>
 
               <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
                 {(["nakit", "kredi_kart"] as OdemeYontemi[]).map((y) => (

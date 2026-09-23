@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useLang } from "@/lib/LangContext";
 
+type Warehouse = { id: string; name: string; is_default: boolean };
+type StockRow = { id: string; warehouse_id: string; quantity: number };
+
 export default function UrunDuzenle({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
@@ -17,6 +20,11 @@ export default function UrunDuzenle({ params }: { params: Promise<{ id: string }
   const [satisFiyati, setSatisFiyati] = useState("");
   const [loading, setLoading] = useState(true);
   const [barcodeScanned, setBarcodeScanned] = useState(false);
+  const [tenantId, setTenantId] = useState<string | null>(null);
+  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+  const [stockRows, setStockRows] = useState<StockRow[]>([]);
+  const [newWarehouseId, setNewWarehouseId] = useState("");
+  const [newWarehouseQty, setNewWarehouseQty] = useState("");
   const barcodeRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -29,10 +37,50 @@ export default function UrunDuzenle({ params }: { params: Promise<{ id: string }
       setStock(String(data.stock ?? ""));
       setAlisFiyati(String(data.price ?? ""));
       setSatisFiyati(String(data.selling_price ?? ""));
+      setTenantId(data.tenant_id);
+
+      const [w, ps] = await Promise.all([
+        supabase.from("warehouses").select("id, name, is_default").eq("tenant_id", data.tenant_id).order("name"),
+        supabase.from("product_stock").select("id, warehouse_id, quantity").eq("product_id", id),
+      ]);
+      if (w.data) setWarehouses(w.data);
+      if (ps.data) setStockRows(ps.data);
+
       setLoading(false);
     };
     fetchProduct();
   }, [id, router]);
+
+  const refreshTotal = async (rows: StockRow[]) => {
+    const total = rows.reduce((sum, r) => sum + r.quantity, 0);
+    setStock(String(total));
+    await supabase.from("products").update({ stock: total }).eq("id", id);
+  };
+
+  const handleWarehouseQtyChange = async (rowId: string, qty: number) => {
+    if (qty < 0) return;
+    await supabase.from("product_stock").update({ quantity: qty, updated_at: new Date().toISOString() }).eq("id", rowId);
+    const updated = stockRows.map((r) => (r.id === rowId ? { ...r, quantity: qty } : r));
+    setStockRows(updated);
+    await refreshTotal(updated);
+  };
+
+  const handleAddWarehouseRow = async () => {
+    if (!newWarehouseId || !tenantId) return;
+    const qty = Number(newWarehouseQty) || 0;
+    const { data, error } = await supabase.from("product_stock").insert({
+      tenant_id: tenantId,
+      product_id: id,
+      warehouse_id: newWarehouseId,
+      quantity: qty,
+    }).select("id, warehouse_id, quantity").single();
+    if (error || !data) { alert(t.errorPrefix + " " + (error?.message ?? "")); return; }
+    const updated = [...stockRows, data];
+    setStockRows(updated);
+    setNewWarehouseId("");
+    setNewWarehouseQty("");
+    await refreshTotal(updated);
+  };
 
   // Barkod alanına scanner okutunca Enter gelir — görsel onay göster
   const handleBarcodeKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -107,8 +155,16 @@ export default function UrunDuzenle({ params }: { params: Promise<{ id: string }
           </div>
 
           <div>
-            <label style={labelStyle}>{t.stockCount}</label>
-            <input type="number" value={stock} onChange={(e) => setStock(e.target.value)} style={inputStyle} />
+            <label style={labelStyle}>
+              {t.stockCount} {stockRows.length > 0 && <span style={{ fontWeight: 400, color: "#888" }}>(depo toplamı — aşağıdan düzenleyin)</span>}
+            </label>
+            <input
+              type="number"
+              value={stock}
+              onChange={(e) => setStock(e.target.value)}
+              disabled={stockRows.length > 0}
+              style={{ ...inputStyle, background: stockRows.length > 0 ? "#f3f4f6" : "white" }}
+            />
           </div>
           <div>
             <label style={labelStyle}>{t.buyPrice}</label>
@@ -135,6 +191,61 @@ export default function UrunDuzenle({ params }: { params: Promise<{ id: string }
             </button>
           </div>
         </form>
+
+        <div style={{ background: "white", padding: 24, borderRadius: 12, boxShadow: "0 1px 4px rgba(0,0,0,0.08)", marginTop: 20 }}>
+          <h2 style={{ fontSize: 16, fontWeight: "bold", marginBottom: 14 }}>🏬 Depo Dağılımı</h2>
+
+          {stockRows.length === 0 && (
+            <p style={{ fontSize: 13, color: "#888", marginBottom: 12 }}>Bu ürün henüz hiçbir depoya atanmamış.</p>
+          )}
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+            {stockRows.map((row) => {
+              const w = warehouses.find((x) => x.id === row.warehouse_id);
+              return (
+                <div key={row.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: "1px solid #f3f4f6" }}>
+                  <span style={{ flex: 1, fontSize: 13, fontWeight: 500 }}>{w?.name ?? "Bilinmeyen depo"}</span>
+                  <input
+                    type="number"
+                    min={0}
+                    value={row.quantity}
+                    onChange={(e) => handleWarehouseQtyChange(row.id, Number(e.target.value))}
+                    style={{ width: 100, padding: 8, border: "1px solid #ccc", borderRadius: 6, fontSize: 13 }}
+                  />
+                </div>
+              );
+            })}
+          </div>
+
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <select
+              value={newWarehouseId}
+              onChange={(e) => setNewWarehouseId(e.target.value)}
+              style={{ flex: 1, padding: 8, border: "1px solid #ccc", borderRadius: 6, fontSize: 13 }}
+            >
+              <option value="">Depo ekle...</option>
+              {warehouses.filter((w) => !stockRows.some((r) => r.warehouse_id === w.id)).map((w) => (
+                <option key={w.id} value={w.id}>{w.name}</option>
+              ))}
+            </select>
+            <input
+              type="number"
+              min={0}
+              placeholder="Miktar"
+              value={newWarehouseQty}
+              onChange={(e) => setNewWarehouseQty(e.target.value)}
+              style={{ width: 100, padding: 8, border: "1px solid #ccc", borderRadius: 6, fontSize: 13 }}
+            />
+            <button
+              type="button"
+              onClick={handleAddWarehouseRow}
+              disabled={!newWarehouseId}
+              style={{ padding: "8px 16px", background: newWarehouseId ? "#6366f1" : "#e5e7eb", color: "white", border: "none", borderRadius: 6, cursor: newWarehouseId ? "pointer" : "not-allowed", fontSize: 13, fontWeight: 600 }}
+            >
+              Ekle
+            </button>
+          </div>
+        </div>
       </div>
     </DashboardLayout>
   );

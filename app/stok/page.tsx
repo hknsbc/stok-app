@@ -16,6 +16,7 @@ type Product = {
 export default function StokListesi() {
   const { t } = useLang();
   const [products, setProducts] = useState<Product[]>([]);
+  const [depotSummary, setDepotSummary] = useState<Record<string, string>>({});
   const [search, setSearch] = useState("");
   const [barcodeInput, setBarcodeInput] = useState("");
   const [barcodeMsg, setBarcodeMsg] = useState<{ text: string; ok: boolean } | null>(null);
@@ -32,6 +33,20 @@ export default function StokListesi() {
       .select("id, name, stock, price, selling_price, barcode")
       .order("created_at", { ascending: false });
     if (!error && data) setProducts(data);
+
+    const { data: stockRows } = await supabase
+      .from("product_stock")
+      .select("product_id, quantity, warehouses(name)");
+    if (stockRows) {
+      const summary: Record<string, string[]> = {};
+      for (const row of stockRows as unknown as { product_id: string; quantity: number; warehouses: { name: string } | null }[]) {
+        const label = `${row.warehouses?.name ?? "?"} (${row.quantity})`;
+        summary[row.product_id] = [...(summary[row.product_id] ?? []), label];
+      }
+      const joined: Record<string, string> = {};
+      for (const [pid, labels] of Object.entries(summary)) joined[pid] = labels.join(", ");
+      setDepotSummary(joined);
+    }
   };
 
   // Barkod okutunca ürünü bul ve düzenleme sayfasına yönlendir
@@ -136,6 +151,7 @@ export default function StokListesi() {
               <tr>
                 <th style={th}>{t.productName}</th>
                 <th style={th}>🔖 Barkod</th>
+                <th style={th}>🏬 Depo</th>
                 <th style={th}>{t.stockCount}</th>
                 <th style={th}>{t.buyPrice}</th>
                 <th style={th}>{t.sellPrice}</th>
@@ -160,6 +176,9 @@ export default function StokListesi() {
                     ) : (
                       <span style={{ color: "#ccc", fontSize: 12 }}>—</span>
                     )}
+                  </td>
+                  <td style={{ ...td, fontSize: 12, color: "#6b7280" }}>
+                    {depotSummary[p.id] ?? <span style={{ color: "#ef4444" }}>Depo atanmamış</span>}
                   </td>
                   <td style={{ ...td, color: p.stock <= 0 ? "#ef4444" : p.stock <= 5 ? "#f59e0b" : undefined }}>
                     {p.stock}
@@ -186,7 +205,7 @@ export default function StokListesi() {
               ))}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={6}>
+                  <td colSpan={7}>
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, padding: "52px 24px" }}>
                       <div style={{ width: 56, height: 56, borderRadius: "50%", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26 }}>📦</div>
                       <p style={{ fontSize: 15, fontWeight: 600, color: "#374151", margin: 0 }}>Henüz kayıt bulunmuyor.</p>

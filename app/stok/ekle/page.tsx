@@ -1,9 +1,11 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useLang } from "@/lib/LangContext";
+
+type Warehouse = { id: string; name: string; is_default: boolean };
 
 export default function UrunEkle() {
   const router = useRouter();
@@ -14,7 +16,25 @@ export default function UrunEkle() {
   const [alisFiyati, setAlisFiyati] = useState("");
   const [satisFiyati, setSatisFiyati] = useState("");
   const [barcodeScanned, setBarcodeScanned] = useState(false);
+  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+  const [warehouseId, setWarehouseId] = useState("");
   const barcodeRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const fetchWarehouses = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single();
+      if (!profile?.tenant_id) return;
+      const { data } = await supabase.from("warehouses").select("id, name, is_default").eq("tenant_id", profile.tenant_id).order("name");
+      if (data) {
+        setWarehouses(data);
+        const def = data.find((w) => w.is_default) ?? data[0];
+        if (def) setWarehouseId(def.id);
+      }
+    };
+    fetchWarehouses();
+  }, []);
 
   // Scanner Enter basınca görsel onay
   const handleBarcodeKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -36,16 +56,28 @@ export default function UrunEkle() {
       .from("profiles").select("tenant_id").eq("id", user.id).single();
     if (!profile?.tenant_id) { alert(t.tenantNotFound); return; }
 
-    const { error } = await supabase.from("products").insert({
+    if (!warehouseId) { alert("Lütfen bir depo seçin."); return; }
+
+    const { data: newProduct, error } = await supabase.from("products").insert({
       name,
       barcode: barcode.trim() || null,
       stock: Number(stock),
       price: Number(alisFiyati),
       selling_price: Number(satisFiyati),
       tenant_id: profile.tenant_id,
-    });
+    }).select("id").single();
 
     if (error) { alert(`${t.errorPrefix} ${error.message}`); return; }
+
+    if (newProduct) {
+      await supabase.from("product_stock").insert({
+        tenant_id: profile.tenant_id,
+        product_id: newProduct.id,
+        warehouse_id: warehouseId,
+        quantity: Number(stock) || 0,
+      });
+    }
+
     router.push("/stok");
   };
 
@@ -123,6 +155,27 @@ export default function UrunEkle() {
               onChange={(e) => setStock(e.target.value)}
               style={inputStyle}
             />
+          </div>
+          <div>
+            <label style={labelStyle}>
+              🏬 Depo
+              {warehouses.length === 0 && (
+                <span style={{ fontSize: 11, color: "#ef4444", fontWeight: 400, marginLeft: 6 }}>
+                  (henüz depo yok — <a href="/stok/depolar" style={{ color: "#6366f1" }}>önce bir depo oluşturun</a>)
+                </span>
+              )}
+            </label>
+            <select
+              value={warehouseId}
+              onChange={(e) => setWarehouseId(e.target.value)}
+              required
+              style={inputStyle}
+            >
+              <option value="">Depo seçin</option>
+              {warehouses.map((w) => (
+                <option key={w.id} value={w.id}>{w.name}{w.is_default ? " (varsayılan)" : ""}</option>
+              ))}
+            </select>
           </div>
           <div>
             <label style={labelStyle}>{t.buyPrice}</label>

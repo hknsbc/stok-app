@@ -17,12 +17,15 @@ type Purchase = {
 
 type Customer = { id: string; name: string };
 type Product = { id: string; name: string; price: number; barcode?: string };
+type Warehouse = { id: string; name: string; is_default: boolean };
 
 export default function Alislar() {
   const { t } = useLang();
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+  const [warehouseId, setWarehouseId] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Purchase | null>(null);
   const [customerId, setCustomerId] = useState("");
@@ -43,6 +46,7 @@ export default function Alislar() {
   }, []);
 
   const fetchAll = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
     const [p, c, pr] = await Promise.all([
       supabase.from("purchases").select("*").order("created_at", { ascending: false }),
       supabase.from("customers").select("id, name"),
@@ -51,6 +55,18 @@ export default function Alislar() {
     if (p.data) setPurchases(p.data);
     if (c.data) setCustomers(c.data);
     if (pr.data) setProducts(pr.data);
+
+    if (user) {
+      const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single();
+      if (profile?.tenant_id) {
+        const { data: w } = await supabase.from("warehouses").select("id, name, is_default").eq("tenant_id", profile.tenant_id).order("name");
+        if (w) {
+          setWarehouses(w);
+          const def = w.find((x) => x.is_default) ?? w[0];
+          if (def) setWarehouseId(def.id);
+        }
+      }
+    }
   };
 
   const resetForm = () => {
@@ -116,8 +132,11 @@ export default function Alislar() {
         quantity: Number(quantity),
         price: Number(price),
         total, date, notes,
+        warehouse_id: warehouseId || null,
       }).eq("id", editing.id);
     } else {
+      if (!warehouseId) { alert("Lütfen bir depo seçin."); return; }
+
       await supabase.from("purchases").insert({
         customer_id: customerId || null,
         product_id: productId || null,
@@ -125,7 +144,17 @@ export default function Alislar() {
         price: Number(price),
         total, date, notes,
         tenant_id: profile.tenant_id,
+        warehouse_id: warehouseId,
       });
+
+      const { data: stockRow } = await supabase
+        .from("product_stock").select("id, quantity")
+        .eq("product_id", productId).eq("warehouse_id", warehouseId).maybeSingle();
+      if (stockRow) {
+        await supabase.from("product_stock").update({ quantity: stockRow.quantity + Number(quantity), updated_at: new Date().toISOString() }).eq("id", stockRow.id);
+      } else {
+        await supabase.from("product_stock").insert({ tenant_id: profile.tenant_id, product_id: productId, warehouse_id: warehouseId, quantity: Number(quantity) });
+      }
     }
     fetchAll();
     resetForm();
@@ -202,6 +231,11 @@ export default function Alislar() {
               style={{ padding: 10, border: "1px solid #ccc", borderRadius: 6, fontSize: 14 }}>
               <option value="">{t.selectProduct}</option>
               {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+            <select value={warehouseId} onChange={(e) => setWarehouseId(e.target.value)}
+              style={{ padding: 10, border: "1px solid #ccc", borderRadius: 6, fontSize: 14 }}>
+              <option value="">🏬 Depo seçin</option>
+              {warehouses.map((w) => <option key={w.id} value={w.id}>{w.name}{w.is_default ? " (varsayılan)" : ""}</option>)}
             </select>
             <input type="number" placeholder={t.quantity} value={quantity}
               onChange={(e) => setQuantity(e.target.value)}

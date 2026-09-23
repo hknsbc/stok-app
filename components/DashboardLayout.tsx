@@ -29,6 +29,7 @@ import {
   MessageCircle,
   Wallet,
   CalendarCheck,
+  Warehouse,
 } from "lucide-react";
 import { useLang } from "@/lib/LangContext";
 import { useMode } from "@/lib/ModeContext";
@@ -218,6 +219,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               </Link>
             );
           })}
+          {mode === "stok" && (
+            <Link href="/stok/depolar" onClick={handleNavClick} style={navLinkStyle(pathname.startsWith("/stok/depolar"))}>
+              <Warehouse size={18} />
+              Depolar
+            </Link>
+          )}
           {mode === "marine" && (
             <>
               <Link href="/marine/tekne" onClick={handleNavClick} style={navLinkStyle(pathname.startsWith("/marine/tekne"))}>
