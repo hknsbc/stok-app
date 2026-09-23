@@ -414,7 +414,7 @@ function Pricing() {
       popular: true,
       cta: "Başla",
       ctaHref: "/login",
-      features: ["Sınırsız ürün & stok", "Barkod okuyucu desteği", "Alış & satış yönetimi", "Cari hesap takibi", "Temel raporlar", "Mobil uyumlu panel", "1 kullanıcı"],
+      features: ["500 adet ürüne kadar stok takibi", "Barkod okuyucu desteği", "Alış & satış yönetimi", "Cari hesap takibi", "Temel raporlar", "Mobil uyumlu panel", "1 kullanıcı", "Aylık servis pakete dahil"],
     },
     {
       name: "Enterprise",
@@ -468,15 +468,25 @@ function Pricing() {
                 )}
 
                 <ul style={{ listStyle: "none", padding: 0, margin: "0 0 24px", flex: 1 }}>
-                  {plan.features.map((f) => (
-                    <li key={f} style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "6px 0", fontSize: 14, color: "#374151" }}>
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, marginTop: 1 }}>
-                        <circle cx="8" cy="8" r="8" fill={`${plan.color}20`}/>
-                        <path d="M4.5 8l2.5 2.5 4.5-4.5" stroke={plan.color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                      {f}
-                    </li>
-                  ))}
+                  {plan.features.map((f) => {
+                    const isHighlight = f.toLowerCase().includes("aylık servis");
+                    return (
+                      <li key={f} style={{
+                        display: "flex", alignItems: "flex-start", gap: 8, padding: "6px 0", fontSize: 14,
+                        color: isHighlight ? plan.color : "#374151", fontWeight: isHighlight ? 700 : 400,
+                      }}>
+                        {isHighlight ? (
+                          <span style={{ flexShrink: 0, fontSize: 15, lineHeight: "16px" }}>⭐</span>
+                        ) : (
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, marginTop: 1 }}>
+                            <circle cx="8" cy="8" r="8" fill={`${plan.color}20`}/>
+                            <path d="M4.5 8l2.5 2.5 4.5-4.5" stroke={plan.color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        )}
+                        {f}
+                      </li>
+                    );
+                  })}
                 </ul>
 
                 {plan.ctaHref.startsWith("mailto:") ? (

@@ -133,13 +133,14 @@ const PLANS: Record<AppMode, Plan[]> = {
       contactUs: false,
       popular: true,
       features: [
-        "Sınırsız ürün & stok",
+        "500 adet ürüne kadar stok takibi",
         "Barkod okuyucu desteği",
         "Alış & satış yönetimi",
         "Cari hesap takibi",
         "Temel raporlar",
         "Mobil uyumlu panel",
         "1 kullanıcı",
+        "Aylık servis pakete dahil",
       ],
     },
     {
@@ -317,12 +318,20 @@ export default function Abonelik() {
 
                 {/* Features */}
                 <ul style={{ listStyle: "none", padding: 0, margin: 0, marginBottom: 24, flex: 1 }}>
-                  {plan.features.map((f) => (
-                    <li key={f} style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 9, fontSize: 14, color: "#374151" }}>
-                      <span style={{ color: plan.color, fontWeight: "bold", fontSize: 15, flexShrink: 0, marginTop: 1 }}>✓</span>
-                      {f}
-                    </li>
-                  ))}
+                  {plan.features.map((f) => {
+                    const isHighlight = f.toLowerCase().includes("aylık servis");
+                    return (
+                      <li key={f} style={{
+                        display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 9, fontSize: 14,
+                        color: isHighlight ? plan.color : "#374151", fontWeight: isHighlight ? 700 : 400,
+                      }}>
+                        <span style={{ color: plan.color, fontWeight: "bold", fontSize: 15, flexShrink: 0, marginTop: 1 }}>
+                          {isHighlight ? "⭐" : "✓"}
+                        </span>
+                        {f}
+                      </li>
+                    );
+                  })}
                 </ul>
 
                 {/* CTA */}
