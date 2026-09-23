@@ -15,7 +15,7 @@ type Purchase = {
   notes: string;
 };
 
-type Customer = { id: string; name: string };
+type Customer = { id: string; name: string; type?: string };
 type Product = { id: string; name: string; price: number; barcode?: string };
 type Warehouse = { id: string; name: string; is_default: boolean };
 
@@ -49,7 +49,7 @@ export default function Alislar() {
     const { data: { user } } = await supabase.auth.getUser();
     const [p, c, pr] = await Promise.all([
       supabase.from("purchases").select("*").order("created_at", { ascending: false }),
-      supabase.from("customers").select("id, name"),
+      supabase.from("customers").select("id, name, type"),
       supabase.from("products").select("id, name, price, barcode"),
     ]);
     if (p.data) setPurchases(p.data);
@@ -150,11 +150,24 @@ export default function Alislar() {
       const { data: stockRow } = await supabase
         .from("product_stock").select("id, quantity")
         .eq("product_id", productId).eq("warehouse_id", warehouseId).maybeSingle();
+      const before = stockRow?.quantity ?? 0;
+      const after = before + Number(quantity);
       if (stockRow) {
-        await supabase.from("product_stock").update({ quantity: stockRow.quantity + Number(quantity), updated_at: new Date().toISOString() }).eq("id", stockRow.id);
+        await supabase.from("product_stock").update({ quantity: after, updated_at: new Date().toISOString() }).eq("id", stockRow.id);
       } else {
-        await supabase.from("product_stock").insert({ tenant_id: profile.tenant_id, product_id: productId, warehouse_id: warehouseId, quantity: Number(quantity) });
+        await supabase.from("product_stock").insert({ tenant_id: profile.tenant_id, product_id: productId, warehouse_id: warehouseId, quantity: after });
       }
+      await supabase.from("stock_movements").insert({
+        tenant_id: profile.tenant_id,
+        product_id: productId,
+        warehouse_id: warehouseId,
+        change_type: "alis",
+        quantity_delta: Number(quantity),
+        previous_quantity: before,
+        new_quantity: after,
+        reference_type: "alislar",
+        created_by: user.id,
+      });
     }
     fetchAll();
     resetForm();
@@ -224,8 +237,8 @@ export default function Alislar() {
             </h2>
             <select value={customerId} onChange={(e) => setCustomerId(e.target.value)}
               style={{ padding: 10, border: "1px solid #ccc", borderRadius: 6, fontSize: 14 }}>
-              <option value="">{t.selectCustomer}</option>
-              {customers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              <option value="">Tedarikçi Seç</option>
+              {customers.filter((c) => c.type === "tedarikci" || c.type === "her_ikisi" || !c.type).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
             <select value={productId} onChange={(e) => handleProductChange(e.target.value)}
               style={{ padding: 10, border: "1px solid #ccc", borderRadius: 6, fontSize: 14 }}>

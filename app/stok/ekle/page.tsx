@@ -15,6 +15,9 @@ export default function UrunEkle() {
   const [stock, setStock] = useState("");
   const [alisFiyati, setAlisFiyati] = useState("");
   const [satisFiyati, setSatisFiyati] = useState("");
+  const [category, setCategory] = useState("");
+  const [unit, setUnit] = useState("adet");
+  const [minStock, setMinStock] = useState("5");
   const [barcodeScanned, setBarcodeScanned] = useState(false);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [warehouseId, setWarehouseId] = useState("");
@@ -64,17 +67,32 @@ export default function UrunEkle() {
       stock: Number(stock),
       price: Number(alisFiyati),
       selling_price: Number(satisFiyati),
+      category: category.trim() || null,
+      unit,
+      min_stock: Number(minStock) || 0,
       tenant_id: profile.tenant_id,
     }).select("id").single();
 
     if (error) { alert(`${t.errorPrefix} ${error.message}`); return; }
 
     if (newProduct) {
+      const qty = Number(stock) || 0;
       await supabase.from("product_stock").insert({
         tenant_id: profile.tenant_id,
         product_id: newProduct.id,
         warehouse_id: warehouseId,
-        quantity: Number(stock) || 0,
+        quantity: qty,
+      });
+      await supabase.from("stock_movements").insert({
+        tenant_id: profile.tenant_id,
+        product_id: newProduct.id,
+        warehouse_id: warehouseId,
+        change_type: "ilk_giris",
+        quantity_delta: qty,
+        previous_quantity: 0,
+        new_quantity: qty,
+        reference_type: "urun_ekle",
+        created_by: user.id,
       });
     }
 
@@ -146,15 +164,53 @@ export default function UrunEkle() {
             )}
           </div>
 
-          <div>
-            <label style={labelStyle}>{t.stockCount}</label>
-            <input
-              type="number"
-              placeholder="0"
-              value={stock}
-              onChange={(e) => setStock(e.target.value)}
-              style={inputStyle}
-            />
+          <div style={{ display: "flex", gap: 12 }}>
+            <div style={{ flex: 1 }}>
+              <label style={labelStyle}>{t.stockCount}</label>
+              <input
+                type="number"
+                placeholder="0"
+                value={stock}
+                onChange={(e) => setStock(e.target.value)}
+                style={inputStyle}
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={labelStyle}>Birim</label>
+              <select value={unit} onChange={(e) => setUnit(e.target.value)} style={inputStyle}>
+                <option value="adet">Adet</option>
+                <option value="kg">Kg</option>
+                <option value="lt">Litre</option>
+                <option value="kutu">Kutu</option>
+                <option value="paket">Paket</option>
+                <option value="m">Metre</option>
+              </select>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 12 }}>
+            <div style={{ flex: 1 }}>
+              <label style={labelStyle}>Kategori</label>
+              <input
+                type="text"
+                placeholder="ör. Elektronik"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                style={inputStyle}
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={labelStyle}>
+                Min. Stok Eşiği
+                <span style={{ fontSize: 11, color: "#888", fontWeight: 400, marginLeft: 4 }}>(uyarı sınırı)</span>
+              </label>
+              <input
+                type="number"
+                min={0}
+                value={minStock}
+                onChange={(e) => setMinStock(e.target.value)}
+                style={inputStyle}
+              />
+            </div>
           </div>
           <div>
             <label style={labelStyle}>

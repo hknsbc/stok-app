@@ -18,9 +18,13 @@ export default function UrunDuzenle({ params }: { params: Promise<{ id: string }
   const [stock, setStock] = useState("");
   const [alisFiyati, setAlisFiyati] = useState("");
   const [satisFiyati, setSatisFiyati] = useState("");
+  const [category, setCategory] = useState("");
+  const [unit, setUnit] = useState("adet");
+  const [minStock, setMinStock] = useState("5");
   const [loading, setLoading] = useState(true);
   const [barcodeScanned, setBarcodeScanned] = useState(false);
   const [tenantId, setTenantId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [stockRows, setStockRows] = useState<StockRow[]>([]);
   const [newWarehouseId, setNewWarehouseId] = useState("");
@@ -37,7 +41,13 @@ export default function UrunDuzenle({ params }: { params: Promise<{ id: string }
       setStock(String(data.stock ?? ""));
       setAlisFiyati(String(data.price ?? ""));
       setSatisFiyati(String(data.selling_price ?? ""));
+      setCategory(data.category ?? "");
+      setUnit(data.unit ?? "adet");
+      setMinStock(String(data.min_stock ?? 5));
       setTenantId(data.tenant_id);
+
+      const { data: { user } } = await supabase.auth.getUser();
+      setUserId(user?.id ?? null);
 
       const [w, ps] = await Promise.all([
         supabase.from("warehouses").select("id, name, is_default").eq("tenant_id", data.tenant_id).order("name"),
@@ -59,10 +69,25 @@ export default function UrunDuzenle({ params }: { params: Promise<{ id: string }
 
   const handleWarehouseQtyChange = async (rowId: string, qty: number) => {
     if (qty < 0) return;
+    const row = stockRows.find((r) => r.id === rowId);
+    const previous = row?.quantity ?? 0;
     await supabase.from("product_stock").update({ quantity: qty, updated_at: new Date().toISOString() }).eq("id", rowId);
     const updated = stockRows.map((r) => (r.id === rowId ? { ...r, quantity: qty } : r));
     setStockRows(updated);
     await refreshTotal(updated);
+    if (tenantId && row && qty !== previous) {
+      await supabase.from("stock_movements").insert({
+        tenant_id: tenantId,
+        product_id: id,
+        warehouse_id: row.warehouse_id,
+        change_type: "manuel_duzenleme",
+        quantity_delta: qty - previous,
+        previous_quantity: previous,
+        new_quantity: qty,
+        reference_type: "urun_duzenle",
+        created_by: userId,
+      });
+    }
   };
 
   const handleAddWarehouseRow = async () => {
@@ -80,6 +105,17 @@ export default function UrunDuzenle({ params }: { params: Promise<{ id: string }
     setNewWarehouseId("");
     setNewWarehouseQty("");
     await refreshTotal(updated);
+    await supabase.from("stock_movements").insert({
+      tenant_id: tenantId,
+      product_id: id,
+      warehouse_id: newWarehouseId,
+      change_type: "yeni_depo_atama",
+      quantity_delta: qty,
+      previous_quantity: 0,
+      new_quantity: qty,
+      reference_type: "urun_duzenle",
+      created_by: userId,
+    });
   };
 
   // Barkod alanına scanner okutunca Enter gelir — görsel onay göster
@@ -101,6 +137,9 @@ export default function UrunDuzenle({ params }: { params: Promise<{ id: string }
       stock: Number(stock),
       price: Number(alisFiyati),
       selling_price: Number(satisFiyati),
+      category: category.trim() || null,
+      unit,
+      min_stock: Number(minStock) || 0,
     }).eq("id", id);
 
     if (error) { alert(`${t.errorPrefix} ${error.message}`); return; }
@@ -165,6 +204,30 @@ export default function UrunDuzenle({ params }: { params: Promise<{ id: string }
               disabled={stockRows.length > 0}
               style={{ ...inputStyle, background: stockRows.length > 0 ? "#f3f4f6" : "white" }}
             />
+          </div>
+          <div style={{ display: "flex", gap: 12 }}>
+            <div style={{ flex: 1 }}>
+              <label style={labelStyle}>Birim</label>
+              <select value={unit} onChange={(e) => setUnit(e.target.value)} style={inputStyle}>
+                <option value="adet">Adet</option>
+                <option value="kg">Kg</option>
+                <option value="lt">Litre</option>
+                <option value="kutu">Kutu</option>
+                <option value="paket">Paket</option>
+                <option value="m">Metre</option>
+              </select>
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={labelStyle}>Kategori</label>
+              <input type="text" placeholder="ör. Elektronik" value={category} onChange={(e) => setCategory(e.target.value)} style={inputStyle} />
+            </div>
+          </div>
+          <div>
+            <label style={labelStyle}>
+              Min. Stok Eşiği
+              <span style={{ fontSize: 11, color: "#888", fontWeight: 400, marginLeft: 4 }}>(bu değerin altı listede kırmızı gösterilir)</span>
+            </label>
+            <input type="number" min={0} value={minStock} onChange={(e) => setMinStock(e.target.value)} style={inputStyle} />
           </div>
           <div>
             <label style={labelStyle}>{t.buyPrice}</label>

@@ -4,12 +4,26 @@ import { supabase } from "@/lib/supabase";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useLang } from "@/lib/LangContext";
 
+type CustomerType = "musteri" | "tedarikci" | "her_ikisi";
+
 type Customer = {
   id: string;
   name: string;
   phone: string;
   email: string;
   address: string;
+  type: CustomerType;
+};
+
+const TYPE_LABELS: Record<CustomerType, string> = {
+  musteri: "Müşteri",
+  tedarikci: "Tedarikçi",
+  her_ikisi: "Her ikisi",
+};
+const TYPE_COLORS: Record<CustomerType, string> = {
+  musteri: "#6366f1",
+  tedarikci: "#f59e0b",
+  her_ikisi: "#10b981",
 };
 
 export default function Cari() {
@@ -21,6 +35,7 @@ export default function Cari() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
+  const [type, setType] = useState<CustomerType>("musteri");
 
   useEffect(() => {
     fetchCustomers();
@@ -35,7 +50,7 @@ export default function Cari() {
   };
 
   const resetForm = () => {
-    setName(""); setPhone(""); setEmail(""); setAddress("");
+    setName(""); setPhone(""); setEmail(""); setAddress(""); setType("musteri");
     setEditing(null); setShowForm(false);
   };
 
@@ -49,11 +64,11 @@ export default function Cari() {
 
     if (editing) {
       await supabase.from("customers")
-        .update({ name, phone, email, address })
+        .update({ name, phone, email, address, type })
         .eq("id", editing.id);
     } else {
       await supabase.from("customers")
-        .insert({ name, phone, email, address, tenant_id: profile.tenant_id });
+        .insert({ name, phone, email, address, type, tenant_id: profile.tenant_id });
     }
     fetchCustomers();
     resetForm();
@@ -63,6 +78,7 @@ export default function Cari() {
     setEditing(c);
     setName(c.name); setPhone(c.phone || "");
     setEmail(c.email || ""); setAddress(c.address || "");
+    setType(c.type || "musteri");
     setShowForm(true);
   };
 
@@ -95,6 +111,14 @@ export default function Cari() {
               style={{ padding: 10, border: "1px solid #ccc", borderRadius: 6 }} />
             <input placeholder={t.address} value={address} onChange={(e) => setAddress(e.target.value)}
               style={{ padding: 10, border: "1px solid #ccc", borderRadius: 6 }} />
+            <div style={{ display: "flex", gap: 12 }}>
+              {(Object.keys(TYPE_LABELS) as CustomerType[]).map((tp) => (
+                <label key={tp} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, cursor: "pointer" }}>
+                  <input type="radio" name="customerType" checked={type === tp} onChange={() => setType(tp)} />
+                  {TYPE_LABELS[tp]}
+                </label>
+              ))}
+            </div>
             <div style={{ display: "flex", gap: 8 }}>
               <button type="submit" style={{ padding: "10px 20px", background: "black", color: "white", border: "none", borderRadius: 6, cursor: "pointer" }}>
                 {editing ? t.update : t.save}
@@ -111,6 +135,7 @@ export default function Cari() {
           <thead>
             <tr>
               <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>{t.name}</th>
+              <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>Tip</th>
               <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>{t.phone}</th>
               <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>{t.email}</th>
               <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>{t.address}</th>
@@ -121,6 +146,14 @@ export default function Cari() {
             {customers.map((c) => (
               <tr key={c.id}>
                 <td style={{ padding: 12 }}>{c.name}</td>
+                <td style={{ padding: 12 }}>
+                  <span style={{
+                    background: `${TYPE_COLORS[c.type ?? "musteri"]}20`, color: TYPE_COLORS[c.type ?? "musteri"],
+                    padding: "2px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600,
+                  }}>
+                    {TYPE_LABELS[c.type ?? "musteri"]}
+                  </span>
+                </td>
                 <td style={{ padding: 12 }}>{c.phone}</td>
                 <td style={{ padding: 12 }}>{c.email}</td>
                 <td style={{ padding: 12 }}>{c.address}</td>
@@ -132,7 +165,7 @@ export default function Cari() {
             ))}
             {customers.length === 0 && (
               <tr>
-                <td colSpan={5}>
+                <td colSpan={6}>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, padding: "52px 24px" }}>
                     <div style={{ width: 56, height: 56, borderRadius: "50%", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26 }}>👥</div>
                     <p style={{ fontSize: 15, fontWeight: 600, color: "#374151", margin: 0 }}>Henüz kayıt bulunmuyor.</p>

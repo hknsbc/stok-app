@@ -15,7 +15,6 @@ import {
   User,
   Truck,
   Settings,
-  Building2,
   PawPrint,
   AlertTriangle,
   Anchor,
@@ -45,7 +44,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [authChecked, setAuthChecked] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
-  const [hasBranches, setHasBranches] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [tenantId, setTenantId] = useState<string | null>(null);
   const [companyName, setCompanyName] = useState<string | null>(null);
@@ -93,11 +91,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       setIsSuperAdmin(profile?.is_superadmin ?? false);
       setTenantId(profile?.tenant_id ?? null);
       setCompanyName(profile?.company_name ?? null);
-      if (profile?.tenant_id) {
-        const { data: tenant } = await supabase
-          .from("tenants").select("has_branches").eq("id", profile.tenant_id).single();
-        setHasBranches(tenant?.has_branches ?? false);
-      }
       setAuthChecked(true);
     };
     checkAuth();
@@ -232,10 +225,20 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             );
           })}
           {mode === "stok" && (
-            <Link href="/stok/depolar" onClick={handleNavClick} style={navLinkStyle(pathname.startsWith("/stok/depolar"))}>
-              <Warehouse size={18} />
-              Depolar
-            </Link>
+            <>
+              <Link href="/stok/kasa" onClick={handleNavClick} style={navLinkStyle(pathname === "/stok/kasa")}>
+                <Wallet size={18} />
+                Kasa
+              </Link>
+              <Link href="/stok/depolar" onClick={handleNavClick} style={navLinkStyle(pathname.startsWith("/stok/depolar"))}>
+                <Warehouse size={18} />
+                Depolar
+              </Link>
+              <Link href="/stok/hareketler" onClick={handleNavClick} style={navLinkStyle(pathname === "/stok/hareketler")}>
+                <ClipboardList size={18} />
+                Hareketler
+              </Link>
+            </>
           )}
           {mode === "marine" && (
             <>
@@ -300,12 +303,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 Gün Sonu
               </Link>
             </>
-          )}
-          {hasBranches && (
-            <Link href="/subeler" onClick={handleNavClick} style={navLinkStyle(pathname === "/subeler")}>
-              <Building2 size={18} />
-              {t.menuSubeler}
-            </Link>
           )}
           {isSuperAdmin && (
             <Link href="/admin" onClick={handleNavClick} style={{

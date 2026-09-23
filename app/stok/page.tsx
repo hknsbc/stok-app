@@ -11,6 +11,9 @@ type Product = {
   price: number;
   selling_price: number;
   barcode: string | null;
+  category: string | null;
+  unit: string | null;
+  min_stock: number | null;
 };
 
 export default function StokListesi() {
@@ -30,7 +33,7 @@ export default function StokListesi() {
   const fetchProducts = async () => {
     const { data, error } = await supabase
       .from("products")
-      .select("id, name, stock, price, selling_price, barcode")
+      .select("id, name, stock, price, selling_price, barcode, category, unit, min_stock")
       .order("created_at", { ascending: false });
     if (!error && data) setProducts(data);
 
@@ -150,6 +153,7 @@ export default function StokListesi() {
             <thead>
               <tr>
                 <th style={th}>{t.productName}</th>
+                <th style={th}>Kategori</th>
                 <th style={th}>🔖 Barkod</th>
                 <th style={th}>🏬 Depo</th>
                 <th style={th}>{t.stockCount}</th>
@@ -163,6 +167,10 @@ export default function StokListesi() {
                 <tr key={p.id}>
                   <td style={td}>
                     <span style={{ fontWeight: 500 }}>{p.name}</span>
+                    {p.unit && p.unit !== "adet" && <span style={{ color: "#9ca3af", fontSize: 11, marginLeft: 4 }}>({p.unit})</span>}
+                  </td>
+                  <td style={{ ...td, color: p.category ? "#374151" : "#ccc" }}>
+                    {p.category || "—"}
                   </td>
                   <td style={td}>
                     {p.barcode ? (
@@ -180,7 +188,7 @@ export default function StokListesi() {
                   <td style={{ ...td, fontSize: 12, color: "#6b7280" }}>
                     {depotSummary[p.id] ?? <span style={{ color: "#ef4444" }}>Depo atanmamış</span>}
                   </td>
-                  <td style={{ ...td, color: p.stock <= 0 ? "#ef4444" : p.stock <= 5 ? "#f59e0b" : undefined }}>
+                  <td style={{ ...td, color: p.stock <= 0 ? "#ef4444" : p.stock <= (p.min_stock ?? 5) ? "#f59e0b" : undefined }}>
                     {p.stock}
                   </td>
                   <td style={td}>{Number(p.price).toFixed(2)} TL</td>
@@ -205,7 +213,7 @@ export default function StokListesi() {
               ))}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={7}>
+                  <td colSpan={8}>
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, padding: "52px 24px" }}>
                       <div style={{ width: 56, height: 56, borderRadius: "50%", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26 }}>📦</div>
                       <p style={{ fontSize: 15, fontWeight: 600, color: "#374151", margin: 0 }}>Henüz kayıt bulunmuyor.</p>

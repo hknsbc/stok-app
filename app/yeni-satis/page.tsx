@@ -18,7 +18,7 @@ type CartItem = {
   quantity: number;
 };
 
-type OdemeYontemi = "nakit" | "kredi_kart";
+type OdemeYontemi = "nakit" | "banka" | "kredi_kart";
 type Warehouse = { id: string; name: string; is_default: boolean };
 
 export default function YeniSatis() {
@@ -34,6 +34,7 @@ export default function YeniSatis() {
   const [quickSearch, setQuickSearch] = useState("");
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [warehouseId, setWarehouseId] = useState("");
+  const [lastGroupId, setLastGroupId] = useState<string | null>(null);
   const barcodeRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -143,7 +144,8 @@ export default function YeniSatis() {
     }
 
     const today = new Date().toISOString().split("T")[0];
-    const paymentNote = odeme === "nakit" ? t.cash.replace("💵 ", "") : t.creditCard.replace("💳 ", "");
+    const paymentNote = odeme === "nakit" ? "Nakit" : odeme === "banka" ? "Banka" : "Kredi Kartı";
+    const groupId = crypto.randomUUID();
 
     const inserts = cart.map((item) => ({
       product_id: item.product.id,
@@ -153,8 +155,10 @@ export default function YeniSatis() {
       cost: item.product.price * item.quantity,
       date: today,
       notes: `Payment: ${paymentNote}`,
+      payment_method: odeme,
       tenant_id: profile.tenant_id,
       warehouse_id: warehouseId,
+      sale_group_id: groupId,
     }));
 
     const { error } = await supabase.from("sales").insert(inserts);
@@ -162,16 +166,29 @@ export default function YeniSatis() {
 
     // Seçili depodaki product_stock'u düş (products.stock toplamı ayrı trigger'la yönetiliyor, dokunulmuyor)
     for (const item of cart) {
-      const remaining = (stockMap.get(item.product.id) ?? 0) - item.quantity;
+      const before = stockMap.get(item.product.id) ?? 0;
+      const remaining = before - item.quantity;
       await supabase.from("product_stock").update({ quantity: remaining, updated_at: new Date().toISOString() })
         .eq("product_id", item.product.id).eq("warehouse_id", warehouseId);
+      await supabase.from("stock_movements").insert({
+        tenant_id: profile.tenant_id,
+        product_id: item.product.id,
+        warehouse_id: warehouseId,
+        change_type: "satis",
+        quantity_delta: -item.quantity,
+        previous_quantity: before,
+        new_quantity: remaining,
+        reference_type: "yeni_satis",
+        created_by: user.id,
+      });
     }
 
     setCart([]);
     setSuccess(true);
+    setLastGroupId(groupId);
     setSaving(false);
     fetchProducts();
-    setTimeout(() => { setSuccess(false); barcodeRef.current?.focus(); }, 2500);
+    setTimeout(() => { setSuccess(false); barcodeRef.current?.focus(); }, 4000);
   };
 
   const inputStyle: React.CSSProperties = { padding: "10px 14px", border: "2px solid #6366f1", borderRadius: 8, fontSize: 15, width: "100%", outline: "none" };
@@ -363,21 +380,31 @@ export default function YeniSatis() {
               </select>
 
               <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-                {(["nakit", "kredi_kart"] as OdemeYontemi[]).map((y) => (
+                {(["nakit", "banka", "kredi_kart"] as OdemeYontemi[]).map((y) => (
                   <button key={y} onClick={() => setOdeme(y)} style={{
                     flex: 1, padding: "9px 0", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 600,
                     border: "2px solid " + (odeme === y ? "#6366f1" : "#e5e7eb"),
                     background: odeme === y ? "#6366f1" : "white",
                     color: odeme === y ? "white" : "#333",
                   }}>
-                    {y === "nakit" ? t.cash : t.creditCard}
+                    {y === "nakit" ? t.cash : y === "banka" ? "🏦 Banka" : t.creditCard}
                   </button>
                 ))}
               </div>
 
               {success && (
-                <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, padding: 12, textAlign: "center", color: "#16a34a", fontWeight: 600, marginBottom: 12, fontSize: 14 }}>
-                  {t.successSale}
+                <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, padding: 12, textAlign: "center", marginBottom: 12 }}>
+                  <div style={{ color: "#16a34a", fontWeight: 600, fontSize: 14, marginBottom: lastGroupId ? 8 : 0 }}>{t.successSale}</div>
+                  {lastGroupId && (
+                    <a
+                      href={`/stok/fis/${lastGroupId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ display: "inline-block", padding: "6px 16px", background: "#16a34a", color: "white", borderRadius: 6, textDecoration: "none", fontSize: 13, fontWeight: 600 }}
+                    >
+                      🖨️ Fişi Yazdır
+                    </a>
+                  )}
                 </div>
               )}
 

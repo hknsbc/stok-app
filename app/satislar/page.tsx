@@ -13,9 +13,11 @@ type Sale = {
   total: number;
   date: string;
   notes: string;
+  payment_method: "nakit" | "banka" | "kredi_kart" | null;
+  sale_group_id: string | null;
 };
 
-type Customer = { id: string; name: string };
+type Customer = { id: string; name: string; type?: string };
 type Product = { id: string; name: string; price: number; selling_price: number };
 type Warehouse = { id: string; name: string; is_default: boolean };
 
@@ -34,6 +36,7 @@ export default function Satislar() {
   const [price, setPrice] = useState("0");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [notes, setNotes] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"nakit" | "banka" | "kredi_kart">("nakit");
 
   useEffect(() => { fetchAll(); }, []);
 
@@ -41,7 +44,7 @@ export default function Satislar() {
     const { data: { user } } = await supabase.auth.getUser();
     const [s, c, pr] = await Promise.all([
       supabase.from("sales").select("*").order("created_at", { ascending: false }),
-      supabase.from("customers").select("id, name"),
+      supabase.from("customers").select("id, name, type"),
       supabase.from("products").select("id, name, price, selling_price"),
     ]);
     if (s.data) setSales(s.data);
@@ -65,6 +68,7 @@ export default function Satislar() {
     setEditing(null); setShowForm(false);
     setCustomerId(""); setProductId(""); setQuantity("1"); setPrice("0"); setNotes("");
     setDate(new Date().toISOString().split("T")[0]);
+    setPaymentMethod("nakit");
   };
 
   const handleProductChange = (pid: string) => {
@@ -81,6 +85,7 @@ export default function Satislar() {
     setPrice(String(s.price));
     setDate(s.date);
     setNotes(s.notes || "");
+    setPaymentMethod(s.payment_method || "nakit");
     setShowForm(true);
   };
 
@@ -101,6 +106,7 @@ export default function Satislar() {
         price: unitPrice,
         total, cost, date, notes,
         warehouse_id: warehouseId || null,
+        payment_method: paymentMethod,
       }).eq("id", editing.id);
     } else {
       if (!warehouseId) { alert("Lütfen bir depo seçin."); return; }
@@ -124,11 +130,23 @@ export default function Satislar() {
         total, cost, date, notes,
         tenant_id: profile.tenant_id,
         warehouse_id: warehouseId,
+        payment_method: paymentMethod,
       });
 
       if (stockRow) {
         await supabase.from("product_stock").update({ quantity: available - qty, updated_at: new Date().toISOString() }).eq("id", stockRow.id);
       }
+      await supabase.from("stock_movements").insert({
+        tenant_id: profile.tenant_id,
+        product_id: productId,
+        warehouse_id: warehouseId,
+        change_type: "satis",
+        quantity_delta: -qty,
+        previous_quantity: available,
+        new_quantity: available - qty,
+        reference_type: "satislar",
+        created_by: user.id,
+      });
     }
     fetchAll();
     resetForm();
@@ -156,7 +174,7 @@ export default function Satislar() {
             <select value={customerId} onChange={(e) => setCustomerId(e.target.value)}
               style={{ padding: 10, border: "1px solid #ccc", borderRadius: 6 }}>
               <option value="">{t.selectCustomer}</option>
-              {customers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              {customers.filter((c) => c.type === "musteri" || c.type === "her_ikisi" || !c.type).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
             <select value={productId} onChange={(e) => handleProductChange(e.target.value)}
               style={{ padding: 10, border: "1px solid #ccc", borderRadius: 6 }}>
@@ -172,6 +190,12 @@ export default function Satislar() {
               style={{ padding: 10, border: "1px solid #ccc", borderRadius: 6 }} />
             <input type="number" placeholder={t.unitPrice} value={price} onChange={(e) => setPrice(e.target.value)}
               style={{ padding: 10, border: "1px solid #ccc", borderRadius: 6 }} />
+            <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value as "nakit" | "banka" | "kredi_kart")}
+              style={{ padding: 10, border: "1px solid #ccc", borderRadius: 6 }}>
+              <option value="nakit">💵 Nakit</option>
+              <option value="banka">🏦 Banka</option>
+              <option value="kredi_kart">💳 Kredi Kartı</option>
+            </select>
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)}
               style={{ padding: 10, border: "1px solid #ccc", borderRadius: 6 }} />
             <input placeholder={t.notes} value={notes} onChange={(e) => setNotes(e.target.value)}
@@ -200,6 +224,7 @@ export default function Satislar() {
               <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>{t.quantity}</th>
               <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>{t.unitPrice}</th>
               <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>{t.total}</th>
+              <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>Ödeme</th>
               <th style={{ borderBottom: "1px solid #eee", padding: 12, textAlign: "left" }}>{t.actions}</th>
             </tr>
           </thead>
@@ -213,6 +238,12 @@ export default function Satislar() {
                 <td style={{ padding: 12 }}>{s.price} TL</td>
                 <td style={{ padding: 12 }}>{s.total} TL</td>
                 <td style={{ padding: 12 }}>
+                  {s.payment_method === "nakit" ? "💵 Nakit" : s.payment_method === "banka" ? "🏦 Banka" : s.payment_method === "kredi_kart" ? "💳 Kredi Kartı" : "—"}
+                </td>
+                <td style={{ padding: 12 }}>
+                  {s.sale_group_id && (
+                    <a href={`/stok/fis/${s.sale_group_id}`} target="_blank" rel="noopener noreferrer" style={{ padding: "6px 10px", background: "#f3f4f6", color: "#374151", borderRadius: 6, textDecoration: "none", marginRight: 8, fontSize: 12 }}>🖨️</a>
+                  )}
                   <button onClick={() => handleEdit(s)} style={{ padding: "6px 12px", background: "blue", color: "white", borderRadius: 6, border: "none", cursor: "pointer", marginRight: 8 }}>{t.edit}</button>
                   <button onClick={() => handleDelete(s.id)} style={{ padding: "6px 12px", background: "red", color: "white", borderRadius: 6, border: "none", cursor: "pointer" }}>{t.delete}</button>
                 </td>
@@ -220,7 +251,7 @@ export default function Satislar() {
             ))}
             {sales.length === 0 && (
               <tr>
-                <td colSpan={7}>
+                <td colSpan={8}>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, padding: "52px 24px" }}>
                     <div style={{ width: 56, height: 56, borderRadius: "50%", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26 }}>📊</div>
                     <p style={{ fontSize: 15, fontWeight: 600, color: "#374151", margin: 0 }}>Henüz kayıt bulunmuyor.</p>

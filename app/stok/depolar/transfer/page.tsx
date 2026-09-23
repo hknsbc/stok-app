@@ -10,6 +10,7 @@ type Product = { id: string; name: string };
 export default function DepoTransferPage() {
   const router = useRouter();
   const [tenantId, setTenantId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [productId, setProductId] = useState("");
@@ -41,6 +42,7 @@ export default function DepoTransferPage() {
   const init = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+    setUserId(user.id);
     const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single();
     if (!profile?.tenant_id) return;
     setTenantId(profile.tenant_id);
@@ -75,11 +77,27 @@ export default function DepoTransferPage() {
     const { data: toRow } = await supabase
       .from("product_stock").select("id, quantity")
       .eq("product_id", productId).eq("warehouse_id", toWarehouseId).maybeSingle();
+    const newToQty = (toRow?.quantity ?? 0) + qty;
     if (toRow) {
-      await supabase.from("product_stock").update({ quantity: toRow.quantity + qty, updated_at: new Date().toISOString() }).eq("id", toRow.id);
+      await supabase.from("product_stock").update({ quantity: newToQty, updated_at: new Date().toISOString() }).eq("id", toRow.id);
     } else {
-      await supabase.from("product_stock").insert({ tenant_id: tenantId, product_id: productId, warehouse_id: toWarehouseId, quantity: qty });
+      await supabase.from("product_stock").insert({ tenant_id: tenantId, product_id: productId, warehouse_id: toWarehouseId, quantity: newToQty });
     }
+
+    await supabase.from("stock_movements").insert([
+      {
+        tenant_id: tenantId, product_id: productId, warehouse_id: fromWarehouseId,
+        change_type: "transfer_cikis", quantity_delta: -qty,
+        previous_quantity: fromRow?.quantity ?? 0, new_quantity: newFromQty,
+        reference_type: "depo_transfer", note: `Hedef depo: ${toWarehouseId}`, created_by: userId,
+      },
+      {
+        tenant_id: tenantId, product_id: productId, warehouse_id: toWarehouseId,
+        change_type: "transfer_giris", quantity_delta: qty,
+        previous_quantity: toRow?.quantity ?? 0, new_quantity: newToQty,
+        reference_type: "depo_transfer", note: `Kaynak depo: ${fromWarehouseId}`, created_by: userId,
+      },
+    ]);
 
     setSaving(false);
     setSuccess(true);
