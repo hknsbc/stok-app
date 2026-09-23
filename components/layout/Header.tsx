@@ -34,15 +34,28 @@ export default function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
         >
           {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
-        <span
-          style={{
-            fontSize: 16, fontWeight: 600, color: theme.sidebarText,
-            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0,
-          }}
-        >
-          {theme.appTitle}
-        </span>
+        <div style={{ overflow: "hidden", minWidth: 0, flex: 1 }}>
+          <span
+            className="header-marquee"
+            style={{
+              display: "inline-block", fontSize: 16, fontWeight: 600, color: theme.sidebarText,
+              whiteSpace: "nowrap", paddingLeft: "100%",
+            }}
+          >
+            {theme.appTitle}
+          </span>
+        </div>
       </div>
+
+      <style>{`
+        @keyframes header-marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-100%); }
+        }
+        .header-marquee {
+          animation: header-marquee 14s linear infinite;
+        }
+      `}</style>
 
       <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
         <div style={{ display: "flex", gap: 6 }}>

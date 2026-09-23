@@ -200,7 +200,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <div style={{ padding: "20px 16px", borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ fontSize: 22 }}>{theme.logoEmoji}</span>
-            <span style={{ fontSize: 16, fontWeight: "bold", whiteSpace: "nowrap" }}>{theme.appName}</span>
+            <span style={{ fontSize: 17, fontWeight: "bold", whiteSpace: "nowrap" }}>{theme.appName}</span>
           </div>
           {companyName && (
             <div style={{
