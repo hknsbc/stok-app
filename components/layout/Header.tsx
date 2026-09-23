@@ -77,14 +77,9 @@ export default function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
             }}
           >
             <ForkliftIcon />
-            <span>📦</span>
-            <span>📦</span>
             <ForkliftIcon />
-            <span>📦</span>
-            <span>📦</span>
             <ForkliftIcon />
-            <span>📦</span>
-            <span>📦</span>
+            <ForkliftIcon />
           </span>
         </div>
       </div>
