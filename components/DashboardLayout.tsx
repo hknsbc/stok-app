@@ -37,6 +37,17 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
+const WHATSAPP_NUMBER = "905447221935";
+
+function WhatsAppIcon() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 32 32" fill="white" aria-hidden>
+      <path d="M16.004 3C9.374 3 4 8.374 4 15.004c0 2.37.697 4.58 1.903 6.444L4 29l7.74-1.868a11.9 11.9 0 0 0 4.264.78h.005c6.63 0 12.004-5.374 12.004-12.004C28.013 8.28 22.634 3 16.004 3Zm0 21.84a9.78 9.78 0 0 1-4.986-1.37l-.358-.213-3.712.897.906-3.617-.234-.372a9.78 9.78 0 0 1-1.49-5.16c0-5.42 4.41-9.83 9.874-9.83 5.42 0 9.83 4.41 9.83 9.83 0 5.464-4.41 9.835-9.83 9.835Z" />
+      <path d="M21.49 18.02c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.95 1.17-.17.2-.35.22-.65.07-1.76-.88-2.91-1.57-4.07-3.56-.31-.53.31-.49.88-1.63.1-.2.05-.37-.05-.52-.1-.15-.47-1.13-.64-1.5-.17-.37-.35-.32-.48-.32-.12 0-.27 0-.42 0-.15 0-.37.05-.56.3-.2.25-.77.75-.77 1.83 0 1.08.78 2.12.89 2.27.1.15 1.63 2.49 3.95 3.4 1.97.78 2.37.63 2.8.59.43-.05 1.39-.56 1.58-1.1.2-.54.2-1 .14-1.1-.06-.1-.23-.16-.48-.28Z" />
+    </svg>
+  );
+}
+
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -348,6 +359,20 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           {children}
         </div>
       </div>
+
+      <a
+        href={`https://wa.me/${WHATSAPP_NUMBER}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        title="WhatsApp ile bize yazın"
+        style={{
+          position: "fixed", bottom: 20, right: 20, width: 56, height: 56, borderRadius: "50%",
+          background: "#25D366", display: "flex", alignItems: "center", justifyContent: "center",
+          boxShadow: "0 4px 14px rgba(0,0,0,0.3)", zIndex: 60, textDecoration: "none",
+        }}
+      >
+        <WhatsAppIcon />
+      </a>
     </div>
   );
 }

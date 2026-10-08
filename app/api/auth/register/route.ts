@@ -31,6 +31,10 @@ export async function POST(request: Request) {
   const isPetTrial = mode === "pet" || mode === "vet";
   const isStok = mode === "stok";
 
+  if (isStok && !phone?.trim()) {
+    return Response.json({ error: "Telefon numarası zorunludur." }, { status: 400 });
+  }
+
   const { data: created, error: createError } = await supabaseAdmin.auth.admin.createUser({
     email,
     password,
