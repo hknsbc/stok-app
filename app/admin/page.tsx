@@ -344,10 +344,11 @@ export default function AdminPanel() {
         {activeTab === "users" && (
           <div style={{ background: "white", borderRadius: 14, boxShadow: "0 1px 6px rgba(0,0,0,0.08)", overflow: "hidden" }}>
             <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1340 }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1460 }}>
                 <thead>
                   <tr style={{ background: "#f9fafb" }}>
                     <th style={th}>{t.adminEmailCol}</th>
+                    <th style={th}>Telefon</th>
                     <th style={th}>{t.adminRegDate}</th>
                     <th style={th}>{t.adminStatus}</th>
                     <th style={th}>{t.adminPlan}</th>
@@ -389,6 +390,15 @@ export default function AdminPanel() {
                               {u.is_superadmin && <div style={{ fontSize: 11, color: "#6366f1" }}>Superadmin</div>}
                             </div>
                           </div>
+                        </td>
+                        <td style={td}>
+                          {u.phone ? (
+                            <a href={`tel:${u.phone}`} style={{ color: "#6366f1", textDecoration: "none" }}>
+                              📞 {u.phone}
+                            </a>
+                          ) : (
+                            <span style={{ color: "#aaa" }}>—</span>
+                          )}
                         </td>
                         <td style={td}>{new Date(u.created_at).toLocaleDateString(locale)}</td>
                         <td style={td}>
@@ -551,7 +561,7 @@ export default function AdminPanel() {
                   })}
                   {users.length === 0 && (
                     <tr>
-                      <td colSpan={12} style={{ padding: 28, textAlign: "center", color: "#aaa" }}>
+                      <td colSpan={13} style={{ padding: 28, textAlign: "center", color: "#aaa" }}>
                         {t.adminNoUsers}
                       </td>
                     </tr>
