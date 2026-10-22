@@ -32,12 +32,20 @@ import {
 import { useLang } from "@/lib/LangContext";
 import { useMode } from "@/lib/ModeContext";
 import Header from "@/components/layout/Header";
+import { ParticleField } from "@/components/stok/motion";
+import { greeting } from "@/components/stok/greeting";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
 const WHATSAPP_NUMBER = "905447221935";
+
+// Her sayfa kendi DashboardLayout'unu oluşturduğu için, oturum bilgisi ve
+// "bir kez oynat" animasyon bayrakları modül seviyesinde tutulur (sayfa geçişlerinde sıfırlanmaz).
+type AuthCache = { email: string | null; userId: string; isSuperAdmin: boolean; tenantId: string | null; companyName: string | null };
+let authCache: AuthCache | null = null;
+let navIntroPlayed = false;
 
 function WhatsAppIcon() {
   return (
@@ -51,16 +59,21 @@ function WhatsAppIcon() {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [authChecked, setAuthChecked] = useState(false);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [tenantId, setTenantId] = useState<string | null>(null);
-  const [companyName, setCompanyName] = useState<string | null>(null);
+  const [authChecked, setAuthChecked] = useState(authCache !== null);
+  const [userEmail, setUserEmail] = useState<string | null>(authCache?.email ?? null);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(authCache?.isSuperAdmin ?? false);
+  const [userId, setUserId] = useState<string | null>(authCache?.userId ?? null);
+  const [tenantId, setTenantId] = useState<string | null>(authCache?.tenantId ?? null);
+  const [companyName, setCompanyName] = useState<string | null>(authCache?.companyName ?? null);
+  const [welcome, setWelcome] = useState<"off" | "show" | "out">("off");
+  const [playNavIntro] = useState(() => !navIntroPlayed);
   const pathname = usePathname();
   const router = useRouter();
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const { mode, theme } = useMode();
+  const isStok = mode === "stok";
+
+  useEffect(() => { navIntroPlayed = true; }, []);
 
   // Detect mobile and set sidebar default
   useEffect(() => {
@@ -90,6 +103,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       const { supabase } = await import("@/lib/supabase");
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
+        authCache = null;
         router.replace("/login");
         return;
       }
@@ -100,10 +114,26 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       setIsSuperAdmin(profile?.is_superadmin ?? false);
       setTenantId(profile?.tenant_id ?? null);
       setCompanyName(profile?.company_name ?? null);
+      authCache = {
+        email: user.email ?? null, userId: user.id, isSuperAdmin: profile?.is_superadmin ?? false,
+        tenantId: profile?.tenant_id ?? null, companyName: profile?.company_name ?? null,
+      };
       setAuthChecked(true);
+
+      // Girişte bir kez: kişiye özel karşılama ekranı
+      if (mode === "stok") {
+        try {
+          if (!sessionStorage.getItem("sp_welcome")) {
+            sessionStorage.setItem("sp_welcome", "1");
+            setWelcome("show");
+            setTimeout(() => setWelcome("out"), 2300);
+            setTimeout(() => setWelcome("off"), 3000);
+          }
+        } catch { /* sessionStorage yoksa karşılamayı atla */ }
+      }
     };
     checkAuth();
-  }, [router]);
+  }, [router, mode]);
 
   // Kullanım takibi (sadece Stok paneli): hangi sayfaya girildiği
   useEffect(() => {
@@ -139,6 +169,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const handleLogout = async () => {
     const { supabase } = await import("@/lib/supabase");
     await supabase.auth.signOut();
+    authCache = null;
+    try { sessionStorage.removeItem("sp_welcome"); } catch { /* yoksay */ }
     router.push("/login");
   };
 
@@ -146,6 +178,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const handleNavClick = useCallback(() => {
     if (isMobile) setSidebarOpen(false);
   }, [isMobile]);
+
+  const navCls = (active: boolean) => (isStok ? `sp-navitem${active ? " sp-active" : ""}` : undefined);
 
   const navLinkStyle = (active: boolean) => ({
     display: "flex",
@@ -161,6 +195,18 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     whiteSpace: "nowrap" as const,
   });
 
+  if (!authChecked && isStok) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 18, height: "100vh", background: "radial-gradient(ellipse at 30% 20%, #3730a3 0%, #1E1B4B 50%, #0f0d2e 100%)" }}>
+        <div className="sp-btn-glow" style={{ width: 56, height: 56, borderRadius: 16, background: "linear-gradient(135deg,#6366F1,#8B5CF6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26 }}>📦</div>
+        <div style={{ width: 120, height: 3, borderRadius: 3, background: "rgba(255,255,255,0.12)", overflow: "hidden" }}>
+          <div className="sp-progress" style={{ height: "100%", background: "linear-gradient(90deg,#6366F1,#06B6D4)", animationDuration: "1.2s" }} />
+        </div>
+        <div style={{ color: "#A5B4FC", fontSize: 13 }}>{t.loading}</div>
+      </div>
+    );
+  }
+
   if (!authChecked) {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "#f5f5f5" }}>
@@ -170,7 +216,33 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   return (
-    <div style={{ display: "flex", height: "100vh", background: "#f5f5f5", position: "relative" }}>
+    <div style={{ display: "flex", height: "100vh", background: isStok ? "linear-gradient(135deg,#f5f3ff 0%,#f8fafc 55%,#eef2ff 100%)" : "#f5f5f5", position: "relative" }}>
+
+      {/* ── Karşılama ekranı (girişte bir kez) ── */}
+      {welcome !== "off" && (
+        <div className={`sp-welcome${welcome === "out" ? " sp-out" : ""}`} aria-live="polite">
+          <ParticleField color="165,180,252" density={9000} />
+          <div className="sp-orb" aria-hidden style={{ position: "absolute", width: 520, height: 520, borderRadius: "50%", top: -180, left: -140, background: "radial-gradient(circle, rgba(99,102,241,0.5), transparent 68%)", filter: "blur(28px)" }} />
+          <div className="sp-orb" aria-hidden style={{ position: "absolute", width: 420, height: 420, borderRadius: "50%", bottom: -160, right: -100, background: "radial-gradient(circle, rgba(16,185,129,0.3), transparent 68%)", filter: "blur(28px)", animationDelay: "-7s" }} />
+          <div style={{ position: "relative", textAlign: "center", padding: 24, maxWidth: 560 }}>
+            <div className="sp-welcome-in sp-btn-glow" style={{ width: 72, height: 72, borderRadius: 20, margin: "0 auto 26px", background: "linear-gradient(135deg,#6366F1,#8B5CF6)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 12px 40px rgba(99,102,241,0.6)", animationDelay: "0.1s" }}>
+              <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+            </div>
+            <div className="sp-welcome-in" style={{ animationDelay: "0.35s", fontSize: 18, color: "#A5B4FC", fontWeight: 600, marginBottom: 8 }}>{greeting(lang)}</div>
+            <div className="sp-welcome-in" style={{ animationDelay: "0.55s", fontSize: 40, fontWeight: 900, color: "white", letterSpacing: "-1px", lineHeight: 1.15, marginBottom: 12, wordBreak: "break-word" }}>
+              <span className="sp-gradient-text" style={{ backgroundImage: "linear-gradient(100deg,#fff,#C7D2FE,#67E8F9,#fff)" }}>
+                {companyName ?? userEmail?.split("@")[0] ?? ""}
+              </span>
+            </div>
+            <div className="sp-welcome-in" style={{ animationDelay: "0.8s", fontSize: 15, color: "rgba(255,255,255,0.6)", marginBottom: 34 }}>
+              {lang === "tr" ? "Deponuz hazırlanıyor…" : "Preparing your warehouse…"}
+            </div>
+            <div className="sp-welcome-in" style={{ animationDelay: "0.9s", width: 220, height: 4, borderRadius: 4, background: "rgba(255,255,255,0.12)", overflow: "hidden", margin: "0 auto" }}>
+              <div className="sp-progress" style={{ height: "100%", background: "linear-gradient(90deg,#6366F1,#06B6D4,#10B981)", animationDelay: "0.9s" }} />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Mobile backdrop ── */}
       {isMobile && sidebarOpen && (
@@ -186,7 +258,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* ── Sidebar ── */}
       <div style={{
         width: 240,
-        background: theme.sidebar,
+        background: isStok ? "linear-gradient(185deg, #1a1a2e 0%, #1E1B4B 55%, #251f5e 100%)" : theme.sidebar,
+        boxShadow: isStok ? "4px 0 28px rgba(30,27,75,0.25)" : undefined,
         color: theme.sidebarText,
         display: "flex",
         flexDirection: "column",
@@ -222,12 +295,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
           )}
         </div>
-        <nav style={{ flex: 1, padding: "12px 8px", overflowY: "auto" }}>
+        <nav className={isStok ? (playNavIntro ? "sp-nav-stagger" : "sp-nav-still") : undefined} style={{ flex: 1, padding: "12px 8px", overflowY: "auto" }}>
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.path;
             return (
-              <Link key={item.path} href={item.path} onClick={handleNavClick} style={navLinkStyle(isActive)}>
+              <Link key={item.path} href={item.path} onClick={handleNavClick} className={navCls(isActive)} style={navLinkStyle(isActive)}>
                 <Icon size={18} />
                 {item.label}
               </Link>
@@ -235,15 +308,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           })}
           {mode === "stok" && (
             <>
-              <Link href="/stok/kasa" onClick={handleNavClick} style={navLinkStyle(pathname === "/stok/kasa")}>
+              <Link href="/stok/kasa" onClick={handleNavClick} className={navCls(pathname === "/stok/kasa")} style={navLinkStyle(pathname === "/stok/kasa")}>
                 <Wallet size={18} />
                 Kasa
               </Link>
-              <Link href="/stok/depolar" onClick={handleNavClick} style={navLinkStyle(pathname.startsWith("/stok/depolar"))}>
+              <Link href="/stok/depolar" onClick={handleNavClick} className={navCls(pathname.startsWith("/stok/depolar"))} style={navLinkStyle(pathname.startsWith("/stok/depolar"))}>
                 <Warehouse size={18} />
                 Depolar
               </Link>
-              <Link href="/stok/hareketler" onClick={handleNavClick} style={navLinkStyle(pathname === "/stok/hareketler")}>
+              <Link href="/stok/hareketler" onClick={handleNavClick} className={navCls(pathname === "/stok/hareketler")} style={navLinkStyle(pathname === "/stok/hareketler")}>
                 <ClipboardList size={18} />
                 Hareketler
               </Link>
@@ -327,8 +400,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </nav>
         <div style={{ padding: 16, borderTop: "1px solid rgba(255,255,255,0.1)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-            <div style={{ width: 32, height: 32, borderRadius: "50%", background: theme.primary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <User size={16} color="white" />
+            <div style={{ position: "relative", width: 34, height: 34, borderRadius: "50%", background: isStok ? "linear-gradient(135deg,#6366F1,#8B5CF6)" : theme.primary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: isStok ? "0 0 0 2px rgba(165,180,252,0.35)" : undefined, color: "white", fontWeight: 800, fontSize: 14 }}>
+              {isStok && userEmail ? userEmail[0].toUpperCase() : <User size={16} color="white" />}
+              {isStok && <span className="sp-live" style={{ position: "absolute", right: -1, bottom: -1, width: 10, height: 10, borderRadius: "50%", background: "#10B981", border: "2px solid #1E1B4B" }} />}
             </div>
             <span style={{ fontSize: 12, color: theme.sidebarText, opacity: 0.7, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {userEmail ?? "Kullanici"}
@@ -356,7 +430,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>
         <Header sidebarOpen={sidebarOpen} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
         <div style={{ flex: 1, overflow: "auto", padding: "16px" }} className="main-content">
-          {children}
+          <div key={pathname} className={isStok ? "sp-page" : undefined}>
+            {children}
+          </div>
         </div>
       </div>
 

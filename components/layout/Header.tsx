@@ -35,13 +35,14 @@ function ForkliftIcon() {
 }
 
 export default function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
-  const { theme } = useMode();
+  const { theme, mode } = useMode();
   const { lang, setLang } = useLang();
 
   return (
     <div
       style={{
         height: 60,
+        position: "relative",
         background: theme.sidebar,
         borderBottom: "1px solid rgba(255,255,255,0.1)",
         display: "flex",
@@ -83,6 +84,8 @@ export default function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
           </span>
         </div>
       </div>
+
+      {mode === "stok" && <div className="sp-hairline" aria-hidden />}
 
       <style>{`
         @keyframes header-marquee {
@@ -129,6 +132,12 @@ export default function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
             🇬🇧 EN
           </button>
         </div>
+        {mode === "stok" && (
+          <span className="hide-mobile" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: "#6EE7B7", fontWeight: 600 }}>
+            <span className="sp-live" style={{ width: 7, height: 7, borderRadius: "50%", background: "#10B981", boxShadow: "0 0 8px #10B981" }} />
+            {lang === "tr" ? "Canlı" : "Live"}
+          </span>
+        )}
         <span className="hide-mobile" style={{ fontSize: 13, color: theme.sidebarText, opacity: 0.6, fontWeight: 500 }}>Marssoft</span>
       </div>
     </div>

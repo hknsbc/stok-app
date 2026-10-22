@@ -268,3 +268,58 @@ img {
   .sp-word { animation: none; opacity: 1; filter: none; transform: none; }
   .sp-marquee, .sp-borderglow::before, .sp-borderglow::after, .sp-live { animation: none; }
 }
+
+/* ── StokPanel: giriş sonrası (uygulama içi) ── */
+@keyframes sp-slide-in   { from { opacity: 0; transform: translateX(-18px); } to { opacity: 1; transform: none; } }
+@keyframes sp-welcome-in { from { opacity: 0; transform: translateY(26px) scale(0.96); filter: blur(10px); } to { opacity: 1; transform: none; filter: blur(0); } }
+@keyframes sp-fill       { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes sp-page-in    { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes sp-alert      { 0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.35); } 50% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } }
+@keyframes sp-sweep      { from { transform: translateX(-120%) skewX(-18deg); } to { transform: translateX(320%) skewX(-18deg); } }
+
+.sp-page { animation: sp-page-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+.sp-welcome { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at 30% 20%, #3730a3 0%, #1E1B4B 45%, #0f0d2e 100%); overflow: hidden;
+  transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), filter 0.7s ease; }
+.sp-welcome.sp-out { opacity: 0; transform: scale(1.06); filter: blur(8px); pointer-events: none; }
+.sp-welcome-in { opacity: 0; animation: sp-welcome-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.sp-progress { transform-origin: left; animation: sp-fill 2.1s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+
+.sp-nav-stagger > a { opacity: 0; animation: sp-slide-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.sp-nav-stagger > a:nth-child(1) { animation-delay: 0.05s; } .sp-nav-stagger > a:nth-child(2) { animation-delay: 0.10s; }
+.sp-nav-stagger > a:nth-child(3) { animation-delay: 0.15s; } .sp-nav-stagger > a:nth-child(4) { animation-delay: 0.20s; }
+.sp-nav-stagger > a:nth-child(5) { animation-delay: 0.25s; } .sp-nav-stagger > a:nth-child(6) { animation-delay: 0.30s; }
+.sp-nav-stagger > a:nth-child(7) { animation-delay: 0.35s; } .sp-nav-stagger > a:nth-child(8) { animation-delay: 0.40s; }
+.sp-nav-stagger > a:nth-child(9) { animation-delay: 0.45s; } .sp-nav-stagger > a:nth-child(10) { animation-delay: 0.50s; }
+.sp-nav-stagger > a:nth-child(11) { animation-delay: 0.55s; } .sp-nav-stagger > a:nth-child(12) { animation-delay: 0.60s; }
+.sp-nav-still > a { opacity: 1; }
+
+.sp-navitem { position: relative; overflow: hidden; transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), background 0.25s ease, box-shadow 0.25s ease; }
+.sp-navitem svg { transition: transform 0.3s cubic-bezier(0.22, 1.4, 0.36, 1); }
+.sp-navitem:not(.sp-active):hover { background: rgba(255, 255, 255, 0.08) !important; transform: translateX(4px); }
+.sp-navitem:hover svg { transform: scale(1.18) rotate(-6deg); }
+.sp-navitem.sp-active {
+  background: linear-gradient(90deg, #6366f1, #8b5cf6) !important;
+  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+  font-weight: 600;
+}
+.sp-navitem.sp-active::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent); animation: sp-sweep 3.4s ease-in-out infinite; }
+
+.sp-alert { animation: sp-alert 2s ease-out infinite; }
+.sp-hairline { position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, #6366f1, #8b5cf6, #06b6d4, #10b981, transparent); background-size: 200% 100%; animation: sp-gradient 6s linear infinite; opacity: 0.85; }
+.sp-statcard { position: relative; overflow: hidden; }
+.sp-statcard .sp-accent { position: absolute; left: 0; bottom: 0; height: 3px; width: 100%; transform-origin: left; transform: scaleX(0); transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+.sp-statcard:hover .sp-accent { transform: scaleX(1); }
+.sp-arrow { transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
+a:hover > .sp-arrow, a:hover .sp-arrow { transform: translateX(6px); }
+
+@media (max-width: 900px) { .sp-hide-sm { display: none !important; } }
+@media (prefers-reduced-motion: reduce) {
+  .sp-page, .sp-welcome-in { animation: none; opacity: 1; filter: none; transform: none; }
+  .sp-progress { animation: none; }
+  .sp-nav-stagger > a { animation: none; opacity: 1; }
+  .sp-navitem.sp-active::after, .sp-alert, .sp-hairline { animation: none; }
+}

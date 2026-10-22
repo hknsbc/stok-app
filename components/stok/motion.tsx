@@ -40,9 +40,9 @@ export function Reveal({
 
 // Görünür olunca 0'dan hedefe sayan sayaç
 export function CountUp({
-  to, decimals = 0, prefix = "", suffix = "", duration = 1600, thousands = false,
+  to, decimals = 0, prefix = "", suffix = "", duration = 1600, thousands = false, locale = "tr-TR",
 }: {
-  to: number; decimals?: number; prefix?: string; suffix?: string; duration?: number; thousands?: boolean;
+  to: number; decimals?: number; prefix?: string; suffix?: string; duration?: number; thousands?: boolean; locale?: string;
 }) {
   const ref = useRef<HTMLSpanElement | null>(null);
   const [val, setVal] = useState(0);
@@ -70,7 +70,7 @@ export function CountUp({
   }, [to, duration]);
 
   const fixed = val.toFixed(decimals);
-  const text = thousands ? Number(fixed).toLocaleString("tr-TR", { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) : fixed;
+  const text = thousands ? Number(fixed).toLocaleString(locale, { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) : fixed;
   return <span ref={ref}>{prefix}{text}{suffix}</span>;
 }
 

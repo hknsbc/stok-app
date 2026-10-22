@@ -8,6 +8,7 @@ import PetLandingPage from "@/components/pet/PetLandingPage";
 import VetLandingPage from "@/components/vet/VetLandingPage";
 import StokLandingPage from "@/components/stok/StokLandingPage";
 import MarineLandingPage from "@/components/marine/MarineLandingPage";
+import StokHome from "@/components/stok/StokHome";
 
 export default function Page() {
   const { mode } = useMode();
@@ -125,6 +126,28 @@ function AnaSayfa() {
   const fmt = (val: number | null, suffix = "") =>
     val === null ? "..." : `${val.toLocaleString(locale)}${suffix}`;
 
+  if (mode === "stok") {
+    return (
+      <DashboardLayout>
+        <StokHome
+          lang={lang}
+          firmaAdi={firmaAdi}
+          toplamCari={toplamCari}
+          stokDegeri={stokDegeri}
+          buAySatis={buAySatis}
+          lisansDurumu={lisansDurumu}
+          lisansAktif={lisansDurumu.startsWith(t.statusActive)}
+          kritikUrunler={kritikUrunler}
+          labels={{
+            totalCustomers: t.totalCustomers, stockValue: t.stockValue, monthlySales: t.monthlySales, licenseLabel: t.licenseLabel,
+            menuCari: t.menuCari, customerDesc: t.customerDesc, menuStok: t.menuStok, stockDesc: t.stockDesc,
+            menuSatislar: t.menuSatislar, salesDesc: t.salesDesc, open: t.open, newSale: t.menuYeniSatis,
+          }}
+        />
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div>
@@ -136,36 +159,6 @@ function AnaSayfa() {
             </p>
           )}
         </div>
-
-        {mode === "stok" && kritikUrunler.length > 0 && (
-          <a href="/stok" style={{
-            display: "block", textDecoration: "none", color: "inherit",
-            background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 12,
-            padding: "16px 20px", marginBottom: 24,
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-              <span style={{ fontSize: 18 }}>⚠️</span>
-              <span style={{ fontSize: 15, fontWeight: 700, color: "#dc2626" }}>
-                {kritikUrunler.length} ürün kritik stok seviyesinde
-              </span>
-            </div>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {kritikUrunler.slice(0, 6).map((p) => (
-                <span key={p.id} style={{
-                  background: "white", border: "1px solid #fecaca", borderRadius: 20,
-                  padding: "3px 12px", fontSize: 12, color: "#991b1b", fontWeight: 500,
-                }}>
-                  {p.name} ({p.stock} / min {p.min_stock})
-                </span>
-              ))}
-              {kritikUrunler.length > 6 && (
-                <span style={{ fontSize: 12, color: "#991b1b", alignSelf: "center" }}>
-                  +{kritikUrunler.length - 6} daha
-                </span>
-              )}
-            </div>
-          </a>
-        )}
 
         <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 32 }}>
           <div style={{ background: "white", padding: 24, borderRadius: 12, boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
