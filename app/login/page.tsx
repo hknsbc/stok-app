@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useLang } from "@/lib/LangContext";
 import { useMode } from "@/lib/ModeContext";
+import { ParticleField } from "@/components/stok/motion";
+import WarehouseScene from "@/components/stok/WarehouseScene";
 
 // ── Branding colours ─────────────────────────────────────────────────────────
 const NAVY = "#1E3A8A";
@@ -410,6 +412,12 @@ export default function Login() {
         <rect width="100%" height="100%" fill="url(#stokLoginDot)" />
       </svg>
 
+      <ParticleField color="165,180,252" density={9000} />
+      {/* Aurora orbs */}
+      <div className="sp-orb" aria-hidden style={{ position: "absolute", width: 420, height: 420, borderRadius: "50%", top: -140, left: -120, background: "radial-gradient(circle, rgba(99,102,241,0.45), transparent 68%)", filter: "blur(24px)", pointerEvents: "none" }} />
+      <div className="sp-orb" aria-hidden style={{ position: "absolute", width: 360, height: 360, borderRadius: "50%", bottom: -140, right: -100, background: "radial-gradient(circle, rgba(16,185,129,0.28), transparent 68%)", filter: "blur(24px)", animationDelay: "-7s", pointerEvents: "none" }} />
+      <div className="sp-orb" aria-hidden style={{ position: "absolute", width: 260, height: 260, borderRadius: "50%", top: "42%", right: "8%", background: "radial-gradient(circle, rgba(139,92,246,0.3), transparent 68%)", filter: "blur(28px)", animationDelay: "-12s", pointerEvents: "none" }} />
+
       <Link href="/" style={{ position: "absolute", top: 24, left: 24, display: "flex", alignItems: "center", gap: 6, color: "rgba(255,255,255,0.65)", textDecoration: "none", fontSize: 13, fontWeight: 500, zIndex: 2 }}>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
         Ana Sayfa
@@ -417,8 +425,8 @@ export default function Login() {
 
       <div style={{ position: "relative", zIndex: 1, textAlign: "center", width: "100%" }}>
         {/* Logo */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 28 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: STOK_INDIGO, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div className="sp-enter" style={{ animationDelay: "0.1s", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 28 }}>
+          <div className="sp-btn-glow" style={{ width: 36, height: 36, borderRadius: 10, background: STOK_INDIGO, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 18px rgba(99,102,241,0.5)" }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
               <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
@@ -430,58 +438,28 @@ export default function Login() {
           </span>
         </div>
 
-        <h2 style={{ fontSize: 26, fontWeight: 800, color: "white", lineHeight: 1.3, marginBottom: 10 }}>
+        <h2 className="sp-enter" style={{ animationDelay: "0.25s", fontSize: 26, fontWeight: 800, color: "white", lineHeight: 1.3, marginBottom: 10 }}>
           Stoğunuzu<br />
-          <span style={{ color: "#A5B4FC" }}>Tam Kontrol Altına Alın</span>
+          <span className="sp-gradient-text" style={{ backgroundImage: "linear-gradient(100deg, #A5B4FC, #C4B5FD, #67E8F9, #A5B4FC)" }}>Tam Kontrol Altına Alın</span>
         </h2>
-        <p style={{ fontSize: 14, color: "rgba(255,255,255,0.65)", maxWidth: 300, margin: "0 auto 32px", lineHeight: 1.6 }}>
+        <p className="sp-enter" style={{ animationDelay: "0.4s", fontSize: 14, color: "rgba(255,255,255,0.65)", maxWidth: 300, margin: "0 auto 32px", lineHeight: 1.6 }}>
           Ürün girişinden satışa, alışlardan raporlamaya kadar tüm stok süreçleriniz tek panelde.
         </p>
 
-        {/* Warehouse illustration */}
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: 32 }}>
-          <svg viewBox="0 0 240 160" fill="none" style={{ width: 220, filter: "drop-shadow(0 12px 32px rgba(0,0,0,0.4))" }}>
-            {/* Shelf rails */}
-            <rect x="10" y="40" width="220" height="7" rx="3" fill="#A5B4FC" opacity="0.5"/>
-            <rect x="10" y="100" width="220" height="7" rx="3" fill="#A5B4FC" opacity="0.5"/>
-            <rect x="10" y="40" width="7" height="67" rx="3" fill="#818CF8" opacity="0.4"/>
-            <rect x="117" y="40" width="7" height="67" rx="3" fill="#818CF8" opacity="0.4"/>
-            <rect x="223" y="40" width="7" height="67" rx="3" fill="#818CF8" opacity="0.4"/>
-            {/* Top row boxes */}
-            <rect x="20" y="12" width="50" height="28" rx="5" fill={STOK_INDIGO}/>
-            <line x1="20" y1="26" x2="70" y2="26" stroke="white" strokeWidth="1" opacity="0.3"/>
-            <line x1="45" y1="12" x2="45" y2="40" stroke="white" strokeWidth="1" opacity="0.3"/>
-            <rect x="80" y="18" width="40" height="22" rx="5" fill="#818CF8"/>
-            <rect x="130" y="14" width="46" height="26" rx="5" fill="#4F46E5"/>
-            <line x1="153" y1="14" x2="153" y2="40" stroke="white" strokeWidth="1" opacity="0.3"/>
-            <rect x="185" y="18" width="38" height="22" rx="5" fill={STOK_INDIGO}/>
-            {/* Bottom row boxes */}
-            <rect x="20" y="72" width="60" height="28" rx="5" fill="#4F46E5"/>
-            <rect x="90" y="68" width="48" height="32" rx="5" fill={STOK_INDIGO}/>
-            <line x1="90" y1="84" x2="138" y2="84" stroke="white" strokeWidth="1" opacity="0.3"/>
-            <rect x="148" y="72" width="42" height="28" rx="5" fill="#818CF8"/>
-            <rect x="200" y="70" width="30" height="30" rx="5" fill="#4F46E5"/>
-            {/* Barcode on center box */}
-            <rect x="94" y="74" width="16" height="10" rx="1" fill="white" opacity="0.9"/>
-            {[96,98,100,102,104,106,108].map((x, i) => (
-              <line key={i} x1={x} y1="75" x2={x} y2="83" stroke={STOK_INDIGO} strokeWidth={i % 2 === 0 ? 1.2 : 0.8}/>
-            ))}
-            {/* Scanner beam */}
-            <line x1="88" y1="70" x2="140" y2="70" stroke={STOK_GREEN} strokeWidth="1.5" opacity="0.9" strokeDasharray="3 2"/>
-            {/* Glow */}
-            <ellipse cx="120" cy="150" rx="100" ry="10" fill={STOK_INDIGO} opacity="0.1"/>
-          </svg>
+        {/* Warehouse animation */}
+        <div className="sp-enter" style={{ animationDelay: "0.55s", display: "flex", justifyContent: "center", marginBottom: 28 }}>
+          <WarehouseScene maxWidth={440} />
         </div>
 
         <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
-          {[{ icon: "📦", label: "Stok Takip" }, { icon: "📊", label: "Raporlar" }, { icon: "🏷️", label: "Barkod Satış" }].map((f) => (
-            <div key={f.label} style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 20, padding: "6px 14px", display: "flex", alignItems: "center", gap: 6, color: "white", fontSize: 13, fontWeight: 500 }}>
+          {[{ icon: "📦", label: "Stok Takip" }, { icon: "📊", label: "Raporlar" }, { icon: "🏷️", label: "Barkod Satış" }].map((f, i) => (
+            <div key={f.label} className="sp-pop" style={{ animationDelay: `${0.8 + i * 0.12}s`, background: "rgba(255,255,255,0.1)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 20, padding: "6px 14px", display: "flex", alignItems: "center", gap: 6, color: "white", fontSize: 13, fontWeight: 500 }}>
               <span>{f.icon}</span> {f.label}
             </div>
           ))}
         </div>
 
-        <div style={{ marginTop: 24, display: "inline-flex", alignItems: "center", gap: 8, background: `${STOK_INDIGO}30`, border: `1px solid ${STOK_INDIGO}70`, borderRadius: 12, padding: "10px 20px" }}>
+        <div className="sp-pop" style={{ animationDelay: "1.2s", marginTop: 24, display: "inline-flex", alignItems: "center", gap: 8, background: `${STOK_INDIGO}30`, border: `1px solid ${STOK_INDIGO}70`, borderRadius: 12, padding: "10px 20px" }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A5B4FC" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
           <span style={{ fontSize: 13, color: "#A5B4FC", fontWeight: 700 }}>14 gün ücretsiz · Kredi kartı gerekmez</span>
         </div>
@@ -611,12 +589,13 @@ export default function Login() {
   const accentColor = isPet ? ORANGE : isVet ? VET_DEEP : isStok ? STOK_DARK : isMarine ? MARINE_DEEP : "#1a1a2e";
   const accentLink  = isPet ? ORANGE : isVet ? VET_BLUE : isStok ? STOK_INDIGO : isMarine ? MARINE_CYAN : "#6366f1";
   const pageBg      = isPet ? BG : isVet ? "#F0F9FF" : isStok ? "#F5F3FF" : isMarine ? "#ECFEFF" : "#f0f4ff";
+  const inputCls    = isStok ? "sp-input" : undefined;
 
   return (
     <div className="login-shell" style={{ display: "flex", height: "100vh", background: pageBg }}>
 
       {/* Left */}
-      {isPet ? <PetLeftPanel /> : isVet ? <VetLeftPanel /> : isStok ? <StokLeftPanel /> : isMarine ? <MarineLeftPanel /> : <DefaultLeftPanel />}
+      {isPet ? <PetLeftPanel /> : isVet ? <VetLeftPanel /> : isStok ? StokLeftPanel() : isMarine ? <MarineLeftPanel /> : <DefaultLeftPanel />}
 
       {/* Right: Form */}
       <div className="login-right" style={{
@@ -625,7 +604,7 @@ export default function Login() {
         background: "white",
         borderLeft: (isPet || isVet || isStok || isMarine) ? `1px solid #E2E8F0` : "none",
       }}>
-        <div style={{ width: "100%", maxWidth: 360 }}>
+        <div className={isStok ? "sp-enter" : undefined} style={{ width: "100%", maxWidth: 360, animationDelay: "0.2s" }}>
 
           {/* Lang selector */}
           <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 24, gap: 8 }}>
@@ -697,23 +676,23 @@ export default function Login() {
           )}
 
           {error && (
-            <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 8, padding: "10px 14px", marginBottom: 16, color: "#DC2626", fontSize: 13 }}>{error}</div>
+            <div key={error} className="sp-shake" role="alert" style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 8, padding: "10px 14px", marginBottom: 16, color: "#DC2626", fontSize: 13 }}>{error}</div>
           )}
           {success && (
             <div style={{ background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: 8, padding: "10px 14px", marginBottom: 16, color: "#16A34A", fontSize: 13 }}>{success}</div>
           )}
 
-          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <form key={`${isRegister}-${isForgotPassword}`} className={isStok ? "sp-enter-f" : undefined} onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12, animationDuration: "0.45s" }}>
             <input
               type="email" placeholder={t.emailLabel} value={email}
               onChange={(e) => setEmail(e.target.value)} required
-              style={{ padding: 12, border: "1px solid #E5E7EB", borderRadius: 8, fontSize: 14, outline: "none", fontFamily: "inherit" }}
+              className={inputCls} style={{ padding: 12, border: "1px solid #E5E7EB", borderRadius: 8, fontSize: 14, outline: "none", fontFamily: "inherit" }}
             />
             {!isForgotPassword && (
               <input
                 type="password" placeholder={t.passwordLabel} value={password}
                 onChange={(e) => setPassword(e.target.value)} required
-                style={{ padding: 12, border: "1px solid #E5E7EB", borderRadius: 8, fontSize: 14, outline: "none", fontFamily: "inherit" }}
+                className={inputCls} style={{ padding: 12, border: "1px solid #E5E7EB", borderRadius: 8, fontSize: 14, outline: "none", fontFamily: "inherit" }}
               />
             )}
 
@@ -723,12 +702,12 @@ export default function Login() {
                 <input
                   type="tel" placeholder="Telefon" value={phone}
                   onChange={(e) => setPhone(e.target.value)} required
-                  style={{ padding: 12, border: "1px solid #E5E7EB", borderRadius: 8, fontSize: 14, outline: "none", fontFamily: "inherit" }}
+                  className={inputCls} style={{ padding: 12, border: "1px solid #E5E7EB", borderRadius: 8, fontSize: 14, outline: "none", fontFamily: "inherit" }}
                 />
                 <input
                   type="text" placeholder="Firma Adı" value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)} required
-                  style={{ padding: 12, border: "1px solid #E5E7EB", borderRadius: 8, fontSize: 14, outline: "none", fontFamily: "inherit" }}
+                  className={inputCls} style={{ padding: 12, border: "1px solid #E5E7EB", borderRadius: 8, fontSize: 14, outline: "none", fontFamily: "inherit" }}
                 />
               </>
             )}
@@ -815,6 +794,7 @@ export default function Login() {
 
             <button
               type="submit" disabled={loading || (isRegister && !requiredConsent)}
+              className={isStok ? "sp-btn" : undefined}
               style={{
                 padding: "13px 0",
                 background: isPet
@@ -842,7 +822,7 @@ export default function Login() {
               }}
             >
               {loading
-                ? t.loginLoading
+                ? <>{isStok && <span className="sp-spinner" aria-hidden />}{t.loginLoading}</>
                 : isForgotPassword
                   ? t.sendResetLink
                   : isRegister
