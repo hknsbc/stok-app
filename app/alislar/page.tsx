@@ -1,4 +1,5 @@
 "use client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -48,9 +49,9 @@ export default function Alislar() {
   const fetchAll = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     const [p, c, pr] = await Promise.all([
-      supabase.from("purchases").select("*").order("created_at", { ascending: false }),
-      supabase.from("customers").select("id, name, type"),
-      supabase.from("products").select("id, name, price, barcode"),
+      fetchAllRows((f, t) => supabase.from("purchases").select("*").order("created_at", { ascending: false }).order("id").range(f, t)),
+      fetchAllRows((f, t) => supabase.from("customers").select("id, name, type").order("id").range(f, t)),
+      fetchAllRows((f, t) => supabase.from("products").select("id, name, price, barcode").order("id").range(f, t)),
     ]);
     if (p.data) setPurchases(p.data);
     if (c.data) setCustomers(c.data);
@@ -137,37 +138,16 @@ export default function Alislar() {
     } else {
       if (!warehouseId) { alert("Lütfen bir depo seçin."); return; }
 
-      await supabase.from("purchases").insert({
-        customer_id: customerId || null,
-        product_id: productId || null,
-        quantity: Number(quantity),
-        price: Number(price),
-        total, date, notes,
-        tenant_id: profile.tenant_id,
-        warehouse_id: warehouseId,
+      const { error } = await supabase.rpc("record_purchase", {
+        p_warehouse: warehouseId,
+        p_product: productId,
+        p_quantity: Number(quantity),
+        p_price: Number(price),
+        p_customer: customerId || null,
+        p_date: date,
+        p_notes: notes || null,
       });
-
-      const { data: stockRow } = await supabase
-        .from("product_stock").select("id, quantity")
-        .eq("product_id", productId).eq("warehouse_id", warehouseId).maybeSingle();
-      const before = stockRow?.quantity ?? 0;
-      const after = before + Number(quantity);
-      if (stockRow) {
-        await supabase.from("product_stock").update({ quantity: after, updated_at: new Date().toISOString() }).eq("id", stockRow.id);
-      } else {
-        await supabase.from("product_stock").insert({ tenant_id: profile.tenant_id, product_id: productId, warehouse_id: warehouseId, quantity: after });
-      }
-      await supabase.from("stock_movements").insert({
-        tenant_id: profile.tenant_id,
-        product_id: productId,
-        warehouse_id: warehouseId,
-        change_type: "alis",
-        quantity_delta: Number(quantity),
-        previous_quantity: before,
-        new_quantity: after,
-        reference_type: "alislar",
-        created_by: user.id,
-      });
+      if (error) { alert(error.message); return; }
     }
     fetchAll();
     resetForm();

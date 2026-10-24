@@ -1,4 +1,5 @@
 "use client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -43,9 +44,9 @@ export default function Satislar() {
   const fetchAll = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     const [s, c, pr] = await Promise.all([
-      supabase.from("sales").select("*").order("created_at", { ascending: false }),
-      supabase.from("customers").select("id, name, type"),
-      supabase.from("products").select("id, name, price, selling_price"),
+      fetchAllRows((f, t) => supabase.from("sales").select("*").order("created_at", { ascending: false }).order("id").range(f, t)),
+      fetchAllRows((f, t) => supabase.from("customers").select("id, name, type").order("id").range(f, t)),
+      fetchAllRows((f, t) => supabase.from("products").select("id, name, price, selling_price").order("id").range(f, t)),
     ]);
     if (s.data) setSales(s.data);
     if (c.data) setCustomers(c.data);
@@ -89,7 +90,7 @@ export default function Satislar() {
     setShowForm(true);
   };
 
-  const handleSave = async (e: any) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     const qty = Number(quantity);
     const unitPrice = Number(price);
@@ -110,43 +111,16 @@ export default function Satislar() {
       }).eq("id", editing.id);
     } else {
       if (!warehouseId) { alert("Lütfen bir depo seçin."); return; }
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data: profile } = await supabase
-        .from("profiles").select("tenant_id").eq("id", user.id).single();
-      if (!profile?.tenant_id) return;
-
-      const { data: stockRow } = await supabase
-        .from("product_stock").select("id, quantity")
-        .eq("product_id", productId).eq("warehouse_id", warehouseId).maybeSingle();
-      const available = stockRow?.quantity ?? 0;
-      if (qty > available) { alert(`Seçili depoda yalnızca ${available} adet var.`); return; }
-
-      await supabase.from("sales").insert({
-        customer_id: customerId || null,
-        product_id: productId || null,
-        quantity: qty,
-        price: unitPrice,
-        total, cost, date, notes,
-        tenant_id: profile.tenant_id,
-        warehouse_id: warehouseId,
-        payment_method: paymentMethod,
+      const { error } = await supabase.rpc("record_sale", {
+        p_warehouse: warehouseId,
+        p_payment_method: paymentMethod,
+        p_customer: customerId || null,
+        p_date: date,
+        p_notes: notes || null,
+        p_reference: "satislar",
+        p_items: [{ product_id: productId, quantity: qty, price: unitPrice, cost: product ? Number(product.price) : 0 }],
       });
-
-      if (stockRow) {
-        await supabase.from("product_stock").update({ quantity: available - qty, updated_at: new Date().toISOString() }).eq("id", stockRow.id);
-      }
-      await supabase.from("stock_movements").insert({
-        tenant_id: profile.tenant_id,
-        product_id: productId,
-        warehouse_id: warehouseId,
-        change_type: "satis",
-        quantity_delta: -qty,
-        previous_quantity: available,
-        new_quantity: available - qty,
-        reference_type: "satislar",
-        created_by: user.id,
-      });
+      if (error) { alert(error.message); return; }
     }
     fetchAll();
     resetForm();

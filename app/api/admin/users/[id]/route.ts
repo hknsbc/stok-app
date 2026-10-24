@@ -8,12 +8,19 @@ export async function PATCH(
   if (!admin) return Response.json({ error: "Yetkisiz erisim" }, { status: 403 });
 
   const { id } = await params;
-  const body = await request.json();
+  const body = await request.json().catch(() => null);
+  if (!body || typeof body !== "object") return Response.json({ error: "Geçersiz istek." }, { status: 400 });
 
-  const updates: Record<string, any> = {};
+  // Tarih alanları: null (temizle) ya da geçerli bir tarih olmalı
+  const validDate = (v: unknown) => v === null || (typeof v === "string" && !Number.isNaN(Date.parse(v)));
+
+  const updates: Record<string, string | boolean | null> = {};
   if (typeof body.is_active === "boolean") updates.is_active = body.is_active;
-  if (body.subscription_starts_at !== undefined) updates.subscription_starts_at = body.subscription_starts_at;
-  if (body.subscription_expires_at !== undefined) updates.subscription_expires_at = body.subscription_expires_at;
+  for (const key of ["subscription_starts_at", "subscription_expires_at"] as const) {
+    if (body[key] === undefined) continue;
+    if (!validDate(body[key])) return Response.json({ error: `Geçersiz tarih: ${key}` }, { status: 400 });
+    updates[key] = body[key];
+  }
 
   if (Object.keys(updates).length === 0) {
     return Response.json({ error: "Guncelleme alani bulunamadi" }, { status: 400 });
@@ -33,6 +40,7 @@ export async function DELETE(
   if (!admin) return Response.json({ error: "Yetkisiz erisim" }, { status: 403 });
 
   const { id } = await params;
+  if (id === admin.id) return Response.json({ error: "Kendi hesabınızı silemezsiniz." }, { status: 400 });
 
   // Önce profile'ı sil, sonra auth user'ı sil
   await supabaseAdmin.from("profiles").delete().eq("id", id);

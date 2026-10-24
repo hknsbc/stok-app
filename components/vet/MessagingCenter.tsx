@@ -208,7 +208,7 @@ export default function MessagingCenter() {
             <h2 style={{ fontSize: 15, fontWeight: "bold", marginBottom: 4 }}>🤖 Otomatik Gönderim (WhatsApp Cloud API)</h2>
             <p style={{ fontSize: 12, color: "#888", marginBottom: 14, lineHeight: 1.6 }}>
               WhatsApp Cloud API anahtarınızı girerek Supabase Edge Function üzerinden otomatik mesaj gönderimi yapabilirsiniz.
-              Edge Function sabah 09:00'da otomatik tetiklenmesi için Supabase&apos;de pg_cron kurulumu yapmanız gerekir.
+              Edge Function sabah 09:00&apos;da otomatik tetiklenmesi için Supabase&apos;de pg_cron kurulumu yapmanız gerekir.
             </p>
             <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, marginBottom: 12 }}>
               <input

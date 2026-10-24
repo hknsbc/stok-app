@@ -1,4 +1,5 @@
 "use client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -31,15 +32,15 @@ export default function StokListesi() {
   }, []);
 
   const fetchProducts = async () => {
-    const { data, error } = await supabase
+    const { data, error } = await fetchAllRows((f, t) => supabase
       .from("products")
       .select("id, name, stock, price, selling_price, barcode, category, unit, min_stock")
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false }).order("id").range(f, t));
     if (!error && data) setProducts(data);
 
-    const { data: stockRows } = await supabase
+    const { data: stockRows } = await fetchAllRows((f, t) => supabase
       .from("product_stock")
-      .select("product_id, quantity, warehouses(name)");
+      .select("product_id, quantity, warehouses(name)").order("id").range(f, t));
     if (stockRows) {
       const summary: Record<string, string[]> = {};
       for (const row of stockRows as unknown as { product_id: string; quantity: number; warehouses: { name: string } | null }[]) {

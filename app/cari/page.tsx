@@ -1,4 +1,5 @@
 "use client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -42,10 +43,10 @@ export default function Cari() {
   }, []);
 
   const fetchCustomers = async () => {
-    const { data, error } = await supabase
+    const { data, error } = await fetchAllRows((f, t) => supabase
       .from("customers")
       .select("*")
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false }).order("id").range(f, t));
     if (!error && data) setCustomers(data);
   };
 
@@ -54,7 +55,7 @@ export default function Cari() {
     setEditing(null); setShowForm(false);
   };
 
-  const handleSave = async (e: any) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;

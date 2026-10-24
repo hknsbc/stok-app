@@ -320,6 +320,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <ClipboardList size={18} />
                 Hareketler
               </Link>
+              <Link href="/ayarlar" onClick={handleNavClick} className={navCls(pathname === "/ayarlar")} style={navLinkStyle(pathname === "/ayarlar")}>
+                <Settings size={18} />
+                Ayarlar
+              </Link>
             </>
           )}
           {mode === "marine" && (

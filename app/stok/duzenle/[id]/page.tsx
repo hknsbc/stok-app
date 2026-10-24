@@ -70,52 +70,31 @@ export default function UrunDuzenle({ params }: { params: Promise<{ id: string }
   const handleWarehouseQtyChange = async (rowId: string, qty: number) => {
     if (qty < 0) return;
     const row = stockRows.find((r) => r.id === rowId);
-    const previous = row?.quantity ?? 0;
-    await supabase.from("product_stock").update({ quantity: qty, updated_at: new Date().toISOString() }).eq("id", rowId);
+    if (!row) return;
+    const { error } = await supabase.rpc("set_stock_quantity", {
+      p_product: id, p_warehouse: row.warehouse_id, p_quantity: qty, p_note: "urun_duzenle",
+    });
+    if (error) { alert(t.errorPrefix + " " + error.message); return; }
     const updated = stockRows.map((r) => (r.id === rowId ? { ...r, quantity: qty } : r));
     setStockRows(updated);
     await refreshTotal(updated);
-    if (tenantId && row && qty !== previous) {
-      await supabase.from("stock_movements").insert({
-        tenant_id: tenantId,
-        product_id: id,
-        warehouse_id: row.warehouse_id,
-        change_type: "manuel_duzenleme",
-        quantity_delta: qty - previous,
-        previous_quantity: previous,
-        new_quantity: qty,
-        reference_type: "urun_duzenle",
-        created_by: userId,
-      });
-    }
   };
 
   const handleAddWarehouseRow = async () => {
     if (!newWarehouseId || !tenantId) return;
     const qty = Number(newWarehouseQty) || 0;
-    const { data, error } = await supabase.from("product_stock").insert({
-      tenant_id: tenantId,
-      product_id: id,
-      warehouse_id: newWarehouseId,
-      quantity: qty,
-    }).select("id, warehouse_id, quantity").single();
-    if (error || !data) { alert(t.errorPrefix + " " + (error?.message ?? "")); return; }
+    const { error } = await supabase.rpc("set_stock_quantity", {
+      p_product: id, p_warehouse: newWarehouseId, p_quantity: qty, p_note: "yeni_depo_atama",
+    });
+    if (error) { alert(t.errorPrefix + " " + error.message); return; }
+    const { data } = await supabase.from("product_stock").select("id, warehouse_id, quantity")
+      .eq("product_id", id).eq("warehouse_id", newWarehouseId).single();
+    if (!data) return;
     const updated = [...stockRows, data];
     setStockRows(updated);
     setNewWarehouseId("");
     setNewWarehouseQty("");
     await refreshTotal(updated);
-    await supabase.from("stock_movements").insert({
-      tenant_id: tenantId,
-      product_id: id,
-      warehouse_id: newWarehouseId,
-      change_type: "yeni_depo_atama",
-      quantity_delta: qty,
-      previous_quantity: 0,
-      new_quantity: qty,
-      reference_type: "urun_duzenle",
-      created_by: userId,
-    });
   };
 
   // Barkod alanına scanner okutunca Enter gelir — görsel onay göster

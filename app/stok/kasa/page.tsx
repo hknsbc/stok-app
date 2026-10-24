@@ -1,4 +1,5 @@
 "use client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -31,8 +32,8 @@ export default function Kasa() {
   useEffect(() => {
     const fetch = async () => {
       const [salesRes, prodRes] = await Promise.all([
-        supabase.from("sales").select("*").eq("date", todayStr).order("created_at", { ascending: false }),
-        supabase.from("products").select("id, name"),
+        fetchAllRows((f, t) => supabase.from("sales").select("*").eq("date", todayStr).order("created_at", { ascending: false }).order("id").range(f, t)),
+        fetchAllRows((f, t) => supabase.from("products").select("id, name").order("id").range(f, t)),
       ]);
       if (salesRes.data) setSatislar(salesRes.data);
       if (prodRes.data) {

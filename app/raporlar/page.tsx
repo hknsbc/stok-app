@@ -1,4 +1,5 @@
 "use client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -85,15 +86,15 @@ export default function Raporlar() {
     setLoading(true);
     const { start, end } = getDateRange(filter, customMonth);
 
-    let salesQuery = supabase.from("sales").select("date, product_id, quantity, price, total, cost");
-    if (start && end) {
-      salesQuery = salesQuery.gte("date", start).lte("date", end);
-    }
-    salesQuery = salesQuery.order("date", { ascending: false });
+    const salesQuery = fetchAllRows((f, t) => {
+      let q = supabase.from("sales").select("date, product_id, quantity, price, total, cost");
+      if (start && end) q = q.gte("date", start).lte("date", end);
+      return q.order("date", { ascending: false }).order("id").range(f, t);
+    });
 
     const [salesRes, productsRes] = await Promise.all([
       salesQuery,
-      supabase.from("products").select("id, name"),
+      fetchAllRows((f, t) => supabase.from("products").select("id, name").order("id").range(f, t)),
     ]);
 
     if (salesRes.data) {

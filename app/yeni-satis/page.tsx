@@ -1,4 +1,5 @@
 "use client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -57,7 +58,7 @@ export default function YeniSatis() {
   };
 
   const fetchProducts = async () => {
-    const { data, error } = await supabase.from("products").select("*");
+    const { data, error } = await fetchAllRows((f, t) => supabase.from("products").select("*").order("id").range(f, t));
     if (data) setProducts(data);
     if (error) console.error("Products fetch error:", error.message);
   };
@@ -123,65 +124,19 @@ export default function YeniSatis() {
     if (!warehouseId) { alert("Lütfen bir depo seçin."); return; }
     setSaving(true);
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { alert(t.loginRequired); setSaving(false); return; }
-    const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single();
-    if (!profile?.tenant_id) { alert(t.tenantNotFound); setSaving(false); return; }
-
-    // Seçilen depoda yeterli stok var mı kontrol et
-    const { data: stockRows } = await supabase
-      .from("product_stock").select("product_id, quantity")
-      .eq("warehouse_id", warehouseId)
-      .in("product_id", cart.map((i) => i.product.id));
-    const stockMap = new Map((stockRows ?? []).map((r) => [r.product_id, r.quantity]));
-    for (const item of cart) {
-      const available = stockMap.get(item.product.id) ?? 0;
-      if (item.quantity > available) {
-        alert(`${item.product.name}: seçili depoda yalnızca ${available} adet var.`);
-        setSaving(false);
-        return;
-      }
-    }
-
-    const today = new Date().toISOString().split("T")[0];
-    const paymentNote = odeme === "nakit" ? "Nakit" : odeme === "banka" ? "Banka" : "Kredi Kartı";
-    const groupId = crypto.randomUUID();
-
-    const inserts = cart.map((item) => ({
-      product_id: item.product.id,
-      quantity: item.quantity,
-      price: item.product.selling_price > 0 ? item.product.selling_price : item.product.price,
-      total: (item.product.selling_price > 0 ? item.product.selling_price : item.product.price) * item.quantity,
-      cost: item.product.price * item.quantity,
-      date: today,
-      notes: `Payment: ${paymentNote}`,
-      payment_method: odeme,
-      tenant_id: profile.tenant_id,
-      warehouse_id: warehouseId,
-      sale_group_id: groupId,
-    }));
-
-    const { error } = await supabase.from("sales").insert(inserts);
-    if (error) { alert(`${t.errorPrefix} ${error.message}`); setSaving(false); return; }
-
-    // Seçili depodaki product_stock'u düş (products.stock toplamı ayrı trigger'la yönetiliyor, dokunulmuyor)
-    for (const item of cart) {
-      const before = stockMap.get(item.product.id) ?? 0;
-      const remaining = before - item.quantity;
-      await supabase.from("product_stock").update({ quantity: remaining, updated_at: new Date().toISOString() })
-        .eq("product_id", item.product.id).eq("warehouse_id", warehouseId);
-      await supabase.from("stock_movements").insert({
-        tenant_id: profile.tenant_id,
+    // Stok kontrolü, satış kaydı ve stok düşümü tek transaction içinde (RPC) yapılır.
+    const { data: groupId, error } = await supabase.rpc("record_sale", {
+      p_warehouse: warehouseId,
+      p_payment_method: odeme,
+      p_notes: `Payment: ${odeme === "nakit" ? "Nakit" : odeme === "banka" ? "Banka" : "Kredi Kartı"}`,
+      p_items: cart.map((item) => ({
         product_id: item.product.id,
-        warehouse_id: warehouseId,
-        change_type: "satis",
-        quantity_delta: -item.quantity,
-        previous_quantity: before,
-        new_quantity: remaining,
-        reference_type: "yeni_satis",
-        created_by: user.id,
-      });
-    }
+        quantity: item.quantity,
+        price: item.product.selling_price > 0 ? item.product.selling_price : item.product.price,
+        cost: item.product.price,
+      })),
+    });
+    if (error) { alert(`${t.errorPrefix} ${error.message}`); setSaving(false); return; }
 
     setCart([]);
     setSuccess(true);

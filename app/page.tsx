@@ -1,4 +1,5 @@
 "use client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -54,8 +55,8 @@ function AnaSayfa() {
 
     const [cariRes, stokRes, satisRes] = await Promise.all([
       supabase.from("customers").select("id", { count: "exact", head: true }).eq("tenant_id", tid),
-      supabase.from("products").select("id, name, price, stock, min_stock").eq("tenant_id", tid),
-      supabase.from("sales").select("total").eq("tenant_id", tid).gte("date", monthStart),
+      fetchAllRows((f, t) => supabase.from("products").select("id, name, price, stock, min_stock").eq("tenant_id", tid).order("id").range(f, t)),
+      fetchAllRows((f, t) => supabase.from("sales").select("total").eq("tenant_id", tid).gte("date", monthStart).order("id").range(f, t)),
     ]);
 
     if (cariRes.count !== null) setToplamCari(cariRes.count);

@@ -11,6 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: theme.appTitle,
     description: theme.appTitle,
+    icons: { icon: { url: `/icons/${mode}.svg`, type: "image/svg+xml" } },
   };
 }
 

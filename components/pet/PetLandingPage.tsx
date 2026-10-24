@@ -191,7 +191,7 @@ function Hero() {
         <div>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: `${ORANGE}18`, border: `1px solid ${ORANGE}40`, borderRadius: 20, padding: "5px 14px", marginBottom: 20 }}>
             <PawPrint size={14} color={ORANGE} />
-            <span style={{ fontSize: 12, fontWeight: 700, color: ORANGE, letterSpacing: "0.5px" }}>TÜRKİYE'NİN #1 PETSHOP YAZILIMI</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: ORANGE, letterSpacing: "0.5px" }}>TÜRKİYE&apos;NİN #1 PETSHOP YAZILIMI</span>
           </div>
 
           <h1 style={{ fontSize: 48, fontWeight: 900, color: NAVY, lineHeight: 1.12, marginBottom: 20, letterSpacing: "-1px" }}>

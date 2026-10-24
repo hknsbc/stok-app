@@ -1,4 +1,5 @@
 "use client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
@@ -48,7 +49,7 @@ export default function DepoTransferPage() {
     setTenantId(profile.tenant_id);
     const [w, p] = await Promise.all([
       supabase.from("warehouses").select("id, name").eq("tenant_id", profile.tenant_id).order("name"),
-      supabase.from("products").select("id, name").eq("tenant_id", profile.tenant_id).order("name"),
+      fetchAllRows((f, t) => supabase.from("products").select("id, name").eq("tenant_id", profile.tenant_id).order("name").order("id").range(f, t)),
     ]);
     if (w.data) setWarehouses(w.data);
     if (p.data) setProducts(p.data);
@@ -66,38 +67,11 @@ export default function DepoTransferPage() {
 
     setSaving(true);
 
-    const { data: fromRow } = await supabase
-      .from("product_stock").select("id, quantity")
-      .eq("product_id", productId).eq("warehouse_id", fromWarehouseId).maybeSingle();
-    const newFromQty = (fromRow?.quantity ?? 0) - qty;
-    if (fromRow) {
-      await supabase.from("product_stock").update({ quantity: newFromQty, updated_at: new Date().toISOString() }).eq("id", fromRow.id);
-    }
-
-    const { data: toRow } = await supabase
-      .from("product_stock").select("id, quantity")
-      .eq("product_id", productId).eq("warehouse_id", toWarehouseId).maybeSingle();
-    const newToQty = (toRow?.quantity ?? 0) + qty;
-    if (toRow) {
-      await supabase.from("product_stock").update({ quantity: newToQty, updated_at: new Date().toISOString() }).eq("id", toRow.id);
-    } else {
-      await supabase.from("product_stock").insert({ tenant_id: tenantId, product_id: productId, warehouse_id: toWarehouseId, quantity: newToQty });
-    }
-
-    await supabase.from("stock_movements").insert([
-      {
-        tenant_id: tenantId, product_id: productId, warehouse_id: fromWarehouseId,
-        change_type: "transfer_cikis", quantity_delta: -qty,
-        previous_quantity: fromRow?.quantity ?? 0, new_quantity: newFromQty,
-        reference_type: "depo_transfer", note: `Hedef depo: ${toWarehouseId}`, created_by: userId,
-      },
-      {
-        tenant_id: tenantId, product_id: productId, warehouse_id: toWarehouseId,
-        change_type: "transfer_giris", quantity_delta: qty,
-        previous_quantity: toRow?.quantity ?? 0, new_quantity: newToQty,
-        reference_type: "depo_transfer", note: `Kaynak depo: ${fromWarehouseId}`, created_by: userId,
-      },
-    ]);
+    const { error: rpcError } = await supabase.rpc("transfer_stock", {
+      p_product: productId, p_from: fromWarehouseId, p_to: toWarehouseId, p_quantity: qty,
+    });
+    if (rpcError) { setError(rpcError.message); setSaving(false); return; }
+    const newFromQty = (availableQty ?? 0) - qty;
 
     setSaving(false);
     setSuccess(true);

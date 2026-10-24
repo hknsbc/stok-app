@@ -35,7 +35,10 @@ export async function GET(request: Request) {
 
   const { data: events, error } = await supabaseAdmin
     .from("usage_events")
-    .select("user_id, event_type, path, created_at");
+    .select("user_id, event_type, path, created_at")
+    .gte("created_at", new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString())
+    .order("created_at", { ascending: false })
+    .limit(200000);
   if (error) return Response.json({ error: error.message }, { status: 500 });
 
   const todayStr = new Date().toISOString().slice(0, 10);

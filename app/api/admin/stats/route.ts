@@ -1,4 +1,4 @@
-import { supabaseAdmin, verifyAdmin } from "@/lib/supabase-admin";
+import { supabaseAdmin, verifyAdmin, listAllUsers } from "@/lib/supabase-admin";
 
 // Plan fiyatları (aylık TL)
 const PLAN_PRICES: Record<string, number> = {
@@ -10,11 +10,12 @@ export async function GET(request: Request) {
   const admin = await verifyAdmin(request);
   if (!admin) return Response.json({ error: "Yetkisiz erisim" }, { status: 403 });
 
-  const { data: { users }, error } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
-  if (error) return Response.json({ error: error.message }, { status: 500 });
+  const { users, error } = await listAllUsers();
+  if (error || !users) return Response.json({ error: error?.message ?? "Kullanıcılar alınamadı" }, { status: 500 });
 
   const { data: profiles } = await supabaseAdmin.from("profiles").select("*");
-  const profileMap: Record<string, any> = {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const profileMap: Record<string, Record<string, any>> = {};
   for (const p of profiles ?? []) profileMap[p.id] = p;
 
   const now = new Date();

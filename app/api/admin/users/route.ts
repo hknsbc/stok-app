@@ -1,16 +1,17 @@
-import { supabaseAdmin, verifyAdmin } from "@/lib/supabase-admin";
+import { supabaseAdmin, verifyAdmin, listAllUsers } from "@/lib/supabase-admin";
 
 export async function GET(request: Request) {
   const admin = await verifyAdmin(request);
   if (!admin) return Response.json({ error: "Yetkisiz erisim" }, { status: 403 });
 
   // Tüm auth kullanıcılarını çek
-  const { data: { users }, error: authError } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
-  if (authError) return Response.json({ error: authError.message }, { status: 500 });
+  const { users, error: authError } = await listAllUsers();
+  if (authError || !users) return Response.json({ error: authError?.message ?? "Kullanıcılar alınamadı" }, { status: 500 });
 
   // Tüm profilleri çek (service role RLS bypass)
   const { data: profiles } = await supabaseAdmin.from("profiles").select("*");
-  const profileMap: Record<string, any> = {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const profileMap: Record<string, Record<string, any>> = {};
   for (const p of profiles ?? []) profileMap[p.id] = p;
 
   const result = users.map((u) => ({

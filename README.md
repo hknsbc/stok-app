@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Stok / Pet / Vet / Marine (marssoft)
 
-## Getting Started
+Next.js (App Router) + Supabase çok kiracılı (multi-tenant) stok ve işletme yönetimi uygulaması.
+Aynı kod tabanı alan adına göre dört moda ayrılır (`proxy.ts`): `stok`, `pet`, `vet`, `marine`.
 
-First, run the development server:
+> Bu proje standart Next.js'ten farklı sürüm kullanır (`proxy.ts`, değişen API'ler).
+> Kod yazmadan önce `node_modules/next/dist/docs/` altındaki ilgili rehbere bakın (bkz. `AGENTS.md`).
+
+## Kurulum
 
 ```bash
+npm ci
+cp .env.example .env.local   # değerleri doldurun
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Gerekli ortam değişkenleri:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Değişken | Açıklama |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase proje URL'i |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Anon (public) anahtar — RLS ile korunur |
+| `SUPABASE_SERVICE_ROLE_KEY` | **Sadece sunucu.** API route'larında kullanılır, asla istemciye sızdırmayın |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Komutlar
 
-## Learn More
+| Komut | Ne yapar |
+|---|---|
+| `npm run dev` | Geliştirme sunucusu |
+| `npm run build` | Üretim derlemesi (tip hataları build'i durdurur) |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm run lint` | ESLint |
+| `npm test` | Vitest birim testleri (`tests/`) |
 
-To learn more about Next.js, take a look at the following resources:
+CI (`.github/workflows/ci.yml`) her push/PR'da typecheck, lint, test ve build çalıştırır.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Veritabanı
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Migration'lar `supabase/migrations/` altındadır ve **tarih sırasıyla** Supabase SQL Editor'de çalıştırılır.
+Hepsi tekrar çalıştırılabilir (idempotent) yazılmıştır.
 
-## Deploy on Vercel
+> ⚠️ Temel tablolar (`profiles`, `tenants`, `products`, `sales`, `purchases`, `customers`) ve bunların
+> trigger'ları (profil oluşturma, `products.stock` toplamı) migration olarak repoda **yoktur**.
+> Mevcut canlı şemayı çıkarıp ekleyin: `supabase db dump --schema public -f supabase/migrations/00000000_baseline.sql`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Önemli mimari kararlar:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Tenant izolasyonu:** her tabloda `tenant_id` + RLS (`current_tenant_id()`).
+- **Hesap durumu:** `account_can_read()` / `account_can_write()` restrictive policy'leri — pasif hesap hiçbir
+  şey okuyamaz/yazamaz; aboneliği biten hesap salt-okunur olur (`20261023b_subscription_enforcement.sql`).
+- **Profil yazımı:** istemci `profiles` tablosunu güncelleyemez; yalnızca API route'ları (service role) yazar.
+- **Stok işlemleri atomiktir:** satış, alış, transfer ve sayım düzeltmesi Postgres RPC'leri ile yapılır
+  (`record_sale`, `record_purchase`, `transfer_stock`, `set_stock_quantity`). İstemciden `product_stock`'a
+  doğrudan yazmayın.
+- **1000 satır sınırı:** PostgREST tek istekte 1000 satırdan fazlasını kesin. Tüm satırlar gerekiyorsa
+  `lib/fetch-all.ts` içindeki `fetchAllRows` kullanın (sorguya `.order(...)` ekleyin).
+
+Veritabanı doğrulama testi: `supabase/tests/stock_and_rls.sql` (staging'de çalıştırın, sonunda rollback eder).
+
+## Güvenlik notları
+
+- Kayıt endpoint'i (`/api/auth/register`) IP başına saatte 5 deneme ile sınırlıdır. Bu sınır bellek içidir
+  (her sunucusuz instance ayrı sayar); kalıcı/global sınır için Upstash/Vercel KV önerilir.
+- Güvenlik başlıkları `next.config.ts` içinde tanımlıdır. CSP henüz eklenmedi (inline stiller yaygın).
+- Eski `users` tablosunda düz metin şifre bulunmuştu; veriyi inceleyip tabloyu silin (`DROP TABLE public.users`).
