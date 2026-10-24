@@ -1,7 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "Bash(xargs grep *)"
+      "Bash(xargs grep *)",
+      "Bash(npx tsc *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(python3 -c \"import sys,json; users=json.load\\(sys.stdin\\).get\\('users',[]\\); [print\\(u['id'], u['email']\\) for u in users]\")",
+      "Bash(curl -s 'https://ezzvvkuoegoyomhoyjfn.supabase.co/auth/v1/admin/users?per_page=100' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6enZ2a3VvZWdveW9taG95amZuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjAwMzIwNSwiZXhwIjoyMDkxNTc5MjA1fQ.8lT7wfhDBAOPTgEdWHUwv2mrw9_cIhxVL90gAcTlnYM' -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6enZ2a3VvZWdveW9taG95amZuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjAwMzIwNSwiZXhwIjoyMDkxNTc5MjA1fQ.8lT7wfhDBAOPTgEdWHUwv2mrw9_cIhxVL90gAcTlnYM')",
+      "Bash(curl -s -X PATCH 'https://ezzvvkuoegoyomhoyjfn.supabase.co/rest/v1/profiles?id=eq.d33181df-5cee-4dcb-8d27-454c63dd6cbd' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6enZ2a3VvZWdveW9taG95amZuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjAwMzIwNSwiZXhwIjoyMDkxNTc5MjA1fQ.8lT7wfhDBAOPTgEdWHUwv2mrw9_cIhxVL90gAcTlnYM' -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6enZ2a3VvZWdveW9taG95amZuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjAwMzIwNSwiZXhwIjoyMDkxNTc5MjA1fQ.8lT7wfhDBAOPTgEdWHUwv2mrw9_cIhxVL90gAcTlnYM' -H 'Content-Type: application/json' -H 'Prefer: return=representation' -d '{\"is_superadmin\": true}')",
+      "Bash(curl -s 'https://ezzvvkuoegoyomhoyjfn.supabase.co/rest/v1/profiles?id=eq.d33181df-5cee-4dcb-8d27-454c63dd6cbd&select=*' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6enZ2a3VvZWdveW9taG95amZuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjAwMzIwNSwiZXhwIjoyMDkxNTc5MjA1fQ.8lT7wfhDBAOPTgEdWHUwv2mrw9_cIhxVL90gAcTlnYM' -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6enZ2a3VvZWdveW9taG95amZuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjAwMzIwNSwiZXhwIjoyMDkxNTc5MjA1fQ.8lT7wfhDBAOPTgEdWHUwv2mrw9_cIhxVL90gAcTlnYM')",
+      "Bash(curl -s 'https://ezzvvkuoegoyomhoyjfn.supabase.co/rest/v1/profiles?id=eq.d33181df-5cee-4dcb-8d27-454c63dd6cbd&select=is_superadmin' -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6enZ2a3VvZWdveW9taG95amZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwMDMyMDUsImV4cCI6MjA5MTU3OTIwNX0.nRN1xs5P7lmbObIGqkHm4aWaOIKZRLeuVAoShhcB6a4' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6enZ2a3VvZWdveW9taG95amZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwMDMyMDUsImV4cCI6MjA5MTU3OTIwNX0.nRN1xs5P7lmbObIGqkHm4aWaOIKZRLeuVAoShhcB6a4')",
+      "Bash(curl -s 'https://ezzvvkuoegoyomhoyjfn.supabase.co/rest/v1/profiles?id=eq.d33181df-5cee-4dcb-8d27-454c63dd6cbd&select=is_superadmin,tenant_id,plan' -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6enZ2a3VvZWdveW9taG95amZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwMDMyMDUsImV4cCI6MjA5MTU3OTIwNX0.nRN1xs5P7lmbObIGqkHm4aWaOIKZRLeuVAoShhcB6a4' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6enZ2a3VvZWdveW9taG95amZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwMDMyMDUsImV4cCI6MjA5MTU3OTIwNX0.nRN1xs5P7lmbObIGqkHm4aWaOIKZRLeuVAoShhcB6a4')"
     ]
   }
 }
